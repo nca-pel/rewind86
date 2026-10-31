@@ -1,0 +1,193 @@
+# REWIND 1986
+
+Deutschsprachiges, browserbasiertes Text-Adventure: Rheda-Wiedenbrück, Herbst 1986. Jan Keller (17) bekommt von
+seinem Freund Ralf die heimlich kopierte Arbeitsdiskette eines unveröffentlichten C64-Spiels – und stößt auf ein
+verstecktes Kommunikationsmodul.
+
+**Stand:** technisch belastbare Grundlage plus **spielbarer vertikaler Ausschnitt (ca. 15–30 Minuten)**. Das
+8–12-Stunden-Vollspiel ist _nicht_ implementiert; der Ausschnitt endet mit „Fortsetzung folgt“.
+
+Verbindliche Spezifikation: [`docs/00-raw/REWIND_1986_GDD.md`](docs/00-raw/REWIND_1986_GDD.md), Auftrag:
+[`docs/00-raw/idee.md`](docs/00-raw/idee.md).
+
+## Voraussetzungen
+
+- Node.js ≥ 20 (getestet mit 22), npm ≥ 10
+- Für E2E-Tests: Chromium für Playwright (`npx playwright install chromium`, falls nicht vorhanden)
+
+## Befehle
+
+| Zweck                                      | Befehl                                  |
+| ------------------------------------------ | --------------------------------------- |
+| Abhängigkeiten installieren                | `npm install`                           |
+| Entwicklungsserver (http://localhost:5173) | `npm run dev`                           |
+| Produktions-Build nach `dist/`             | `npm run build`                         |
+| Build im Netz ausliefern (Port 4173)       | `npm run serve`                         |
+| Build lokal ansehen                        | `npm run preview`                       |
+| Unit-/Integrationstests (Vitest)           | `npm test`                              |
+| E2E-Tests Desktop + Mobil (Playwright)     | `npm run test:e2e`                      |
+| Lint (ESLint) / Format prüfen (Prettier)   | `npm run lint` / `npm run format:check` |
+| Alles: Lint, Unit, Build, E2E              | `npm run test:all`                      |
+
+Der Build ist statisch (`base: './'`) und braucht keinen Server, kein Backend und keinen Login.
+
+## Zugriff von Windows (Server ohne Bildschirm)
+
+Das Spiel läuft komplett im Browser. Auf dem Ubuntu-Server muss nur ein kleiner Webserver laufen; geöffnet wird es
+im Browser auf Windows (Chrome, Edge oder Firefox). Es gibt drei Wege – **Weg A ist der empfohlene**.
+
+Platzhalter in den Beispielen: `user` = dein Login auf dem Server, `server` = Hostname oder IP des Servers
+(IP herausfinden auf dem Server: `hostname -I`).
+
+### Weg A: SSH-Tunnel (empfohlen, nichts wird ins Netz geöffnet)
+
+1. Auf dem **Server** (z. B. per SSH-Sitzung) den Build ausliefern:
+
+   ```bash
+   cd /projects/rewind86
+   npm install          # nur beim ersten Mal
+   npm run build
+   npx vite preview --port 4173
+   ```
+
+2. Auf **Windows** in PowerShell oder der Eingabeaufforderung (OpenSSH ist in Windows 10/11 enthalten) den Tunnel
+   öffnen und das Fenster offen lassen:
+
+   ```powershell
+   ssh -N -L 4173:localhost:4173 user@server
+   ```
+
+3. Im Windows-Browser öffnen: **http://localhost:4173**
+
+Der Port ist auf dem Server nur lokal erreichbar; der Verkehr läuft verschlüsselt durch SSH. Für die Entwicklung mit
+automatischem Neuladen dasselbe mit `npm run dev` und Port `5173` (`ssh -N -L 5173:localhost:5173 user@server`,
+dann http://localhost:5173).
+
+**VS Code:** Wer per „Remote – SSH“ auf dem Server arbeitet, startet `npm run dev` im integrierten Terminal; VS Code
+leitet den Port automatisch weiter (Reiter „Ports“) und bietet „Im Browser öffnen“ an.
+
+**PuTTY statt OpenSSH:** _Connection → SSH → Tunnels_: Source port `4173`, Destination `localhost:4173`, „Add“,
+dann wie gewohnt verbinden.
+
+### Weg B: Direkt im lokalen Netz
+
+Nur in einem vertrauenswürdigen Netz (Heim-/Firmen-LAN, VPN) verwenden – der Server ist dann für alle Rechner im
+Netz erreichbar.
+
+```bash
+npm run serve        # baut und liefert auf 0.0.0.0:4173 aus
+```
+
+Im Windows-Browser: **http://server:4173** (bzw. die IP). Falls die Firewall `ufw` aktiv ist, den Port einmalig
+freigeben: `sudo ufw allow 4173/tcp` (nur fürs LAN: `sudo ufw allow from 192.168.0.0/16 to any port 4173 proto tcp`).
+
+`npm run dev:remote` macht dasselbe mit dem Entwicklungsserver (Port 5173). Den Entwicklungsserver nicht ins
+Internet stellen – er ist nicht dafür gedacht.
+
+### Weg C: Dauerhaft mit einem normalen Webserver
+
+Der Build in `dist/` besteht nur aus statischen Dateien und kann von jedem Webserver ausgeliefert werden, z. B. nginx:
+
+```bash
+npm run build
+sudo mkdir -p /var/www/rewind1986 && sudo cp -r dist/* /var/www/rewind1986/
+```
+
+```nginx
+# /etc/nginx/sites-available/rewind1986  (danach nach sites-enabled verlinken, nginx neu laden)
+server {
+    listen 8080;
+    root /var/www/rewind1986;
+    index index.html;
+}
+```
+
+Aufruf: http://server:8080. Alternativ den Ordner `dist/` nach Windows kopieren und dort mit einem beliebigen lokalen
+Webserver ausliefern (z. B. `python -m http.server 8000` im Ordner, dann http://localhost:8000).
+**Nicht** einfach `index.html` per Doppelklick öffnen – Browser blockieren JavaScript-Module über `file://`.
+
+### Hinweise
+
+- **Spielstände** liegen im Browser auf Windows (`localStorage`), nicht auf dem Server. Sie sind an die Adresse
+  gebunden: `http://localhost:4173` und `http://server:4173` haben getrennte Spielstände. Zum Umziehen im Spiel
+  _Menü → Exportieren_ und am anderen Ort _Importieren_ verwenden.
+- **Ton** startet erst nach dem ersten Klick oder Tastendruck (Autoplay-Regel der Browser).
+- **E2E-Tests** laufen headless direkt auf dem Server (`npm run test:e2e`), dafür ist kein Bildschirm nötig.
+- **Port belegt?** Die Skripte brechen dann ab (`--strictPort`). Anderen Port wählen, z. B.
+  `npx vite preview --port 4180`, und im Tunnel/Browser entsprechend anpassen.
+- **Seite lädt nicht über Weg B?** Auf dem Server prüfen, ob er lauscht: `ss -ltn | grep 4173`
+  (`0.0.0.0:4173` = von außen erreichbar, `127.0.0.1:4173` = nur lokal → Weg A oder `npm run serve` nutzen).
+
+## Steuerung
+
+Die Oberfläche hat **zwei getrennte Eingaben** – Tastendrücke gehen immer nur an das fokussierte Feld.
+
+### Adventure-Eingabe (unten links / mobil unten)
+
+Freie deutsche Sätze, Groß-/Kleinschreibung und Umlaute (`ö`/`oe`) egal. Beispiele:
+
+```
+SCHAU DICH UM            UNTERSUCHE DISKETTE        ÖFFNE SCHUBLADE
+NIMM HÖRER / HEBE AB     FRAGE RALF NACH DEM SPIEL  REDE MIT RALF ÜBER SEIDEL
+LEGE AUF                 WARTE / WARTE 30           LEGE DISKETTE INS LAUFWERK
+SCHALTE COMPUTER EIN     STELLE RADIO AUF BFBS      LIES ZEICHENTABELLE
+WÄHLE 12345              RUFE RALF AN               LEGE HÖRER IN DEN KOPPLER
+TIPPE LOAD"$",8          DRÜCKE LEERTASTE           DRÜCKE PFEILTASTE
+NOTIZEN / NOTIERE …      VERKNÜPFE M.S. MIT SEIDEL  DENKE NACH (3 Hilfestufen)
+INVENTAR  ZEIT  THEMEN   SPEICHERN 1 / LADEN 1      HILFE
+```
+
+Pronomen (`ÖFFNE ES`), Rückfragen bei Mehrdeutigkeit (`Welche Diskette meinst du …?` → `die 1001`), mehrere
+Befehle pro Zeile (`ÖFFNE SCHUBLADE. NIMM 1001`) und leichte Tippfehler werden unterstützt.
+
+### C64-Eingabe (unter dem Monitor)
+
+- **BASIC-Modus:** Zeile tippen + Enter, z. B. `LOAD"$",8` · `LIST` · `LOAD"*",8` · `RUN` · `10 PRINT "HALLO"`.
+  ↑/↓ blättern in der Befehlshistorie. Vereinfacht geht auch `ZEIGE DATEIEN` und `LADE SPIEL`.
+- **Tastenmodus** (laufende Programme): jede Taste geht sofort an das Programm.
+  `Esc` = RUN/STOP, `^` oder `` ` `` = C64-Taste `←`. Sondertasten gibt es zusätzlich als Buttons (mobil wichtig).
+
+### Klick / Touch
+
+Gegenstände am illustrierten Schreibtisch sind anklickbar und per Tab erreichbar. Die Detailansicht bietet
+Schaltflächen, die jeweils genau einen Textbefehl auslösen (Tooltip zeigt ihn). Auf Smartphones schalten Tabs
+zwischen Schreibtisch und C64; die Adventure-Eingabe bleibt sichtbar.
+
+### Einstellungen
+
+Ton an/aus und Lautstärke, reduzierte Bewegung (folgt standardmäßig `prefers-reduced-motion`), CRT-Effekt,
+Textgröße, hoher Kontrast. Alle Geräusche haben Texteinblendungen – das Spiel ist stumm vollständig lösbar.
+
+### Spielstände
+
+Autosave nach jedem Befehl und bei Meilensteinen (Slot „Auto“), drei manuelle Slots, Export/Import als JSON
+(validiert, max. 2 MB). Alles liegt lokal im Browser (`localStorage`).
+
+## Lösungsweg des Ausschnitts (Spoiler)
+
+<details><summary>aufklappen</summary>
+
+1. `NIMM HÖRER`, mit Ralf reden, `LEGE AUF`, `WARTE` → Ralf bringt die Diskette und muss zum Training.
+2. `LEGE DISKETTE INS LAUFWERK`, `SCHALTE COMPUTER EIN`; am C64 `LOAD"*",8` + `RUN`.
+3. Im Intro mit RETURN bis zu den Credits; dort `←` drücken → „MODUL K“ verlangt Diskette 2.
+4. `J` (eingeschränkter Betrieb), `1` → „Ersatzwahl: siehe LADER“. Modul verlassen (`RUN/STOP`, `3`).
+5. `LOAD"LADER",8` + `LIST` → `910 DATA 52,49,57,55,51`. Päckchen öffnen, `LIES TABELLE` → 48 = „0“ … → **41973**.
+6. Modul erneut starten, `1`; im Adventure `WÄHLE 41973`, `LEGE HÖRER IN DEN KOPPLER`; am C64 RETURN.
+7. Nachrichten lesen (`1`, `1`, `2`), abmelden (`4`), `LEGE AUF` → Ende des Ausschnitts.
+
+Optional: Diskette `1001` aus der Schublade → Demo INTRUDER; Archivdiskette → Jans Archivprogramm.
+
+</details>
+
+## Dokumentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) – Engine, Parser, C64-Teilmenge, Events, Speicherformat
+- [`docs/STORY_OPEN_QUESTIONS.md`](docs/STORY_OPEN_QUESTIONS.md) – bewusst offene Storypunkte und Platzhalter
+- [`docs/NEXT_STEPS.md`](docs/NEXT_STEPS.md) – priorisierter Ausbauplan und Abschlussprotokoll
+
+## Rechte und Fiktion
+
+Alle Grafiken sind eigene SVG-/Canvas-Platzhalter, alle Klänge werden zur Laufzeit synthetisiert (keine Samples, keine
+SID-Originale). Schrift: „Press Start 2P“ (SIL Open Font License, via `@fontsource`). Geheimdienstaktivitäten
+betreffen ausschließlich erfundene Personen und Netze; reale Firmen und Orte dienen nur als historisches Umfeld.
+Telefonnummern sind fiktiv und werden niemals real gewählt.

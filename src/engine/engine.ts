@@ -1,0 +1,119 @@
+/**
+ * Öffentliche Engine-Schnittstelle: step(state, command) → neuer Zustand + Ausgaben.
+ * Rein und deterministisch: kein Date.now(), kein Math.random(), keine DOM-Zugriffe.
+ */
+import { parseAdventure, splitCommands, type Intent } from '../parser/adventure';
+import { c64Key, c64Line, c64Tick } from '../sim/c64';
+import { giveHint, runIntent } from './actions';
+import { formatClock } from './clock';
+import { Ctx } from './context';
+import { resolveObject } from './resolve';
+import { advanceTime, checkTriggers } from './time';
+import type { Command, GameState, StepResult } from './types';
+
+const MAX_INPUT = 300;
+const MAX_NOTE = 500;
+
+function introText(state: GameState): string {
+  return `${formatClock(state.gameClock)}. Rheda-Wiedenbrück.
+
+Herbst 1986. Draußen nieselt es seit Mittag, drinnen ist es warm. Auf deinem Schreibtisch stehen dein Commodore 64 mit Monitor, die 1541, das Telefon mit dem Akustikkoppler und ein Radio. Daneben ein Päckchen, das heute mit der Post kam. Aus dem Wohnzimmer dringen gedämpfte Fernsehstimmen.
+
+Du bist Jan Keller, 17 – und das Wochenende fängt gerade erst an.`;
+}
+
+/** Offene Mehrdeutigkeitsrückfrage mit der neuen Eingabe beantworten, falls möglich. */
+function applyPending(ctx: Ctx, intent: Intent): Intent {
+  const pending = ctx.state.parser.pending;
+  ctx.state.parser.pending = null;
+  if (!pending) return intent;
+  if (intent.kind !== 'bare') return intent;
+  const r = resolveObject(ctx.state, intent.words, { among: pending.candidates });
+  if (r.status !== 'ok') return intent;
+  const original = JSON.parse(pending.intent) as Extract<Intent, { kind: 'verb' }>;
+  original.segments[pending.segIndex] = { ...original.segments[pending.segIndex], words: [`#id:${r.id}`] };
+  return original;
+}
+
+function handleAdventure(ctx: Ctx, raw: string): void {
+  let intent = parseAdventure(raw);
+  intent = applyPending(ctx, intent);
+  const minutes = runIntent(ctx, intent);
+  if (minutes > 0) advanceTime(ctx, minutes);
+}
+
+export function step(state: GameState, cmd: Command): StepResult {
+  const ctx = new Ctx(structuredClone(state));
+  const s = ctx.state;
+
+  switch (cmd.type) {
+    case 'start':
+      if (s.mode === 'title') {
+        s.mode = 'desk';
+        ctx.say(introText(s));
+        ctx.say(
+          '(Tippe HILFE für Beispielbefehle. Klick auf Gegenstände am Schreibtisch, um sie dir anzusehen.)',
+          'system',
+        );
+        advanceTime(ctx, 0);
+      }
+      break;
+    case 'adventure': {
+      const raw = cmd.text.slice(0, MAX_INPUT);
+      if (!raw.trim()) break;
+      s.commandCount++;
+      ctx.say(`> ${raw.trim()}`, 'echo');
+      for (const part of splitCommands(raw)) handleAdventure(ctx, part);
+      break;
+    }
+    case 'c64line': {
+      s.commandCount++;
+      const minutes = c64Line(ctx, cmd.text.slice(0, 80));
+      if (minutes > 0) advanceTime(ctx, minutes);
+      break;
+    }
+    case 'c64key': {
+      const minutes = c64Key(ctx, cmd.key);
+      if (minutes > 0) advanceTime(ctx, minutes);
+      break;
+    }
+    case 'c64tick':
+      // Animationstakt: verändert nie die Spielzeit (GDD §10.1)
+      c64Tick(ctx);
+      break;
+    case 'note':
+      if (cmd.op === 'add' && cmd.text.trim()) {
+        s.deskNotes.push({
+          id: `n${s.commandCount}_${s.deskNotes.length}_${s.nextLogId}`,
+          text: cmd.text.trim().slice(0, MAX_NOTE),
+          createdAtGameTime: s.gameClock,
+        });
+      } else if (cmd.op === 'edit') {
+        const n = s.deskNotes.find((x) => x.id === cmd.id);
+        if (n && cmd.text.trim()) n.text = cmd.text.trim().slice(0, MAX_NOTE);
+      } else if (cmd.op === 'delete') {
+        s.deskNotes = s.deskNotes.filter((x) => x.id !== cmd.id);
+      }
+      break;
+    case 'hint':
+      giveHint(ctx, cmd.puzzleId);
+      break;
+  }
+  checkTriggers(ctx);
+  return { state: s, log: ctx.log, ui: ctx.ui, audio: ctx.audio };
+}
+
+/** Bequemer Helfer für Tests und Skripte: mehrere Befehle nacheinander ausführen. */
+export function run(state: GameState, cmds: Command[]): StepResult {
+  let res: StepResult = { state, log: [], ui: [], audio: [] };
+  const log: StepResult['log'] = [];
+  const ui: StepResult['ui'] = [];
+  const audio: StepResult['audio'] = [];
+  for (const c of cmds) {
+    res = step(res.state, c);
+    log.push(...res.log);
+    ui.push(...res.ui);
+    audio.push(...res.audio);
+  }
+  return { state: res.state, log, ui, audio };
+}

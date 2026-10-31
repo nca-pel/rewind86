@@ -1,0 +1,21 @@
+/** Eindeutige Textbezeichnung je Objekt – damit Klicks exakt dem Textbefehl entsprechen. */
+export const COMMAND_NAME: Record<string, string> = {
+  desk: 'SCHREIBTISCH',
+  c64: 'COMPUTER',
+  monitor: 'MONITOR',
+  drive1541: 'LAUFWERK',
+  phone: 'TELEFON',
+  handset: 'HÖRER',
+  coupler: 'KOPPLER',
+  radio: 'RADIO',
+  tape: 'KASSETTENREKORDER',
+  drawer: 'SCHUBLADE',
+  notebook: 'NOTIZBLOCK',
+  package: 'PÄCKCHEN',
+  magazine: 'ZEITSCHRIFT',
+  disk_game: 'SPIELEDISKETTE',
+  disk_1001: 'DISKETTE 1001',
+  disk_archive: 'ARCHIVDISKETTE',
+  door: 'TÜR',
+  window: 'FENSTER',
+};

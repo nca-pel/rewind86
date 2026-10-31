@@ -1,0 +1,5 @@
+dist
+node_modules
+docs/00-raw
+test-results
+playwright-report
