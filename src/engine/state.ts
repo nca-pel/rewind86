@@ -1,24 +1,36 @@
+import { bootVideo, getBootProfile, type BootProfile } from '../c64/boot';
+import { createVideo } from '../c64/video';
 import { GAME_CONFIG } from '../content/config';
 import { INITIAL_DISKS } from '../content/disks';
 import { EVENTS } from '../content/events';
 import { OBJECTS } from '../content/objects';
 import { INITIAL_ARCHIVE } from '../content/archive';
 import { PUZZLES } from '../content/puzzles';
+import { nextOccurrence } from './routine';
 import type { GameState, ItemLocation, ScreenState } from './types';
 
-export const SCHEMA_VERSION = 1;
+/**
+ * 2: Bildschirm als Bildschirm-/Farbspeicher statt Textzeilen · 3: Mailbox-Konten (telecom.bbs) ·
+ * 4: Kennungssperren, Risiko-Minuten · 5: Tagesablauf (tägliche Ereignisse, Gebührenablesung, Brief)
+ */
+export const SCHEMA_VERSION = 6;
 
-export const C64_BOOT_LINES = [
-  '',
-  '    **** COMMODORE 64 BASIC V2 ****',
-  '',
-  ' 64K RAM SYSTEM  38911 BASIC BYTES FREE',
-  '',
-  'READY.',
-];
+/** Erste Termine der täglichen Ereignisse ab `clock` */
+export function dailySchedule(clock: string): Array<{ id: string; at: string; status: 'pending' }> {
+  return EVENTS.filter((e) => e.daily).map((e) => ({
+    id: e.id,
+    at: nextOccurrence(clock, e.daily!),
+    status: 'pending' as const,
+  }));
+}
+
+/** Das konfigurierte (austauschbare) Startbildschirm-Profil */
+export function bootProfile(): BootProfile {
+  return getBootProfile(GAME_CONFIG.c64.bootProfile);
+}
 
 export function bootScreen(): ScreenState {
-  return { lines: [...C64_BOOT_LINES], border: 14, background: 6, text: 14 };
+  return bootVideo(bootProfile());
 }
 
 export function createInitialState(seed = 1986): GameState {
@@ -52,7 +64,7 @@ export function createInitialState(seed = 1986): GameState {
     computer: {
       powerOn: false,
       driveOn: false,
-      screen: { lines: [], border: 14, background: 6, text: 14 },
+      screen: createVideo(),
       program: [],
       programIsDirectory: false,
       loaded: null,
@@ -72,12 +84,19 @@ export function createInitialState(seed = 1986): GameState {
       messageReadIds: [],
       messagePostedIds: [],
       onlineMinutes: 0,
+      bbs: {},
+      locks: {},
+      riskMinutes: 0,
+      costsAtLastReading: 0,
     },
-    scheduledEvents: EVENTS.filter((e) => e.at).map((e) => ({
-      id: e.id,
-      at: e.at!,
-      status: 'pending' as const,
-    })),
+    scheduledEvents: [
+      ...EVENTS.filter((e) => e.at).map((e) => ({
+        id: e.id,
+        at: e.at!,
+        status: 'pending' as const,
+      })),
+      ...dailySchedule(GAME_CONFIG.startDate),
+    ],
     firedEvents: [],
     history: [],
     nextLogId: 1,

@@ -14,10 +14,11 @@ import { c64Key, c64Line, powerOff, powerOn } from '../sim/c64';
 import { formatClock, formatDm } from './clock';
 import { evalCondition } from './conditions';
 import type { Ctx } from './context';
-import { discoverFact } from './effects';
+import { applyEffects, discoverFact } from './effects';
 import { describe, inventoryText, itemsAt, listNames, lookAround } from './describe';
 import { dial, dropCarrier, handsetIntoCoupler, hangUp, pickUp, talkAbout } from './phone';
 import { capitalize, isReachable, resolveObject, resolveTopic, type ResolveOptions } from './resolve';
+import { canSleepNow, requestAbsence, sleep } from './routine';
 import { advanceTime } from './time';
 
 const DEFAULT_MINUTES = 1;
@@ -27,10 +28,10 @@ const HELP_TEXT = `So spielst du (Beispiele – Groß-/Kleinschreibung und Umlau
 • Gegenstände: NIMM … · LEGE DISKETTE INS LAUFWERK · ÖFFNE SCHUBLADE · NIMM DISKETTE AUS DEM LAUFWERK
 • Geräte: SCHALTE COMPUTER EIN · SCHALTE RADIO EIN · STELLE RADIO AUF BFBS
 • Telefon: NIMM HÖRER · WÄHLE 12345 · RUFE RALF AN · LEGE HÖRER IN DEN KOPPLER · LEGE AUF
-• Gespräche: FRAGE RALF NACH DEM SPIEL · REDE MIT RALF ÜBER SEIDEL · THEMEN
-• C64: Eigene Eingabezeile unter dem Monitor (z. B. LOAD"$",8 und LIST). Vom Adventure aus: TIPPE LOAD"$",8 · DRÜCKE LEERTASTE
+• Gespräche: FRAGE RALF NACH DEM SPIEL · REDE MIT RALF ÜBER DAS TRAINING · THEMEN
+• C64: Eigene Eingabezeile unter dem Monitor (z. B. LOAD"$",8 zeigt das Diskettenverzeichnis). Vom Adventure aus: TIPPE LOAD"$",8 · DRÜCKE LEERTASTE
 • Notizen: NOTIZEN · NOTIERE <Text> · VERKNÜPFE <A> MIT <B> · DENKE NACH (Hilfe in 3 Stufen)
-• Zeit & Spiel: ZEIT · WARTE (15 Min.) · WARTE 30 · INVENTAR · SPEICHERN 1 · LADEN 1 · SPIELSTÄNDE`;
+• Zeit & Spiel: ZEIT · WARTE (15 Min.) · WARTE 30 · SCHLAFE (ab 21 Uhr) · INVENTAR · SPEICHERN 1 · LADEN 1 · SPIELSTÄNDE`;
 
 interface Verb {
   kind: 'verb';
@@ -168,7 +169,14 @@ function take(ctx: Ctx, id: string): number {
   }
   if (loc === 'drive') return eject(ctx, id);
   s.itemLocations[id] = 'inventory';
-  const from = loc === 'drawer' ? ' aus der Schublade' : loc === 'package' ? ' aus dem Päckchen' : '';
+  const from =
+    loc === 'drawer'
+      ? ' aus der Schublade'
+      : loc === 'package'
+        ? ' aus dem Päckchen'
+        : loc === 'datasette'
+          ? ' aus der Datasette'
+          : '';
   ctx.say(`Du nimmst ${o.acc}${from}.`);
   return DEFAULT_MINUTES;
 }
@@ -185,10 +193,53 @@ function drop(ctx: Ctx, id: string): number {
   return DEFAULT_MINUTES;
 }
 
+/** Datasette an den Kassettenport stecken (passiert beim ersten Einlegen der Kassette automatisch) */
+function connectDatasette(ctx: Ctx): boolean {
+  if (ctx.state.flags.datasetteConnected) return false;
+  ctx.state.flags.datasetteConnected = true;
+  ctx.say(
+    'Du ziehst die alte Datasette hinter dem Monitor hervor und steckst ihren Stecker in den Kassettenport hinten am C64.',
+  );
+  return true;
+}
+
+function cassetteInto(ctx: Ctx, tgt: string): number {
+  const s = ctx.state;
+  if (tgt === 'tape') {
+    ctx.say(
+      'Du schiebst die Kassette probehalber in den Kassettenrekorder und drückst PLAY: nur Kreischen und Pfeifen. Daten – das Band gehört in die Datasette. Du nimmst es wieder heraus.',
+    );
+    return DEFAULT_MINUTES;
+  }
+  if (s.itemLocations.cassette === 'datasette') {
+    ctx.say('Die Kassette steckt schon in der Datasette.');
+    return 0;
+  }
+  connectDatasette(ctx);
+  s.itemLocations.cassette = 'datasette';
+  ctx.say(
+    'Du drückst EJECT, legst die Kassette ein und klappst das Fach zu. (Am C64: LOAD – Gerät 1 ist der Standard.)',
+  );
+  return DEFAULT_MINUTES;
+}
+
 function insertInto(ctx: Ctx, id: string, target: string | null): number {
   if (id === 'handset' || id === 'phone') {
     if (target === null || target === 'coupler') return handsetIntoCoupler(ctx);
     if (target === 'phone') return hangUp(ctx);
+  }
+  if (id === 'datasette' && (target === null || target === 'c64')) {
+    if (!connectDatasette(ctx)) ctx.say('Die Datasette hängt schon am C64.');
+    return DEFAULT_MINUTES;
+  }
+  if (
+    id === 'cassette' &&
+    (target === null || target === 'datasette' || target === 'tape' || target === 'c64')
+  )
+    return cassetteInto(ctx, target ?? 'datasette');
+  if ((target === 'datasette' || target === 'tape') && id !== 'cassette') {
+    ctx.say(`${capitalize(OBJECT_BY_ID[id].name)} passt nicht in ${OBJECT_BY_ID[target].acc}.`);
+    return 0;
   }
   const tgt = target ?? (id.startsWith('disk_') ? 'drive1541' : null);
   if (!tgt) {
@@ -310,6 +361,13 @@ function turnOn(ctx: Ctx, id: string): number {
     case 'tape':
       ctx.say('Ohne Kassette passiert nichts außer einem leisen Surren. Du drückst wieder auf STOP.');
       return 0;
+    case 'datasette':
+      ctx.say(
+        s.flags.datasetteConnected
+          ? 'Die Datasette hat keinen Schalter. Tippe am C64 LOAD – dann drückst du PLAY.'
+          : 'Die Datasette ist nicht angeschlossen. (STECKE DATASETTE AN oder lege gleich eine Kassette ein.)',
+      );
+      return 0;
     case 'coupler':
       ctx.say('Der Koppler hat keinen eigenen Schalter; er bekommt Strom über den Userport des C64.');
       return 0;
@@ -362,12 +420,17 @@ function read(ctx: Ctx, id: string): number {
       ctx.say(describe(s, id));
       discoverFact(ctx, 'coupler_howto');
       return 3;
+    case 'mag_ads':
+      ctx.say(describe(s, id));
+      discoverFact(ctx, 'bbs_bitschuppen');
+      return 2;
     case 'notebook':
       ctx.ui.push({ type: 'openNotebook' });
       notesSummary(ctx);
       return 0;
     default:
       ctx.say(describe(s, id));
+      applyEffects(ctx, OBJECT_BY_ID[id]?.readEffects);
       return DEFAULT_MINUTES;
   }
 }
@@ -557,14 +620,14 @@ function meta(ctx: Ctx, intent: Extract<Intent, { kind: 'meta' }>): number {
       return 0;
     }
     case 'sleep': {
-      const hour = parseInt(s.gameClock.slice(11, 13), 10);
-      if (hour < 21 && hour >= 7) {
-        ctx.say('Schlafen? Um diese Uhrzeit? Mit dieser Diskette auf dem Tisch? Niemals.');
+      if (!canSleepNow(s.gameClock)) {
+        ctx.say(
+          `Schlafen? Um diese Uhrzeit? Mit dieser Diskette auf dem Tisch? Niemals. (Ab ${GAME_CONFIG.calendar.sleepFrom} Uhr.)`,
+        );
         return 0;
       }
-      ctx.say(
-        'Du legst dich hin, aber die Gedanken kreisen noch lange. (TODO-STORY: Folgetage sind im Ausschnitt nicht ausgearbeitet.)',
-      );
+      sleep(ctx);
+      advanceTime(ctx, 0);
       return 0;
     }
     case 'c64hint':
@@ -575,6 +638,33 @@ function meta(ctx: Ctx, intent: Extract<Intent, { kind: 'meta' }>): number {
       ctx.ui.push({ type: 'focus', target: 'c64' });
       return 0;
   }
+}
+
+/** Clubabend als erzählter Zeitblock (GDD: Jan erkundet keine weiteren Orte). */
+function goToClub(ctx: Ctx): number {
+  const s = ctx.state;
+  const c = GAME_CONFIG.club;
+  const now = s.gameClock.slice(11, 16);
+  if (!s.knownFacts.includes('club_evening')) {
+    ctx.say('Zum Computerclub? Wann der sich das nächste Mal trifft, weißt du gerade gar nicht.');
+    return 0;
+  }
+  if (s.gameClock.slice(0, 10) !== c.eveningDate || now < c.leaveFrom || now > c.leaveUntil) {
+    ctx.say(
+      `Der Clubabend ist am Donnerstag um 19 Uhr. Losgehen solltest du zwischen ${c.leaveFrom} und ${c.leaveUntil} Uhr.`,
+    );
+    return 0;
+  }
+  // TODO-STORY: Inhalte des Clubabends (Begegnungen, GHOST-Indizien) folgen mit Akt 2.
+  requestAbsence(
+    ctx,
+    'club',
+    `${c.eveningDate}T${c.backAt}`,
+    'Du schnappst dir deine Diskettenbox und radelst durch den Nieselregen zum Jugendzentrum. Drinnen riecht es nach Kaffee und warmen Netzteilen. Ein paar Leute tauschen Disketten, an einem Tisch wird eine Datasette justiert, und jemand schwärmt vom neuen Amiga, den sich keiner leisten kann.',
+    'Kurz vor zehn bist du wieder zu Hause, die Jacke klamm vom Regen, den Kopf voller neuer Ideen.',
+  );
+  advanceTime(ctx, 0);
+  return 0;
 }
 
 // ---------------------------------------------------------------------------- Dispatcher
@@ -645,7 +735,7 @@ export function runIntent(ctx: Ctx, intent: Intent): number {
     }
     case 'link': {
       if (!intent.subject || !intent.target) {
-        ctx.say('Was möchtest du womit verknüpfen? (z. B. VERKNÜPFE SEIDEL MIT M.S.)');
+        ctx.say('Was möchtest du womit verknüpfen? (z. B. VERKNÜPFE RALF MIT DISKETTE)');
         return 0;
       }
       s.hypotheses.push({
@@ -691,7 +781,20 @@ function verb(ctx: Ctx, intent: Verb): number {
       return DEFAULT_MINUTES;
     }
     case 'take': {
-      if (direct.length === 0 && seg(intent, 'aus')) return eject(ctx);
+      const from = seg(intent, 'aus');
+      if (from) {
+        if (direct.length === 0) return eject(ctx);
+        const src = obj(ctx, intent, from.index);
+        if (!src) return 0;
+        // Im Laufwerk kann nur eine Diskette stecken – keine Rückfrage, welche gemeint ist.
+        if (src === 'drive1541' || src === 'c64') {
+          const inDrive = itemsAt(s, 'drive')[0];
+          if (!inDrive) return eject(ctx);
+          const id = obj(ctx, intent, 0, { prefer: (i) => i === inDrive });
+          if (!id) return 0;
+          return id === 'drive1541' || id === 'c64' ? eject(ctx) : eject(ctx, id);
+        }
+      }
       const id = obj(ctx, intent, 0, { prefer: (i) => s.itemLocations[i] !== 'inventory' });
       return id ? take(ctx, id) : 0;
     }
@@ -705,6 +808,13 @@ function verb(ctx: Ctx, intent: Verb): number {
       if (!id) return 0;
       if (id === 'handset') return pickUp(ctx);
       if (id === 'drive1541') return eject(ctx);
+      if (id === 'cassette' || id === 'datasette') {
+        if (s.itemLocations.cassette !== 'datasette') {
+          ctx.say('In der Datasette steckt keine Kassette.');
+          return 0;
+        }
+        return take(ctx, 'cassette');
+      }
       return eject(ctx, id);
     }
     case 'insert':
@@ -873,6 +983,8 @@ function verb(ctx: Ctx, intent: Verb): number {
       const words = intent.segments.flatMap((x) => x.words);
       if (words.some((w) => ['tuer', 'flur', 'zimmertuer', 'haustuer', 'treppe'].includes(w)))
         return open(ctx, 'door');
+      if (words.some((w) => ['club', 'computerclub', 'clubabend', 'jugendzentrum'].includes(w)))
+        return goToClub(ctx);
       ctx.say('Du bleibst an deinem Schreibtisch. Die Welt kommt zu dir – per Telefon, Post und Modem.');
       return 0;
     }

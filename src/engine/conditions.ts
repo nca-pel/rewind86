@@ -1,4 +1,6 @@
-import { isBefore, toMinutes } from './clock';
+import { isBefore, toMinutes, weekday } from './clock';
+import { dateOf, isSchoolDay, isSchoolTomorrow } from './routine';
+import { threshold } from './pressure';
 import type { Condition, GameState } from './types';
 
 /** Leitung durch Jan belegt: Hörer ist abgenommen (in der Hand oder im Koppler). */
@@ -31,5 +33,17 @@ export function evalCondition(state: GameState, c: Condition | undefined): boole
   if ('lineBusy' in c) return janUsesLine(state);
   if ('online' in c) return state.telecom.connectedSystemId !== null;
   if ('ringing' in c) return state.telecom.ringing !== null;
+  if ('schoolDay' in c) return isSchoolDay(state.gameClock);
+  if ('schoolTomorrow' in c) return isSchoolTomorrow(state.gameClock);
+  if ('weekday' in c) return weekday(state.gameClock) === c.weekday;
+  if ('date' in c) return dateOf(state.gameClock) === c.date;
+  if ('atLeast' in c) {
+    const t = threshold(c.rel, c.atLeast);
+    return t !== undefined && state.relationships[c.rel] >= t;
+  }
+  if ('below' in c) {
+    const t = threshold(c.rel, c.below);
+    return t !== undefined && state.relationships[c.rel] < t;
+  }
   return false;
 }

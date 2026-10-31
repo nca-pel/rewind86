@@ -399,73 +399,79 @@ select {
 /* ---------------------------------------------------------------- C64 */
 .c64-frame {
   position: relative;
-  container-type: inline-size;
   border-radius: 14px;
   overflow: hidden;
+  background: #0b0c0b;
+  padding: 2.2%;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.8);
   cursor: text;
 }
-.c64-border {
+/* Sichtbares Bild inkl. Rahmen: 384×272 PAL-Pixel, Seitenverhältnis per Inline-Style */
+.c64-display {
   position: relative;
-  padding: 4cqw 5cqw;
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  border-radius: 3% / 4%;
+  overflow: hidden;
 }
-.c64-border.flash {
-  animation: borderflash 0.35s steps(1) infinite;
+.c64-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
-@keyframes borderflash {
-  0% {
-    box-shadow: inset 0 0 0 100vmax #68372b;
-  }
-  33% {
-    box-shadow: inset 0 0 0 100vmax #b8c76f;
-  }
-  66% {
-    box-shadow: inset 0 0 0 100vmax #6f3d86;
-  }
-}
-.c64-frame.crt::after {
+/* Wölbung der Bildröhre: Randabdunklung und schwacher Glanz */
+.c64-display.crt::after {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 14px;
   pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.35));
+  background: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.06), transparent 45%),
+    radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.42) 100%);
 }
-.c64-screen {
-  position: relative;
-  font-family: var(--font-retro);
-  font-size: calc(89.5cqw / 40);
-  font-synthesis: none;
-  line-height: 1;
-  overflow: hidden;
+.c64-display.power-on .c64-canvas {
+  animation: crt-on 0.6s ease-out;
 }
-.c64-line {
-  height: 1em;
-  font-family: var(--font-retro), 'DejaVu Sans Mono', monospace;
-  white-space: pre;
-  overflow: hidden;
+.c64-display.power-off .c64-canvas {
+  animation: crt-off 0.6s ease-in forwards;
 }
-.c64-cursor {
-  background: currentColor;
-  animation: blink 1s steps(1) infinite;
-}
-.c64-cursor.static {
-  animation: none;
-}
-@keyframes blink {
-  50% {
-    background: transparent;
+@keyframes crt-on {
+  0% {
+    transform: scale(1, 0.004);
+    filter: brightness(4);
+  }
+  45% {
+    transform: scale(1, 0.004);
+    filter: brightness(3);
+  }
+  100% {
+    transform: none;
+    filter: none;
   }
 }
-.c64-off {
+@keyframes crt-off {
+  0% {
+    transform: none;
+    filter: brightness(1);
+  }
+  40% {
+    transform: scale(1, 0.004);
+    filter: brightness(4);
+  }
+  100% {
+    transform: scale(0.002, 0.004);
+    filter: brightness(6);
+  }
+}
+/* Textebene für Screenreader und Tests – unsichtbar, aber im Dokument */
+.c64-text {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  color: #555;
-  font-size: 1.2em;
-  text-align: center;
+  margin: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: pre;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
 }
 .demo-canvas {
   position: absolute;
@@ -639,6 +645,21 @@ select {
   font-size: 1rem;
   color: var(--accent);
 }
+.game-over {
+  text-align: left;
+  /* über der Entwicklerkonsole: das Spielende muss immer sichtbar sein */
+  z-index: 70;
+}
+.game-over h2 {
+  text-align: center;
+}
+.game-over-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
 .toast {
   position: fixed;
   right: 1rem;
@@ -719,4 +740,164 @@ html[data-motion='reduced'] *,
 html[data-motion='reduced'] *::after {
   animation: none !important;
   transition: none !important;
+}
+
+/* ---------------------------------------------------------------- Entwicklerkonsole (?dev=1) */
+.dev-toggle {
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  z-index: 60;
+  font: 700 11px var(--font-ui);
+  padding: 4px 8px;
+  background: var(--panel-2);
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  opacity: 0.8;
+}
+.dev-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  width: min(440px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  color: var(--ink);
+  border-left: 2px dashed var(--accent);
+  font: 13px/1.4 var(--font-ui);
+  box-shadow: -8px 0 24px rgb(0 0 0 / 0.4);
+}
+.dev-head,
+.dev-cmd,
+.dev-tabs,
+.dev-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.dev-head {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.dev-head strong {
+  color: var(--accent);
+}
+.dev-head span {
+  margin-left: auto;
+  color: var(--muted);
+}
+.dev-cmd {
+  padding: 8px 12px 4px;
+  flex-wrap: nowrap;
+}
+.dev-cmd input {
+  flex: 1;
+  min-width: 0;
+  font:
+    13px ui-monospace,
+    monospace;
+}
+.dev-panel input,
+.dev-panel select,
+.dev-panel button {
+  background: var(--panel-2);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+.dev-panel button:hover {
+  border-color: var(--accent);
+}
+.dev-tabs {
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.dev-tabs button[aria-selected='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.dev-body {
+  flex: 1;
+  overflow: auto;
+  padding: 4px 12px 16px;
+}
+.dev-body h4 {
+  margin: 12px 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.dev-row {
+  margin: 2px 0;
+}
+.dev-row input[type='number'] {
+  width: 64px;
+}
+.dev-key {
+  font-family: ui-monospace, monospace;
+  min-width: 150px;
+  display: inline-block;
+}
+.dev-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.dev-table td,
+.dev-table th {
+  padding: 2px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.dev-table td:first-child,
+.dev-table .dev-nowrap {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  font-family: ui-monospace, monospace;
+}
+.dev-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+}
+.dev-list li {
+  margin: 2px 0;
+}
+.dev-out {
+  margin: 4px 12px;
+  padding: 6px 8px;
+  max-height: 120px;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font:
+    11px/1.4 ui-monospace,
+    monospace;
+  white-space: pre-wrap;
+}
+.dev-body .dev-out {
+  margin: 4px 0;
+}
+.dev-log {
+  max-height: none;
+}
+.dev-muted {
+  color: var(--muted);
+}
+.dev-ok {
+  color: var(--ok);
+}
+.dev-warn {
+  color: var(--danger);
 }

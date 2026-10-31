@@ -57,6 +57,17 @@ export const KEYWORDS = [
   'CONT',
   'ON',
   'WAIT',
+  'SIN',
+  'COS',
+  'TAN',
+  'ATN',
+  'LOG',
+  'EXP',
+  'FRE',
+  'POS',
+  'DEF',
+  'FN',
+  'USR',
 ] as const;
 
 // Längste zuerst, damit z. B. "RESTORE" vor "REM"/"RETURN" nicht falsch zerlegt wird.
@@ -146,7 +157,7 @@ export function tokenize(src: string): Token[] {
       i += 2;
       continue;
     }
-    if ('+-*/^=<>(),;:'.includes(c)) {
+    if ('+-*/^=<>(),;:#'.includes(c)) {
       out.push({ t: 'op', v: c });
       i++;
       continue;
@@ -161,4 +172,32 @@ export function canonicalVar(name: string): string {
   const suffix = name.endsWith('$') || name.endsWith('%') ? name.slice(-1) : '';
   const base = suffix ? name.slice(0, -1) : name;
   return base.slice(0, 2) + suffix;
+}
+
+/**
+ * Länge einer Programmzeile im Speicher, wenn Schlüsselwörter wie beim Original zu je einem Byte
+ * verdichtet werden (Strings, REM- und DATA-Inhalte bleiben unverändert).
+ */
+export function crunchedLength(src: string): number {
+  let n = 0;
+  let i = 0;
+  while (i < src.length) {
+    if (src[i] === '"') {
+      const end = src.indexOf('"', i + 1);
+      const j = end < 0 ? src.length : end + 1;
+      n += j - i;
+      i = j;
+      continue;
+    }
+    const kw = keywordAt(src, i);
+    if (kw) {
+      n++;
+      i += kw.length;
+      if (kw === 'REM' || kw === 'DATA') return n + src.length - i;
+      continue;
+    }
+    n++;
+    i++;
+  }
+  return n;
 }

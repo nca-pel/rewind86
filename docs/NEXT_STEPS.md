@@ -25,28 +25,43 @@
 - Illustrierter Schreibtisch (SVG-Platzhalter) mit zustandsabhängigen Hotspots, Detailansichten, Inventarleiste,
   Statusleiste (Zeit, Geld, Telefonkosten, Leitung).
 - Speichern: Autosave, 3 Slots, Export/Import als validiertes JSON (zod, Größenlimit, Migration), Fortsetzen nach Reload.
+- Entwicklerkonsole (`?dev=1`): Zustand ansehen/setzen, Zeitsprung, Meilenstein-Spielstände aus echten
+  Spielbefehlen, Ereignis-/Rätselgraph mit Prüfung auf tote Enden, Debug-Log.
+- Eigenständige C64-Bildschirmsimulation (`src/c64/`): PAL-Geometrie, berechnete Palette, eigener Zeichensatz,
+  Röhreneffekte, austauschbares Startbild; BASIC mit Trigonometrie, `DEF FN`, `FRE`, `POS`.
+- Allgemeines Mailbox-System: Öffnungszeiten, Gast/Anmeldung/Freischaltung, Bretter, private Post mit verzögerten
+  Antworten, Downloads auf die Diskette; Terminalprogramm `TERMINAL`; zwei reguläre Mailboxen (Kleinanzeige →
+  BIT-SCHUPPEN → Mailboxliste → DATENKELLER).
+- Tagesablauf: Kalender mit Schultagen, erzählte Zeitblöcke (Schule, Schlaf, Abendbrot, Clubabend), Ralfs
+  Wochenplan mit Rückrufen und späteren Telefonaten, Post, Taschengeld, Gebührenablesung durch den Vater.
+- Verdachtslogik: benannte Schwellen, Risiko durch Verhalten im geheimen Netz, Symptome (Systemnachrichten,
+  Kennungssperre, anonymer Anruf), letzte Warnung, Spielende mit „Letzten Schritt zurücknehmen“.
+- Schlüssel-Strang: drei Fragmente (unsichtbare REM-Zeile im LADER, fehlgeleitete Netzmeldung, Datasette-Kassette
+  von Ralf), Ersatzschlüssel im Modul mit Klartextanzeige, Expertenweg über Rohdaten als SEQ-Datei und eigenes
+  BASIC-Programm (`OPEN`/`CLOSE`/`PRINT#`/`INPUT#`/`GET#`/`ST`), nutzbare Datasette, Rätsel P07–P09.
 - Barrierefreiheit/UX: Ton an/aus + Lautstärke, Texte für Tonsignale, reduzierte Bewegung, CRT-Effekt abschaltbar,
   Textgröße, hoher Kontrast, Tastaturbedienung, Fokusmarkierung, mobile Tabs und Sondertasten.
 
 ### Getestet (automatisiert, zuletzt alle grün)
 
-- `npm test`: 64 Vitest-Tests in 5 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Save/Load, Prolog-Durchlauf,
-  Demo, Archiv, Content-Integrität).
-- `npm run test:e2e`: 4 Playwright-Szenarien × 2 Geräteprofile (Desktop Chrome, Pixel 7) = 8 Tests, darunter der
-  komplette Prolog über die echte UI bis „Fortsetzung folgt“.
+- `npm test`: 153 Vitest-Tests in 11 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
+  Prolog-Durchlauf, Demo, Archiv, Content-Integrität, Entwicklerkonsole/Meilensteine, Mailbox-System, Verdacht,
+  Tagesablauf, Schlüssel-Strang).
+- `npm run test:e2e`: 8 Playwright-Szenarien × 2 Geräteprofile (Desktop Chrome, Pixel 7) = 16 Tests, darunter der
+  komplette Prolog über die echte UI bis „Fortsetzung folgt“, die Entwicklerkonsole, eine reguläre Mailbox, das
+  Spielende und die unsichtbare REM-Zeile.
 - `npm run lint`, `npm run build` fehlerfrei.
 - Manuell: Screenshots Desktop/Mobil (Titel, Schreibtisch, C64, Demo) geprüft.
 
 ### Nicht implementiert
 
-- Akte 2–6, weitere Handlungsstränge, GHOST, Operation REWIND, Enden, Game-Over.
-- Reguläre regionale Mailboxen, BTX, Usenet-Gateway; Nachrichten senden im Netz.
-- Diskette 2 und Schlüsselrekonstruktion; Entschlüsselung.
-- Folgetage (Schlafen, Schule, Mahlzeiten), Ralf-Rückrufe, Briefe/Pakete als Ereignisse.
-- Kassettenrekorder/Datasette-Inhalte, TV/VHS.
+- Akte 2–6, weitere Handlungsstränge, GHOST, Operation REWIND, reguläre Enden (ein Game-Over „Entdeckt“ existiert).
+- BTX, Usenet-Gateway; Nachrichten senden im geheimen Netz.
+- Die echte Diskette 2; was das Modul mit vollem Schlüssel zusätzlich kann (Senden).
+- Story-Inhalte der Folgetage (Akt 2+); der Alltag selbst läuft.
+- Weitere Kassetten, Speichern auf Band, TV/VHS.
 - Sprachausgabe, echte Illustrationen, komponierte Musik.
-- Entwicklerkonsole (Flags setzen, Zeitsprung) – `debugLog` wird bereits geführt, aber nicht angezeigt.
-- Folgen der verdeckten Werte (Verdachtsschwellen, Vertrauen).
+- Symptome für Ralfs Vertrauen und Netzglaubwürdigkeit; Abklingen des Verdachts.
 - IndexedDB (derzeit `localStorage`, Datenmenge klein).
 
 ### Bekannte Grenzen
@@ -63,21 +78,23 @@
 
 ## Priorisierter Ausbauplan
 
-1. **Storydesign-Workshop (Blocker für Akt 2+):** Fragen aus `STORY_OPEN_QUESTIONS.md` entscheiden – v. a.
-   GHOST-Identität/-Erkennungsbogen, Operation REWIND (Termin, Ziel, Agent), Diskette 2, Titel des Spiels.
-2. **Entwicklerkonsole** (`?dev=1`): Flags/Fakten/Beziehungen anzeigen und setzen, Zeit springen,
-   Meilenstein-Spielstände, Ereignis-/Rätselgraph prüfen.
-3. **Allgemeines Mailbox-System:** mehrere Systeme mit Brettern, privaten Nachrichten, Downloads, Öffnungszeiten,
-   Kosten, Benutzerstatus; erste reguläre Mailbox (Kleinanzeige im Journal) als freiwillige Spur.
-4. **Verdachts- und Vertrauenslogik:** Schwellen mit erzählerischen Symptomen (Tonfall, Anrufe, Accountsperre),
-   Warnungen vor Game-Over.
-5. **Tagesablauf:** Schlafen/Schule als Zeitblöcke, Ralf-Erreichbarkeit nach Plan, Post/Pakete als Ereignisse,
-   Taschengeld und Telefonrechnung mit Elternreaktion.
-6. **Schlüssel-Strang:** Teilrekonstruktion von Diskette 2 über Funde und eigene BASIC-Programme; vorgegebenes
-   Entschlüsselungsprogramm (normaler Weg) + Expertenweg.
+1. ~~**Storydesign-Workshop**~~ – erledigt am 31.10.2026, siehe `STORY_DECISIONS.md`. Details innerhalb der
+   Entscheidungen (GHOSTs Name, Fragmente von Diskette 2, Ablauf des Finales …) werden mit den Akten ausgearbeitet,
+   siehe `STORY_OPEN_QUESTIONS.md`.
+2. ~~**Entwicklerkonsole**~~ – erledigt (siehe oben). Neue Meilensteine bei jedem neuen Akt ergänzen.
+3. ~~**Allgemeines Mailbox-System**~~ – erledigt (siehe oben). Offen: Inhalte/Storyrolle der Mailboxen, Sysop als
+   Gesprächspartner, Brett-Beiträge anderer Nutzer über die Zeit, Fernzone-Tarife, Verbindungsabbruch bei
+   Sendeschluss.
+4. ~~**Verdachts- und Vertrauenslogik**~~ – Mechanik und Seidel-Kette erledigt (siehe oben). Offen: Symptome für
+   Ralfs Vertrauen (mit den Ralf-Rückrufen aus Punkt 5) und Netzglaubwürdigkeit (braucht Senden), Storytexte.
+5. ~~**Tagesablauf**~~ – erledigt (siehe oben). Offen: Briefe/Pakete für Akt 2, Inhalte des Clubabends,
+   Ralf-Strang (Überzeugen, Loyalitätskrise), weitere Ralf-Themen.
+6. ~~**Schlüssel-Strang**~~ – erledigt (siehe oben). Offen: Folgen des Klartexts für Akt 2 (Freitag als Frist),
+   Reaktion Ralfs auf den Inhalt der Kassette, Senden mit Schlüssel, ein Entwickler-Meilenstein für den Strang.
 7. **BTX** mit eigener Seitendarstellung und historisch geprüfter Ausrüstung.
 8. **Parser-Ausbau** anhand von Playtest-Protokollen (fehlgeschlagene Eingaben loggen, lokal).
-9. **BASIC-Erweiterungen** nach Rätselbedarf (`OPEN/PRINT#/GET#` für SEQ-Dateien, `DEF FN`, Trigonometrie).
+9. **BASIC-Erweiterungen** nach Rätselbedarf (SEQ-Dateien, `DEF FN` und Trigonometrie sind erledigt; offen z. B.
+   Kommandokanal 15, `CMD`, Bildschirmeditor).
 10. **Audio/Grafik:** echte Illustrationen, Detailansichten pro Gerät, komponierte SID-inspirierte Stücke,
     ausgewählte Sprachaufnahmen mit Transkript.
 11. **Persistenz:** IndexedDB-Backend und Migrationstests, sobald Zustände wachsen.

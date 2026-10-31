@@ -127,7 +127,7 @@ describe('BASIC-Teilmenge', () => {
 describe('Disketten und Laufwerk (GDD §19.2)', () => {
   test('LOAD"$",8 + LIST zeigt das Verzeichnis der eingelegten Diskette', () => {
     const s = poweredOn('disk_game');
-    expect(s.c('LOAD"$",8')).toMatch(/SEARCHING FOR \$\nLOADING\nREADY\./);
+    expect(s.c('LOAD"$",8')).toMatch(/SEARCHING FOR \$\nLOADING\n0 "WT-07/);
     const scr = s.c('LIST');
     expect(scr).toContain('0 "WT-07 ARBEITSK. " MS 2A');
     expect(scr).toMatch(/2 {4}"LADER" {12}PRG/);
@@ -159,6 +159,41 @@ describe('Disketten und Laufwerk (GDD §19.2)', () => {
     s.a('nimm diskette aus dem laufwerk');
     expect(s.state.itemLocations.disk_1001).toBe('inventory');
     expect(s.c('LOAD"$",8')).toContain('?FILE NOT FOUND');
+  });
+
+  test('LOAD"$",8 listet das Verzeichnis sofort (auch mit Leerzeichen), LIST zeigt es erneut', () => {
+    const s = poweredOn('disk_archive');
+    const scr = s.c('LOAD "$",8');
+    expect(scr).toMatch(/SEARCHING FOR \$\nLOADING\n0 "JANS ARCHIV {5}" JK 2A\n/);
+    expect(scr).toMatch(/598 BLOCKS FREE\.\nREADY\.$/);
+    expect(s.c('LIST')).toMatch(/LIST\n0 "JANS ARCHIV/);
+  });
+
+  test('Diskette aus dem Laufwerk nehmen fragt nicht nach, welche gemeint ist', () => {
+    const s = new Session();
+    s.a('öffne schublade');
+    s.state.itemLocations.disk_archive = 'drive';
+    for (const cmd of ['nimm diskette aus dem laufwerk', 'nimm die diskette aus der 1541']) {
+      s.state.itemLocations.disk_archive = 'drive';
+      const out = s.a(cmd);
+      expect(out).not.toContain('Welche');
+      expect(out).toContain('ziehst deine Archivdiskette aus der 1541');
+      expect(s.state.itemLocations.disk_archive).toBe('inventory');
+    }
+    expect(s.a('nimm diskette aus dem laufwerk')).toContain('Im Laufwerk steckt keine Diskette.');
+  });
+
+  test('SYS16384 und SYS 64738 setzen den Rechner zurück', () => {
+    for (const cmd of ['SYS16384', 'SYS 64738']) {
+      const s = poweredOn('disk_archive');
+      s.c('10 PRINT "X"');
+      s.c('POKE 53280,2');
+      const scr = s.c(cmd);
+      expect(scr.startsWith('\n    **** COMMODORE 64 BASIC V2 ****')).toBe(true);
+      expect(scr).not.toContain(cmd);
+      expect(s.state.computer.program).toHaveLength(0);
+      expect(s.state.computer.screen.border).toBe(14);
+    }
   });
 
   test('Datasette und fremde Geräte', () => {

@@ -2,6 +2,8 @@ import { EVENT_BY_ID } from '../content/events';
 import { FACT_BY_ID } from '../content/facts';
 import { addMinutes } from './clock';
 import type { Ctx } from './context';
+import { changeRelationship, lockAccount } from './pressure';
+import { meterReading, nextOccurrence, pocketMoney, requestAbsence, sleep } from './routine';
 import type { GameEffect, PuzzleStatus } from './types';
 
 const PUZZLE_RANK: Record<PuzzleStatus, number> = {
@@ -38,7 +40,7 @@ export function scheduleEvent(ctx: Ctx, id: string, inMinutes: number): void {
   const def = EVENT_BY_ID[id];
   if (!def) throw new Error(`Unbekanntes Ereignis: ${id}`);
   // Einmalige Ereignisse werden nach dem Feuern nie erneut eingeplant (Idempotenz).
-  if (!def.repeatable && s.firedEvents.includes(id)) return;
+  if (!def.repeatable && !def.daily && s.firedEvents.includes(id)) return;
   const at = addMinutes(s.gameClock, inMinutes);
   const existing = s.scheduledEvents.find((e) => e.id === id && e.status === 'pending');
   if (existing) {
@@ -71,8 +73,7 @@ export function applyEffect(ctx: Ctx, e: GameEffect): void {
       (s.objectStates[e.id] ??= {})[e.key] = e.value as boolean | number | string;
       break;
     case 'changeRelationship':
-      s.relationships[e.id] = clamp100(s.relationships[e.id] + e.delta);
-      ctx.debug(`rel ${e.id} ${e.delta >= 0 ? '+' : ''}${e.delta} = ${s.relationships[e.id]}`);
+      changeRelationship(ctx, e.id, e.delta);
       break;
     case 'changeMoney':
       s.moneyDm = Math.round((s.moneyDm + e.deltaDm) * 100) / 100;
@@ -108,6 +109,26 @@ export function applyEffect(ctx: Ctx, e: GameEffect): void {
       if (e.op === 'ring') s.telecom.ringing = e.who ?? 'unknown';
       else if (e.op === 'stopRinging') s.telecom.ringing = null;
       else if (e.op === 'houseBusy') s.telecom.houseLineBusyUntil = addMinutes(s.gameClock, e.minutes);
+      break;
+    case 'absence':
+      requestAbsence(ctx, e.kind, nextOccurrence(s.gameClock, e.until), e.text, e.backText);
+      break;
+    case 'sleep':
+      sleep(ctx, e.forced);
+      break;
+    case 'pocketMoney':
+      pocketMoney(ctx);
+      break;
+    case 'meterReading':
+      meterReading(ctx);
+      break;
+    case 'lockAccount':
+      lockAccount(ctx, e.system, e.minutes);
+      break;
+    case 'gameOver':
+      s.flags.gameOver = e.ending;
+      ctx.debug(`gameover ${e.ending}`);
+      ctx.ui.push({ type: 'gameOver', ending: e.ending });
       break;
   }
 }

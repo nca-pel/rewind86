@@ -7,6 +7,10 @@ import { isSlot, readSlot, writeSlot } from './storage';
 
 export type Panel = 'desk' | 'c64' | 'notes';
 
+function autosave(s: GameState): void {
+  if (!s.flags.gameOver) writeSlot('auto', s);
+}
+
 export interface GameUi {
   state: GameState | null;
   dispatch: (cmd: Command) => void;
@@ -24,6 +28,8 @@ export interface GameUi {
   setMenuOpen: (o: false | 'menu' | 'load') => void;
   sliceEnd: boolean;
   dismissSliceEnd: () => void;
+  /** Spielende rückgängig machen: Autosave (Stand vor der letzten Handlung) laden */
+  undoGameOver: () => void;
   demoMusic: boolean;
 }
 
@@ -104,7 +110,7 @@ export function useGame(): GameUi {
             setMenuOpen('load');
             break;
           case 'autosave':
-            if (ref.current) writeSlot('auto', ref.current);
+            if (ref.current) autosave(ref.current);
             showToast(`Automatisch gespeichert: ${e.reason}`);
             break;
           case 'demoMusic':
@@ -112,6 +118,10 @@ export function useGame(): GameUi {
             break;
           case 'sliceEnd':
             setSliceEnd(true);
+            break;
+          case 'gameOver':
+            setDetail(null);
+            setMenuOpen(false);
             break;
         }
       }
@@ -128,7 +138,8 @@ export function useGame(): GameUi {
       for (const cue of r.audio) audio.play(cue);
       handleUi(r.ui);
       // Fortlaufender Autosave (Ticks verändern nur Animationszustand und werden nicht gespeichert).
-      if (cmd.type !== 'c64tick') writeSlot('auto', r.state);
+      // Ein beendetes Spiel wird nie automatisch gespeichert – so bleibt der Schritt davor erhalten.
+      if (cmd.type !== 'c64tick') autosave(r.state);
     },
     [commit, handleUi],
   );
@@ -143,8 +154,14 @@ export function useGame(): GameUi {
     writeSlot('auto', r.state);
   }, [commit]);
 
+  const undoGameOver = useCallback(() => {
+    const r = readSlot('auto');
+    if (r?.ok && !r.file.state.flags.gameOver) loadState(r.file.state, 'Letzter Schritt zurückgenommen.');
+    else showToast('Kein Spielstand vor dem Ende gefunden – bitte über das Menü laden.');
+  }, [loadState, showToast]);
+
   const toTitle = useCallback(() => {
-    if (ref.current) writeSlot('auto', ref.current);
+    if (ref.current) autosave(ref.current);
     commit(null);
     setMenuOpen(false);
     setDemoMusic(false);
@@ -157,7 +174,7 @@ export function useGame(): GameUi {
 
   useEffect(() => {
     const save = () => {
-      if (ref.current) writeSlot('auto', ref.current);
+      if (ref.current) autosave(ref.current);
     };
     window.addEventListener('pagehide', save);
     return () => window.removeEventListener('pagehide', save);
@@ -180,6 +197,7 @@ export function useGame(): GameUi {
     setMenuOpen,
     sliceEnd,
     dismissSliceEnd: () => setSliceEnd(false),
+    undoGameOver,
     demoMusic,
   };
 }

@@ -1,28 +1,20 @@
 # Offene Storyfragen
 
-Diese Punkte sind laut GDD `[OFFEN]` bzw. nicht verbindlich entschieden. Der Code verwendet neutrale,
-austauschbare Platzhalter (überwiegend in `src/content/config.ts`, markiert mit `TODO-STORY`). **Keiner der Platzhalter
-ist eine kanonische Storyentscheidung.**
+Die 14 offenen Punkte aus GDD §22 wurden im Storydesign-Workshop am 31.10.2026 entschieden – siehe
+[`STORY_DECISIONS.md`](STORY_DECISIONS.md). Hier steht nur noch, was **innerhalb** dieser Entscheidungen offen ist
+und erst beim Schreiben der jeweiligen Akte konkretisiert wird.
 
-| #   | Thema                                                           | GDD                     | Aktueller Platzhalter im Code                                                                                                                    | Ort                                 |
-| --- | --------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
-| 1   | Bürgerliche Identität von GHOST                                 | §3.4, §22.1             | `GHOST_CIVIL_IDENTITY_TBD`; GHOST kommt im Ausschnitt nicht vor                                                                                  | `config.ts`                         |
-| 2   | Wann erkennt GHOST, dass Jan hinter der Kennung steckt?         | §3.4, §22.2             | `GHOST_RECOGNITION_ARC_TBD`                                                                                                                      | `config.ts`                         |
-| 3   | GHOSTs britischer Kontakt und Motive                            | §3.4, §22.3             | nicht modelliert                                                                                                                                 | –                                   |
-| 4   | Operation REWIND: Termin, Ziel, auszuschleusender Agent, Finale | §4.2, §22.4             | nicht modelliert; Systemnachricht erwähnt nur vage „Abschluss der Erprobung“                                                                     | `networks.ts`                       |
-| 5a  | Titel/Genre des unveröffentlichten Spiels                       | §7.4, §22.5             | `WORKING_TITLE_TBD`, Projektkennung `WT-07` (neutral, austauschbar)                                                                              | `config.ts`                         |
-| 5b  | Konkrete versteckte Taste und fairer Entdeckungsweg             | §4.1, §22.5             | Taste `←` während der Credits-Phase; Hinweis: aufblitzender Pfeil + Notiz + 3-stufige Hilfe                                                      | `config.ts`, `sim/apps/wt07.ts`     |
-| 5c  | Intro-Grafik                                                    | §22.5                   | ASCII-Logo „WT-07“ und Textphasen                                                                                                                | `wt07.ts`                           |
-| 5d  | Inhalt des eigentlichen Spielteils                              | §7.4                    | „Spielteil in dieser Kopie nicht enthalten“                                                                                                      | `wt07.ts`                           |
-| 6   | Diskette 2: Verbleib, Inhalt, Rekonstruktionsmethode            | §7.5, §22.6             | Objekt `disk_key` existiert (Ort `nowhere`), leeres Image; Modul reagiert mit Platzhaltertext                                                    | `objects.ts`, `disks.ts`, `modk.ts` |
-| 7   | Namen/Biografien der Eltern, Ralfs Familienname                 | §3.2, §3.5, §3.6, §22.7 | Eltern nur „Mutter“/„Vater“; `RALF_FAMILY_NAME_TBD` (nicht angezeigt)                                                                            | `config.ts`                         |
-| 8   | Genaues Startdatum                                              | §2.2, §22.8             | Entwickler-Default Freitag, 14.11.1986, 16:00                                                                                                    | `config.ts`                         |
-| 9   | Namen geheimer/regionaler Mailboxen, Sysops, BTX-Angebote       | §8, §22.9               | Modul „MODUL K“, Knoten „KNOTEN ?“, Kennungen `K-17` (Testzugang) und `K-01` – alles neutrale Arbeitsnamen; keine regionalen Mailboxen, kein BTX | `config.ts`, `networks.ts`          |
-| 10  | Filmzitate und Zuordnung zu Rätseln                             | §13, §22.10             | keine Filmrätsel; nur fiktives Poster „SPACE RIDERS“ als Deko                                                                                    | `Desk.tsx`                          |
-| 11  | Worauf zeigt der unbeabsichtigte INTRUDER-Hinweis?              | §12.2, §22.11           | `intruder.hintLink = null`; Demo-Teil 2 erzeugt nur den neutralen Fakt `demo_border`                                                             | `config.ts`, `intruder.ts`          |
-| 12  | Umfang TV/VHS/Datasette                                         | §5.2, §22.12            | Datasette nur als Beschreibung („nicht angeschlossen“), kein TV/VHS                                                                              | `objects.ts`                        |
-| 13  | Illustrationen, Sprecher, Musik                                 | §22.13                  | eigene SVG-/Canvas-Platzhalter, synthetisierte Klänge, keine Sprachausgabe                                                                       | `ui/`, `audio/`                     |
-| 14  | Endgültiger BASIC-Umfang                                        | §7.3, §22.14            | dokumentierte Teilmenge, siehe `ARCHITECTURE.md`                                                                                                 | `sim/basic/`                        |
+| Thema               | Entschieden                                   | Noch offen (wird mit dem Akt ausgearbeitet)                                                                       |
+| ------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| GHOST               | Computerclub-Betreuer, erkennt Jan spät       | Name, Auftreten im Club, persönliches Motiv im Detail, welcher Fehler Jans die Kennung verrät, Indizienkette      |
+| Operation REWIND    | Fr. 21.11.1986, Fernmeldesoftware, K-01, Netz | Zeitplan der Woche, wer K-01 ist, Ablauf des Finales, Bedingungen der 3–5 Enden                                   |
+| Diskette 2          | 3 Fragmente, Ersatzschlüssel im Modul         | Ob/wann Jan die echte Diskette 2 sieht; was das Modul mit echtem Schlüssel zusätzlich kann (Senden?)              |
+| FERNHANDEL          | Wirtschaftssimulation, Taste `←` bleibt       | Intro-Grafik, Inhalt des Spielteils (bisher „nicht enthalten“)                                                    |
+| Computerclub        | BIT-SCHUPPEN ist die Club-Mailbox             | Wo/wann der Club stattfindet und wie Jan dort ohne freie Erkundung Kontakt hat (GDD: Jan bleibt im Zimmer)        |
+| Systemnachrichten   | –                                             | Ob Seidel selbst hinter „PROTOKOLLIERUNG“/„LETZTE WARNUNG“ steht (naheliegend, da er die Infrastruktur betreut)   |
+| Filme               | 3–4 Anspielungen mit Rätselbezug              | Welche Filme, welche Rätsel; Rechteprüfung                                                                        |
+| Datasette           | Prüfband 3 mit Schlüsselteil 3                | Weitere Kassetten, Speichern auf Band                                                                             |
+| Historische Prüfung | –                                             | Ob ein Anschluss 1986 über die Bundespost ermittelbar war (`needs_research`); Tarife; fiktive Nummern (GDD §20.4) |
 
 ## Weitere im Ausschnitt getroffene Annahmen (bitte prüfen)
 
@@ -33,8 +25,8 @@ Diese Punkte waren für einen spielbaren Ausschnitt nötig. Sie sind bewusst kle
   BASIC-Programm. (`content/disks.ts`)
 - **Vorprovisionierte Testkennung** auf Diskette 1 (GDD §8.4 als Vorschlag): Systemnachricht „Kennung wurde mit
   Arbeitskopie WT-07 ausgeliefert“ dient als „identifizierbare Alltagsspur“. Formulierung und Konsequenz sind offen.
-- **„M.S.“ in den Credits** als Programmiererkürzel – passt zu Seidel als Entwickler des Moduls (GDD §3.3), ist aber
-  nur ein Hinweis, kein Beweis.
+- **„M.S.“ in den Credits** als Programmiererkürzel – passt zu Seidel als Entwickler des Moduls (GDD §3.3). Der
+  Notizblock nennt nur das Kürzel; die Verbindung zu Seidel muss der Spieler selbst ziehen.
 - **Elternereignisse:** Mutter hört beim ersten Online-Gang das Modem in der Leitung; Vater kommt 18:00 heim und will
   18:30 telefonieren (Varianten je nach Leitungszustand). „Tante Gisela“ und „Oma“ sind beiläufige Erwähnungen.
 - **Ralf** ruft um 16:00 an, ist ca. 12 Minuten nach dem Auflegen an der Tür; Rückrufe bei Ralf führen im Ausschnitt
@@ -42,8 +34,34 @@ Diese Punkte waren für einen spielbaren Ausschnitt nötig. Sie sind bewusst kle
 - **Tarife:** 0,23 DM pro Einheit, 8 Minuten pro Ortseinheit – vereinfachte Spielökonomie, `needs_research`.
 - **Fiktive Telefonnummern** `47112` (Ralf) und `41973` (Mailbox). Vor einer Veröffentlichung prüfen, ob ein realer
   Anschein entstehen könnte (GDD §20.4).
-- **Radiosender:** fiktive Popwelle und Infowelle, dazu BFBS (real, als Umfeld plausibel). Keine echten
-  Nachrichtenmeldungen, solange der Starttag nicht feststeht.
+- **Radiosender:** fiktive Popwelle und Infowelle, dazu BFBS (real, als Umfeld plausibel). Der Starttag steht jetzt
+  fest (14.11.1986); echte Nachrichtenmeldungen nur nach historischer Prüfung.
 - **Heimcomputer-Journal** ist eine fiktive Zeitschrift.
-- **Verdachtswerte:** Das Lesen der Mailbox erhöht `seidelSuspicion` leicht (+1/+2). Schwellenwerte sind benannt
-  (`thresholds` in `config.ts`), haben im Ausschnitt aber noch keine Folgen.
+- **Reguläre Mailboxen** `BIT-SCHUPPEN GT` (Sysop ANDI, 18–24 Uhr, Tel. `23586`) und `DATENKELLER` (Sysop MOLE,
+  22–6 Uhr, Tel. `38104`). Storyrolle entschieden (Club-Mailbox mit GHOST-Spuren bzw. Gerüchte), Inhalte dafür folgen
+  mit Akt 2; bisher Stimmungsbilder und zwei Download-Programme. Namen ANDI/MOLE sind weiterhin Arbeitsnamen. Nummern
+  vor Veröffentlichung prüfen (GDD §20.4).
+- **Terminalprogramm** `TERMINAL` liegt auf Jans Archivdiskette – plausibel, weil Jan bereits einen Koppler besitzt.
+- **Freischaltung** neuer Benutzer nach 30 bzw. 60 Spielminuten, ohne Passwortabfrage (Vereinfachung).
+- **Verdachtswerte:** Riskantes Verhalten im geheimen Netz erhöht `seidelSuspicion` (Anmeldung +3, je 5 Online-Minuten
+  +1, Sendeversuch +2, Lesen +1/+2). Schwellen 30/70/90/100 mit Symptomen: Systemnachricht „Protokollierung“,
+  Sperre der Testkennung für 3 Stunden plus anonymer Anruf (bleibt eine offene Fährte), letzte Warnung, Spielende
+  „Entdeckt“ (Seidel an der Tür). Die Zahlenwerte sind Spielbalance und frei justierbar. Der Verdacht sinkt bisher nie
+  von selbst.
+- **Tagesablauf:** Schule Mo–Fr 07:15–13:30, Sa bis 12:00 (Samstagsunterricht entschieden);
+  Abendbrot 18:50; Weckzeiten 06:45/09:30; Taschengeld 10 DM pro Woche; Eltern zahlen 3 DM Telefon pro Woche, den
+  Rest Jan; Ablesung des Gebührenzählers sonntags durch den Vater (privater Gebührenzähler war 1986 üblich,
+  `needs_research`).
+- **Ralfs Familie:** Am Telefon meldet sich die Familie mit „Seidel“ (Ralfs Mutter hat Seidel geheiratet); abends geht
+  oft Seidel selbst ran. Ralfs Trainingstage Di/Do/Fr, Samstagnachmittag Spiel (Uhrzeiten angenommen). Schulnamen
+  entschieden; ob die Schulen 1986 schon unter diesen Namen firmierten, ist `needs_research`.
+- **Ralf vom versteckten Modus erzählen:** Vertrauen +5, aber Seidels Verdacht +8 (Ralf ist neugierig und kein
+  guter Lügner). Ralf berichtet danach von einem abgeschlossenen Schrank in Seidels Arbeitszimmer.
+- **Computerclub:** Rundbrief kommt Samstag mit der Post; Clubabend Do 20.11., 19 Uhr im Jugendzentrum (erzählter
+  Zeitblock, Inhalte `TODO-STORY`, noch ohne GHOST-Indizien).
+- **Ralfs Vertrauen / Netzglaubwürdigkeit:** Schwellen sind benannt (`trusting` 40, `close` 75; `established` 60),
+  haben aber noch keine Symptome – Ralf kommt im Ausschnitt nur im Prolog vor, Senden im Netz fehlt.
+- **Schlüssel-Strang:** Schlüssel `7302 1958 4426`; Meldung „Schlüsselwechsel“ ab Mo. 17.11. 08:00; Ralf bringt die
+  Kassette Mi. 19.11. 15:00 (bei wenig Vertrauen gibt er sie nur unten ab). Das Modul prüft den Ersatzschlüssel
+  nicht (es kennt ihn ja nicht) – erst der Klartext zeigt, ob er stimmt. Seidels Handle bleibt ungenannt; die
+  fehlgeleitete Meldung kommt formal vom SYSTEM. Lesen der Meldung kostet wie jede andere +1 Verdacht.

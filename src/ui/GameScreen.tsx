@@ -5,6 +5,8 @@ import { C64Panel } from './C64Panel';
 import { COMMAND_NAME } from './commandNames';
 import { Desk } from './Desk';
 import { DetailPanel } from './DetailPanel';
+import { ENDING_BY_ID } from '../content/endings';
+import { DevPanel, devEnabled } from './DevPanel';
 import { SaveList, SettingsForm } from './Menu';
 import { Modal } from './Modal';
 import { Notebook } from './Notebook';
@@ -12,7 +14,9 @@ import { StatusBar } from './StatusBar';
 
 export function GameScreen({ game }: { game: GameUi }) {
   const state = game.state!;
+  const ending = state.flags.gameOver ? ENDING_BY_ID[String(state.flags.gameOver)] : undefined;
   const [panel, setPanel] = useState<Panel>('desk');
+  const [dev] = useState(devEnabled);
 
   useEffect(() => {
     if (game.focusRequest?.target === 'c64') setPanel('c64');
@@ -80,14 +84,32 @@ export function GameScreen({ game }: { game: GameUi }) {
         <div className="slice-end" role="dialog" aria-label="Ende des Ausschnitts">
           <h2>Fortsetzung folgt …</h2>
           <p>
-            Das war der spielbare Ausschnitt von REWIND 1986. Du kannst weiterspielen – Notizen, Demo, BASIC
-            und Archiv bleiben verfügbar.
+            Das war der Prolog von REWIND 1986. Die Geschichte geht weiter: Die nächsten Tage laufen als
+            Alltag, und irgendwo muss sich finden lassen, was auf Diskette 2 steht.
           </p>
           <button type="button" onClick={game.dismissSliceEnd}>
             Weiterspielen
           </button>
         </div>
       )}
+      {ending && !game.menuOpen && (
+        <div className="slice-end game-over" role="alertdialog" aria-label={`Spielende: ${ending.title}`}>
+          <h2>Ende: {ending.title}</h2>
+          <p>{ending.text}</p>
+          <div className="game-over-actions">
+            <button type="button" onClick={game.undoGameOver} data-testid="undo-game-over">
+              Letzten Schritt zurücknehmen
+            </button>
+            <button type="button" onClick={() => game.setMenuOpen('load')}>
+              Spielstand laden
+            </button>
+            <button type="button" onClick={game.toTitle}>
+              Zum Titelbildschirm
+            </button>
+          </div>
+        </div>
+      )}
+      {dev && <DevPanel game={game} />}
       <div className="toast" role="status" aria-live="polite" data-testid="toast">
         {game.toast}
       </div>

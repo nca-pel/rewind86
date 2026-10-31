@@ -1,4 +1,4 @@
-import type { Condition, ItemLocation } from '../engine/types';
+import type { Condition, GameEffect, ItemLocation } from '../engine/types';
 import { GAME_CONFIG } from './config';
 
 /**
@@ -30,9 +30,12 @@ export interface WorldObject {
   hotspot?: boolean;
   description: Array<{ when?: Condition; text: string }>;
   historicalStatus: 'verified' | 'plausible' | 'fictional' | 'needs_research';
+  /** Effekte beim Lesen (LIES …) */
+  readEffects?: GameEffect[];
 }
 
 const B = GAME_CONFIG.unreleasedGame.buildCode;
+const CLUB_DATE = `${GAME_CONFIG.club.eveningDate.slice(8, 10)}.${GAME_CONFIG.club.eveningDate.slice(5, 7)}.`;
 
 export const OBJECTS: WorldObject[] = [
   {
@@ -159,7 +162,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Ein Mono-Kassettenrekorder. Gerade liegt keine Kassette drin. (Kassetten spielen in diesem Ausschnitt noch keine Rolle.)',
+        text: 'Ein Mono-Kassettenrekorder für Musik. Gerade liegt keine Kassette drin.',
       },
     ],
     historicalStatus: 'plausible',
@@ -173,6 +176,10 @@ export const OBJECTS: WorldObject[] = [
     gender: 'f',
     nouns: ['datasette', 'datenrekorder'],
     description: [
+      {
+        when: { flag: 'datasetteConnected' },
+        text: 'Deine alte Datasette hängt wieder am Kassettenport des C64. Laden: LOAD am C64 (Gerät 1 ist der Standard).',
+      },
       {
         text: 'Deine alte Datasette steht abgestöpselt hinter dem Monitor. Seit du die 1541 hast, nimmst du sie kaum noch.',
       },
@@ -241,7 +248,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Die neue Ausgabe des »Heimcomputer-Journals« (fiktive Zeitschrift). Inhalt: eine ZEICHENTABELLE, ein ARTIKEL über Akustikkoppler und die KLEINANZEIGEN.',
+        text: 'Die neue Ausgabe des »Heimcomputer-Journals« (fiktive Zeitschrift). Inhalt: eine ZEICHENTABELLE, ein ARTIKEL über Akustikkoppler, die LESERTIPPS und die KLEINANZEIGEN.',
       },
     ],
     historicalStatus: 'fictional',
@@ -279,6 +286,23 @@ export const OBJECTS: WorldObject[] = [
     historicalStatus: 'plausible',
   },
   {
+    id: 'mag_tips',
+    name: 'die Lesertipps',
+    acc: 'die Lesertipps',
+    dat: 'den Lesertipps',
+    short: 'Lesertipps',
+    gender: 'pl',
+    nouns: ['lesertipps', 'tipps', 'tips', 'tricks', 'leserbriefe', 'leserbrief'],
+    partOf: 'magazine',
+    readEffects: [{ type: 'discoverFact', id: 'hidden_text' }],
+    description: [
+      {
+        text: '»TIPPS & TRICKS – Unsichtbare Zeilen«: Ein Leser fragt, warum in einem gekauften Programm eine REM-Zeile leer aussieht. Antwort der Redaktion: In REM-Zeilen lassen sich Farb-Steuerzeichen ablegen. Beim LIST wechselt der C64 dann die Schriftfarbe – ist sie gleich der Hintergrundfarbe, sieht man den Rest der Zeile nicht. Er ist aber noch da. Wer neugierig ist, ändert einfach die Hintergrundfarbe (Speicherstelle 53281) und listet noch einmal.',
+      },
+    ],
+    historicalStatus: 'plausible',
+  },
+  {
     id: 'mag_ads',
     name: 'die Kleinanzeigen',
     acc: 'die Kleinanzeigen',
@@ -289,7 +313,7 @@ export const OBJECTS: WorldObject[] = [
     partOf: 'magazine',
     description: [
       {
-        text: 'KLEINANZEIGEN: »Suche Tauschpartner für C64-Software, Raum Bielefeld.« – »Verkaufe 1541, kaum benutzt.« – »Neue Mailbox im Kreis Gütersloh, Nummer im nächsten Heft!« (TODO-STORY: reguläre Mailboxen folgen im Vollspiel.)',
+        text: 'KLEINANZEIGEN: »Suche Tauschpartner für C64-Software, Raum Bielefeld.« – »Verkaufe 1541, kaum benutzt.« – »Neue Mailbox im Kreis Gütersloh: BIT-SCHUPPEN GT, 300 Baud, täglich 18–24 Uhr, Tel. 23586. Gäste willkommen!«',
       },
     ],
     historicalStatus: 'fictional',
@@ -352,6 +376,24 @@ export const OBJECTS: WorldObject[] = [
     historicalStatus: 'fictional',
   },
   {
+    id: 'cassette',
+    name: 'die Kassette',
+    acc: 'die Kassette',
+    dat: 'der Kassette',
+    short: 'Prüfband-Kassette',
+    gender: 'f',
+    nouns: ['kassette', 'band', 'pruefband', 'datenkassette', 'compactcassette'],
+    adjectives: ['wt', 'wt07', '07', 'pruef', 'seidels', '3'],
+    portable: true,
+    initialLocation: 'nowhere',
+    description: [
+      {
+        text: 'Eine C60-Kassette ohne Hülle. Auf dem Etikett mit Kuli: »WT-07 PRÜFBAND 3«. Musik ist da sicher keine drauf – das ist ein Band für die Datasette.',
+      },
+    ],
+    historicalStatus: 'plausible',
+  },
+  {
     id: 'disk_key',
     name: 'die Diskette 2',
     acc: 'die Diskette 2',
@@ -408,7 +450,11 @@ export const OBJECTS: WorldObject[] = [
     nouns: ['ralf'],
     npc: true,
     present: { flag: 'ralfPresent', eq: true },
-    description: [{ text: 'Ralf, dein bester Freund. Sporttasche, Trainingsjacke, immer in Eile.' }],
+    description: [
+      {
+        text: 'Ralf, dein bester Freund. Früher wohnte er nebenan – bis seine Eltern sich scheiden ließen und er mit seiner Mutter wegzog. Sporttasche, Trainingsjacke, immer in Eile.',
+      },
+    ],
     historicalStatus: 'fictional',
   },
   {
@@ -435,6 +481,25 @@ export const OBJECTS: WorldObject[] = [
     npc: true,
     present: { flag: 'fatherPresent', eq: true },
     description: [{ text: 'Dein Vater, noch in Arbeitsklamotten.' }],
+    historicalStatus: 'fictional',
+  },
+  {
+    id: 'club_letter',
+    name: 'der Rundbrief',
+    acc: 'den Rundbrief',
+    dat: 'dem Rundbrief',
+    short: 'Rundbrief',
+    gender: 'm',
+    nouns: ['rundbrief', 'brief', 'umschlag', 'clubbrief'],
+    adjectives: ['clubbrief', 'computerclub'],
+    portable: true,
+    initialLocation: 'nowhere',
+    description: [
+      {
+        text: `Ein hektografierter Rundbrief, blaue Schrift auf saugfähigem Papier: »COMPUTERCLUB – Clubabend am Donnerstag, ${CLUB_DATE}, 19 Uhr im Jugendzentrum. Bringt eure Disketten mit! Neu: Unsere Club-Mailbox ${GAME_CONFIG.mailboxes.bitschuppen.name} ist jeden Abend ab ${GAME_CONFIG.mailboxes.bitschuppen.hours.from} Uhr unter ${GAME_CONFIG.mailboxes.bitschuppen.phoneNumber} erreichbar.«`,
+      },
+    ],
+    readEffects: [{ type: 'discoverFact', id: 'club_evening' }],
     historicalStatus: 'fictional',
   },
 ];

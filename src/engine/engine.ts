@@ -7,6 +7,7 @@ import { c64Key, c64Line, c64Tick } from '../sim/c64';
 import { giveHint, runIntent } from './actions';
 import { formatClock } from './clock';
 import { Ctx } from './context';
+import { devCommand } from './dev';
 import { resolveObject } from './resolve';
 import { advanceTime, checkTriggers } from './time';
 import type { Command, GameState, StepResult } from './types';
@@ -35,8 +36,14 @@ function applyPending(ctx: Ctx, intent: Intent): Intent {
   return original;
 }
 
+const AFTER_END_META = new Set(['load', 'saves', 'help', 'notes', 'time']);
+
 function handleAdventure(ctx: Ctx, raw: string): void {
   let intent = parseAdventure(raw);
+  if (ctx.state.flags.gameOver && !(intent.kind === 'meta' && AFTER_END_META.has(intent.meta))) {
+    ctx.say('Das Spiel ist zu Ende. Mit LADEN kehrst du zu einem Spielstand zurück.', 'system');
+    return;
+  }
   intent = applyPending(ctx, intent);
   const minutes = runIntent(ctx, intent);
   if (minutes > 0) advanceTime(ctx, minutes);
@@ -67,12 +74,14 @@ export function step(state: GameState, cmd: Command): StepResult {
       break;
     }
     case 'c64line': {
+      if (s.flags.gameOver) break;
       s.commandCount++;
       const minutes = c64Line(ctx, cmd.text.slice(0, 80));
       if (minutes > 0) advanceTime(ctx, minutes);
       break;
     }
     case 'c64key': {
+      if (s.flags.gameOver) break;
       const minutes = c64Key(ctx, cmd.key);
       if (minutes > 0) advanceTime(ctx, minutes);
       break;
@@ -97,6 +106,9 @@ export function step(state: GameState, cmd: Command): StepResult {
       break;
     case 'hint':
       giveHint(ctx, cmd.puzzleId);
+      break;
+    case 'dev':
+      devCommand(ctx, cmd.text.slice(0, MAX_INPUT));
       break;
   }
   checkTriggers(ctx);

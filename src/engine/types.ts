@@ -2,6 +2,7 @@
  * Zentrale, serialisierbare Datentypen der Game-Engine.
  * Alles im GameState muss JSON-tauglich sein (kein Date, keine Map, keine Funktionen).
  */
+import type { VideoState } from '../c64/video';
 
 export type FactId = string;
 export type FlagId = string;
@@ -15,10 +16,12 @@ export type PuzzleStatus = 'unknown' | 'discovered' | 'solving' | 'solved' | 'by
 
 export type RelationshipId = 'seidelSuspicion' | 'ralfTrust' | 'networkCredibility';
 
+export type AbsenceKind = 'school' | 'sleep' | 'meal' | 'club';
+
 export type GameMode = 'title' | 'desk' | 'conversation';
 
 /** Orte, an denen sich bewegliche Gegenstände befinden können. */
-export type ItemLocation = 'inventory' | 'desk' | 'drawer' | 'package' | 'drive' | 'nowhere';
+export type ItemLocation = 'inventory' | 'desk' | 'drawer' | 'package' | 'drive' | 'datasette' | 'nowhere';
 
 export type C64Color = number; // 0..15, C64-Palettenindex
 
@@ -62,14 +65,22 @@ export interface BasicRun {
   /** Wartet auf INPUT in diese Variablen. */
   awaitingInput: string[] | null;
   rng: number;
+  /** Mit DEF FN definierte Funktionen: Parametername + Tokens des Funktionsterms */
+  fns?: Record<string, { param: string; body: Array<{ t: string; v: string | number }> }>;
+  /** Mit OPEN geöffnete sequenzielle Dateien (logische Dateinummer → Puffer) */
+  files?: Record<string, OpenFile>;
 }
 
-export interface ScreenState {
-  lines: string[];
-  border: C64Color;
-  background: C64Color;
-  text: C64Color;
+export interface OpenFile {
+  mode: 'r' | 'w';
+  name: string;
+  /** Lesen: ganzer Dateiinhalt; Schreiben: bisher geschriebene Zeichen */
+  data: string;
+  pos: number;
 }
+
+/** Bildschirm des C64: Bildschirm-RAM, Farb-RAM, VIC-Register, Cursor (siehe src/c64/video.ts) */
+export type ScreenState = VideoState;
 
 export interface AppState {
   id: string;
@@ -101,6 +112,31 @@ export interface CallState {
   outgoing: boolean;
 }
 
+/** Von Jan geschriebene oder an ihn gerichtete Nachricht in einer regulären Mailbox */
+export interface StoredMessage {
+  id: string;
+  from: string;
+  to: string;
+  subject: string;
+  body: string[];
+  /** Spielzeit, ab der die Nachricht im System sichtbar ist (Antworten kommen verzögert) */
+  at: string;
+  /** Brett-ID bei öffentlichen Beiträgen; fehlt = private Post */
+  board?: string;
+}
+
+/** Jans Konto in einer regulären Mailbox */
+export interface BbsAccount {
+  handle: string;
+  status: 'neu' | 'mitglied';
+  /** Spielzeit der Freischaltung durch den Sysop */
+  validateAt: string;
+  lastLogin: string | null;
+  inbox: StoredMessage[];
+  posts: StoredMessage[];
+  downloads: string[];
+}
+
 export interface TelecomState {
   ringing: string | null;
   handset: 'cradle' | 'hand' | 'coupler';
@@ -112,6 +148,14 @@ export interface TelecomState {
   messageReadIds: string[];
   messagePostedIds: string[];
   onlineMinutes: number;
+  /** Konten in regulären Mailboxen (Schlüssel = System-ID) */
+  bbs: Record<string, BbsAccount>;
+  /** Gesperrte Kennungen: System-ID → gesperrt bis (Spielzeit) */
+  locks: Record<string, string>;
+  /** Noch nicht als Verdacht verbuchte Online-Minuten im geheimen Netz */
+  riskMinutes: number;
+  /** Stand der Telefonkosten bei der letzten Ablesung des Gebührenzählers durch den Vater */
+  costsAtLastReading: number;
 }
 
 export interface ArchiveEntry {
@@ -203,6 +247,14 @@ export type Condition =
   | { lineBusy: true }
   | { online: true }
   | { ringing: true }
+  /** Benannte Schwelle eines verdeckten Werts (GAME_CONFIG.thresholds) erreicht bzw. unterschritten */
+  | { rel: RelationshipId; atLeast: string }
+  | { rel: RelationshipId; below: string }
+  /** Kalender: heute bzw. morgen Schultag, Wochentag (»Samstag«), Datum (»1986-11-15«) */
+  | { schoolDay: true }
+  | { schoolTomorrow: true }
+  | { weekday: string }
+  | { date: string }
   | { all: Condition[] }
   | { any: Condition[] }
   | { not: Condition };
@@ -224,7 +276,20 @@ export type GameEffect =
   | { type: 'audio'; cue: AudioCueId }
   | { type: 'ui'; effect: UiEffect }
   | { type: 'telecom'; op: 'stopRinging' | 'ring'; who?: string }
-  | { type: 'telecom'; op: 'houseBusy'; minutes: number };
+  | { type: 'telecom'; op: 'houseBusy'; minutes: number }
+  /** Kennung in einem System sperren; eine bestehende Verbindung trennt die Gegenstelle. */
+  | { type: 'lockAccount'; system: string; minutes: number }
+  /**
+   * Erzählter Zeitblock (Schule, Abendbrot, Clubabend): Jan legt auf, die Zeit springt bis `until` (HH:MM, nächstes
+   * Vorkommen). Ereignisse dazwischen laufen ab; während des Blocks ist das Flag `away` gesetzt.
+   */
+  | { type: 'absence'; kind: AbsenceKind; until: string; text: string; backText?: string }
+  /** Schlafen bis zum nächsten Morgen (Weckzeit je nach Schultag) */
+  | { type: 'sleep'; forced?: boolean }
+  | { type: 'pocketMoney' }
+  | { type: 'meterReading' }
+  /** Endgültiges Spielende (nur nach vorheriger Warnung einsetzen, GDD §10.3) */
+  | { type: 'gameOver'; ending: string };
 
 export type AudioCueId =
   | 'phone_ring'
@@ -247,7 +312,8 @@ export type UiEffect =
   | { type: 'listSaves' }
   | { type: 'autosave'; reason: string }
   | { type: 'demoMusic'; on: boolean }
-  | { type: 'sliceEnd' };
+  | { type: 'sliceEnd' }
+  | { type: 'gameOver'; ending: string };
 
 export interface StepResult {
   state: GameState;
@@ -279,4 +345,6 @@ export type Command =
   | { type: 'note'; op: 'add'; text: string }
   | { type: 'note'; op: 'edit'; id: string; text: string }
   | { type: 'note'; op: 'delete'; id: string }
-  | { type: 'hint'; puzzleId?: string };
+  | { type: 'hint'; puzzleId?: string }
+  /** Entwicklerbefehl (nur über die Entwicklerkonsole, siehe engine/dev.ts) */
+  | { type: 'dev'; text: string };

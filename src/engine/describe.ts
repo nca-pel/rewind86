@@ -1,3 +1,4 @@
+import { videoLines } from '../c64/video';
 import { OBJECTS, OBJECT_BY_ID } from '../content/objects';
 import { STATIONS } from '../content/radio';
 import { diskInDrive } from '../sim/c64';
@@ -23,7 +24,7 @@ function monitorText(state: GameState): string {
   if (c.app?.id === 'archive') return 'Auf dem Monitor: dein Archivprogramm.';
   if (c.app?.id === 'intruder')
     return 'Auf dem Monitor tobt die INTRUDER-Demo: Rasterbalken, Sprites, Laufschrift.';
-  const last = c.screen.lines
+  const last = videoLines(c.screen)
     .filter((l) => l.trim())
     .slice(-3)
     .join(' / ');
@@ -63,6 +64,8 @@ export function dynamicDescription(state: GameState, id: string): string {
         : t.handset === 'coupler'
           ? 'Der Hörer steckt in den Muffen, die Träger-LED ist aus.'
           : 'Die Träger-LED ist aus.';
+    case 'datasette':
+      return state.itemLocations.cassette === 'datasette' ? 'Im Fach steckt Ralfs Prüfband-Kassette.' : '';
     case 'radio': {
       const st = STATIONS.find((s) => s.id === state.objectStates.radio.station);
       return state.objectStates.radio.on ? `Es läuft: ${st?.label}.` : 'Es ist ausgeschaltet.';
@@ -94,7 +97,8 @@ export function describe(state: GameState, id: string): string {
 export function lookAround(state: GameState): string {
   const parts = [describe(state, 'desk')];
   const onDesk = itemsAt(state, 'desk');
-  if (onDesk.length) parts.push(`Auf dem Tisch liegt außerdem ${listNames(onDesk)}.`);
+  if (onDesk.length)
+    parts.push(`Auf dem Tisch ${onDesk.length > 1 ? 'liegen' : 'liegt'} außerdem ${listNames(onDesk)}.`);
   const inDrive = itemsAt(state, 'drive');
   if (inDrive.length) parts.push(`In der 1541 steckt ${OBJECT_BY_ID[inDrive[0]].name}.`);
   if (state.objectStates.drawer.open)

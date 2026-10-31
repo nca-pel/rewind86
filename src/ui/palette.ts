@@ -1,19 +1,2 @@
-/** C64-Farbpalette (an verbreitete Messwerte angelehnt) */
-export const C64_PALETTE = [
-  '#000000',
-  '#ffffff',
-  '#68372b',
-  '#70a4b2',
-  '#6f3d86',
-  '#588d43',
-  '#352879',
-  '#b8c76f',
-  '#6f4f25',
-  '#433900',
-  '#9a6759',
-  '#444444',
-  '#6c6c6c',
-  '#9ad284',
-  '#6c5eb5',
-  '#959595',
-];
+/** C64-Farbpalette als CSS-Farben (Quelle: src/c64/palette.ts) */
+export { PALETTE_HEX as C64_PALETTE } from '../c64/palette';

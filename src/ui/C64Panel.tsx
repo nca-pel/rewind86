@@ -8,7 +8,8 @@ import { reducedMotion, useSettings } from '../app/settings';
 import type { C64Key } from '../engine/types';
 import { renderC64 } from '../sim/c64';
 import { DemoCanvas } from './DemoCanvas';
-import { C64_PALETTE } from './palette';
+import { bootProfile } from '../engine/state';
+import { C64Display } from './C64Display';
 
 const SPECIAL_KEYS: Array<{ key: C64Key; label: string; aria: string }> = [
   { key: 'RUNSTOP', label: 'RUN/STOP', aria: 'Taste RUN/STOP' },
@@ -112,64 +113,33 @@ export function C64Panel({ game }: { game: GameUi }) {
     inputRef.current?.focus({ preventScroll: true });
   };
 
-  // Bildschirmzeilen inkl. Live-Vorschau der Eingabe und Cursor
-  let lines = [...r.lines];
-  const typedPreview = value.toUpperCase();
-  const awaiting = r.powerOn && r.inputMode === 'basic' && state.computer.run?.awaitingInput;
-  if (r.powerOn && r.inputMode !== 'keys') {
-    if (awaiting && lines.length) lines[lines.length - 1] = lines[lines.length - 1] + typedPreview;
-    else lines.push(typedPreview);
-  }
-  // Die Eingabe (und damit der Cursor) steht immer in der letzten belegten Zeile.
-  const cursorLine = r.powerOn && r.inputMode !== 'keys' ? Math.min(lines.length, 25) - 1 : -1;
-  lines = lines.slice(-25);
-  while (lines.length < 25) lines.push('');
-  const flash = r.flash && !reduced;
+  const preview = r.powerOn && r.inputMode !== 'keys' ? value.toUpperCase() : '';
+  const profile = bootProfile();
 
   return (
-    <section className={`c64-panel${focused ? ' input-focused' : ''}`} aria-label="Commodore 64">
+    <section className={`c64-panel${focused ? ' input-focused' : ''}`} aria-label={profile.machineName}>
       <div className="panel-title">
-        <span className="badge c64-badge">C64</span>
+        <span className="badge c64-badge">{profile.badge}</span>
         <span className="panel-hint">
           {!r.powerOn
             ? 'ausgeschaltet'
             : keysMode
               ? 'Tastenmodus: Tasten gehen direkt an das Programm'
-              : 'BASIC: Zeile tippen + RETURN'}
+              : r.inputMode === 'line'
+                ? 'Programm-Eingabe: Text tippen + RETURN'
+                : 'BASIC: Zeile tippen + RETURN'}
         </span>
       </div>
-      <div
-        className={`c64-frame${settings.crt && !reduced ? ' crt' : ''}`}
-        onClick={() => inputRef.current?.focus({ preventScroll: true })}
-      >
-        <div
-          className={`c64-border${flash ? ' flash' : ''}`}
-          style={{ background: r.powerOn ? C64_PALETTE[r.border] : '#0b0c0b' }}
+      <div className="c64-frame" onClick={() => inputRef.current?.focus({ preventScroll: true })}>
+        <C64Display
+          view={r}
+          preview={preview}
+          crt={settings.crt && !reduced}
+          reduced={reduced}
+          machineName={profile.machineName}
         >
-          <div
-            className="c64-screen"
-            data-testid="c64-screen"
-            style={{
-              background: r.powerOn ? C64_PALETTE[r.background] : '#0f110f',
-              color: C64_PALETTE[r.text],
-            }}
-            aria-label="C64-Bildschirminhalt"
-          >
-            {lines.map((l, i) => (
-              <div
-                key={i}
-                className="c64-line"
-                style={r.lineColors?.[i] !== undefined ? { color: C64_PALETTE[r.lineColors[i]] } : undefined}
-              >
-                {l}
-                {i === cursorLine && <span className={`c64-cursor${reduced ? ' static' : ''}`}>&nbsp;</span>}
-                {l === '' && i !== cursorLine ? '\u00a0' : ''}
-              </div>
-            ))}
-            {!r.powerOn && <div className="c64-off">Monitor aus</div>}
-          </div>
           {r.demoScreen !== undefined && <DemoCanvas screen={r.demoScreen} reduced={reduced} />}
-        </div>
+        </C64Display>
       </div>
       <label className="c64-input-row">
         <span className="sr-only">C64-Eingabe</span>
@@ -185,7 +155,15 @@ export function C64Panel({ game }: { game: GameUi }) {
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
-          placeholder={!r.powerOn ? 'C64 ist aus' : keysMode ? 'Taste drücken …' : 'z. B. LOAD"$",8'}
+          placeholder={
+            !r.powerOn
+              ? 'C64 ist aus'
+              : keysMode
+                ? 'Taste drücken …'
+                : r.inputMode === 'line'
+                  ? 'Text + RETURN'
+                  : 'z. B. LOAD"$",8'
+          }
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKeyDown}
           onFocus={() => setFocused(true)}

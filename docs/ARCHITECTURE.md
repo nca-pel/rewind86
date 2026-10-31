@@ -14,9 +14,12 @@ src/
 │   ├── time.ts       Aktionsbasierte Uhr, Ereignisplanung, Gebühren
 │   ├── effects.ts    Deklarative Effekte anwenden
 │   ├── conditions.ts Deklarative Bedingungen auswerten
+│   ├── pressure.ts   Verdeckte Werte: benannte Schwellen, Deckel bis zur Warnung, Risiko, Kennungssperren
+│   ├── routine.ts    Tagesablauf: Kalender, Schlaf, Ralfs Wochenplan, Taschengeld, Gebührenzähler
 │   ├── describe.ts   Zustandsabhängige Beschreibungen
 │   └── save.ts       Speicherformat, zod-Schema, Migration, Import-Validierung
 ├── parser/       Adventure-Parser (Normalisierung, Lexikon, Intent-Erkennung)
+├── c64/          Eigenständige Bildschirmsimulation (ohne Engine-Abhängigkeit, ohne ROM-Daten)
 ├── sim/          C64-Simulation
 │   ├── basic/        Tokenizer + Interpreter der BASIC-V2-Teilmenge
 │   ├── c64.ts        Laufwerk, Directory, LOAD/SAVE/SYS, App-Steuerung, Bildschirm
@@ -58,15 +61,17 @@ laufende App), `disks` (virtuelle Disketten inkl. gespeicherter Dateien), `telec
 ### Bedingungen & Effekte (deklarativ)
 
 Content enthält keinen ausführbaren Code. Bedingungen: `fact`, `notFact`, `flag`, `notFlag`, `itemAt`, `objState`,
-`timeAfter/Before`, `lineBusy`, `online`, `ringing`, `all/any/not`. Effekte: `setFlag`, `discoverFact`, `addTopic`,
-`moveItem`, `setObjectState`, `changeRelationship`, `changeMoney`, `scheduleEvent`, `cancelEvent`, `puzzle`, `say`,
-`audio`, `ui`, `telecom`.
+`timeAfter/Before`, `lineBusy`, `online`, `ringing`, `rel` + `atLeast`/`below` (benannte Schwelle), `schoolDay`,
+`schoolTomorrow`, `weekday`, `date`, `all/any/not`. Effekte: `setFlag`, `discoverFact`, `addTopic`, `moveItem`,
+`setObjectState`, `changeRelationship`, `changeMoney`, `scheduleEvent`, `cancelEvent`, `puzzle`, `say`, `audio`, `ui`,
+`telecom`, `lockAccount`, `gameOver`, `absence`, `sleep`, `pocketMoney`, `meterReading`. Objekte können
+`readEffects` haben (z. B. Fakt beim Lesen eines Briefs).
 
 ### Zeit & Ereignisse
 
 - Aktionen kosten Minuten (Standard 1; Meta-Befehle 0; Lesen 2–3; LOAD je nach Blockzahl; Online-Aktionen 1).
 - `advanceTime()` verarbeitet alle fälligen Ereignisse **chronologisch**; bei `WARTE` unterbricht ein Ereignis mit
-  `interrupts: true` das Warten fair.
+  `interrupts: true` das Warten fair – aber nur, wenn es dabei etwas ausgibt (stilles Neuplanen unterbricht nicht).
 - Einmalige Ereignisse werden in `firedEvents` vermerkt und nie erneut ausgelöst oder eingeplant (Idempotenz auch
   nach Laden). `repeatable` für Alltags-/Erinnerungsereignisse (Telefon klingelt weiter, bis abgehoben wird).
 - Bedingungsereignisse (`trigger`) werden nach jedem Schritt geprüft (z. B. Ende des Ausschnitts).
@@ -101,25 +106,52 @@ bekannte Themen; nicht gelistete bleiben eingebbar.
 
 ## C64-Simulation (kein Emulator)
 
-### Bildschirm
+### Bildschirm (`src/c64/`)
 
-Logisch 40 × 25 Zeichen, Umbruch bei 40 Zeichen, Eingabezeilen auf 80 Zeichen begrenzt (wie am Original). Farben
-über simulierte Register `53280` (Rahmen), `53281` (Hintergrund), `646` (Text) und Farbcodes in `CHR$`.
+Eigenständiges Modul ohne Abhängigkeit von der Spiel-Engine. **Es enthält keine Original-ROM-Dateien und keine
+daraus extrahierten Daten** (ein Test prüft, dass keine ROM-/Binärabbilder im Projekt liegen).
+
+| Datei         | Inhalt                                                                                                                                                                                                                                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `geometry.ts` | PAL-VIC-II (6569): 40×25 Zeichen à 8×8, Anzeigefenster 320×200, sichtbares Bild 384×272 (Rahmen 32/35/32/37), Pixel-Seitenverhältnis 0,9365, 50,12 Hz, Cursorblinken alle 20 Jiffies (60 Hz), Speicheradressen                                                                                                     |
+| `palette.ts`  | 16 Farben, **aus einem YUV-Modell berechnet** (Helligkeitsstufen + Farbwinkel in 22,5°-Schritten, PAL-Gamma) – keine kopierte Tabelle; Parameter in `PALETTE_MODEL`                                                                                                                                                |
+| `charset.ts`  | **Eigener Zeichensatz**, von Hand gezeichnet bzw. aus Geometrieregeln erzeugt: Großschrift/Grafik und Klein-/Großschrift, je 128 Zeichen + Reversdarstellung (256 × 8 Byte). Senkrechte Striche 2 px breit (fernsehtauglich), Null mit Querstrich                                                                  |
+| `petscii.ts`  | PETSCII ↔ Bildschirmcode ↔ Unicode (Text für Screenreader/Tests)                                                                                                                                                                                                                                                 |
+| `video.ts`    | Serialisierbarer Zustand: Bildschirm-RAM (1000 Codes), Farb-RAM, Rahmen/Hintergrund/Schreibfarbe, Cursor, logische Zeilen (bis 80 Zeichen; 40 Zeichen + RETURN ⇒ Leerzeile wie am Original), RVS, Quote-Modus, Zeichensatz, Bildabschaltung. Steuercodes: Farben, RVS ON/OFF, CLR, HOME, Cursor, DEL, INST, 14/142 |
+| `renderer.ts` | Pixelgenaue Ausgabe 384×272; PAL-Farbsäume (Farbanteile verschmieren stärker als Helligkeit), scharf-bilineare Skalierung, Zeilenlücken (ab ≥ 2,4 Gerätepixel/Rasterzeile), Nachleuchten, Rasterstreifen im Rahmen                                                                                                 |
+| `boot.ts`     | Austauschbare Startbildschirm-Profile (siehe unten)                                                                                                                                                                                                                                                                |
+
+Speicherabbildung: `1024–2023` Bildschirm-RAM, `55296–56295` Farb-RAM, `53280`/`53281` Rahmen/Hintergrund, `646`
+Schreibfarbe, `53272` (Bit 1: Kleinschrift, z. B. `POKE 53272,23`), `53265` (Bit 4: Bild an), `199` RVS, `211`/`214`
+Cursor (nur lesen). In der UI zeichnet `ui/C64Display.tsx` den Zustand auf ein Canvas; eine unsichtbare Textebene
+(`data-testid="c64-screen"`) dient Screenreadern und Tests. Ein-/Ausschalten zeigt das Aufziehen bzw.
+Zusammenfallen der Bildröhre; bei „reduzierter Bewegung“ entfallen Blinken, Streifen und Animationen.
+
+### Startbildschirm austauschen
+
+Alle möglicherweise geschützten Elemente (Herstellername in der Einschaltmeldung, Gerätebezeichnung im Panel und in
+`aria-label`s) stehen ausschließlich in Profilen in `src/c64/boot.ts`:
+
+- `authentic` (Standard): historische Einschaltmeldung.
+- `neutral`: gleiche Geometrie, Speicheranzeige und Verhalten, ohne Marken-/Produktnamen („HEIMCOMPUTER 64“).
+- Umschalten ohne Codeänderung: `VITE_C64_BOOT_PROFILE=neutral npm run build`, oder `GAME_CONFIG.c64.bootProfile`.
+- Eigene Profile: `registerBootProfile({...})` (Zeilen werden auf 40 Zeichen geprüft; `^` zentriert, `{BYTES}` =
+  freier Speicher). Unbekannte IDs fallen auf `neutral` zurück, nie auf geschützte Inhalte.
 
 ### Unterstützte BASIC-V2-Teilmenge
 
-| Kategorie   | Unterstützt                                                                                                                                                                                                                                                                                      |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Programm    | Zeilennummern 0–63999, Zeile löschen durch Nummer allein, `LIST [a][-b]`, `NEW`, `RUN [n]`, `CLR`                                                                                                                                                                                                |
-| Anweisungen | `PRINT`/`?` (`;` `,` `TAB(` `SPC(`), `LET`/Zuweisung, `INPUT ["…";]v[,w]`, `GET` (liefert leer), `IF … THEN n`/Anweisung, `IF … GOTO`, `GOTO`, `GOSUB`/`RETURN`, `ON … GOTO/GOSUB`, `FOR … TO … [STEP]`/`NEXT [v,w]`, `REM`, `END`, `STOP`, `DATA`/`READ`/`RESTORE`, `DIM`, `POKE`, `SYS`        |
-| Funktionen  | `CHR$ ASC LEN MID$ LEFT$ RIGHT$ VAL STR$ INT ABS SGN SQR RND PEEK`; `TI`/`TI$` konstant 0                                                                                                                                                                                                        |
-| Operatoren  | `+ - * / ^`, `= <> < > <= >=`, `AND OR NOT` (wahr = −1)                                                                                                                                                                                                                                          |
-| Variablen   | numerisch, `$`-Strings, `%`-Integer; nur die ersten 2 Zeichen zählen (wie V2); Keywords werden auch ohne Leerzeichen erkannt (`FORI=1TO3`)                                                                                                                                                       |
-| Laufwerk    | `LOAD"$",8` (Directory als Programm, überschreibt Speicher), `LOAD"NAME",8[,1]`, Wildcards `*`/`PRE*`, `SAVE"NAME",8`                                                                                                                                                                            |
-| Fehler      | `?SYNTAX`, `?TYPE MISMATCH`, `?UNDEF'D STATEMENT`, `?NEXT WITHOUT FOR`, `?RETURN WITHOUT GOSUB`, `?OUT OF DATA`, `?DIVISION BY ZERO`, `?ILLEGAL QUANTITY`, `?BAD SUBSCRIPT`, `?FILE NOT FOUND`, `?DEVICE NOT PRESENT`, `?MISSING FILE NAME`, `?ILLEGAL DIRECT`, `?REDO FROM START`, `BREAK IN n` |
+| Kategorie   | Unterstützt                                                                                                                                                                                                                                                                                                                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Programm    | Zeilennummern 0–63999, Zeile löschen durch Nummer allein, `LIST [a][-b]`, `NEW`, `RUN [n]`, `CLR`                                                                                                                                                                                                                                                                                                        |
+| Anweisungen | `PRINT`/`?` (`;` `,` `TAB(` `SPC(`), `LET`/Zuweisung, `INPUT ["…";]v[,w]`, `GET` (liefert leer), `IF … THEN n`/Anweisung, `IF … GOTO`, `GOTO`, `GOSUB`/`RETURN`, `ON … GOTO/GOSUB`, `FOR … TO … [STEP]`/`NEXT [v,w]`, `REM`, `END`, `STOP`, `DATA`/`READ`/`RESTORE`, `DIM`, `POKE`, `SYS`                                                                                                                |
+| Funktionen  | `CHR$ ASC LEN MID$ LEFT$ RIGHT$ VAL STR$ INT ABS SGN SQR RND PEEK SIN COS TAN ATN LOG EXP FRE POS`, `DEF FN`/`FN`; `TI`/`TI$` konstant 0                                                                                                                                                                                                                                                                 |
+| Operatoren  | `+ - * / ^`, `= <> < > <= >=`, `AND OR NOT` (wahr = −1)                                                                                                                                                                                                                                                                                                                                                  |
+| Variablen   | numerisch, `$`-Strings, `%`-Integer; nur die ersten 2 Zeichen zählen (wie V2); Keywords werden auch ohne Leerzeichen erkannt (`FORI=1TO3`)                                                                                                                                                                                                                                                               |
+| Laufwerk    | `LOAD"$",8` (Directory als Programm, überschreibt Speicher), `LOAD"NAME",8[,1]`, Wildcards `*`/`PRE*`, `SAVE"NAME",8`; Datasette: `LOAD["NAME"][,1]`                                                                                                                                                                                                                                                     |
+| Dateien     | `OPEN n,8,sa,"NAME[,S,R\|W]"`, `CLOSE n`, `PRINT#n,…`, `INPUT#n,v[,w]`, `GET#n,v`, Status `ST` (64 = Dateiende); nur SEQ-Dateien auf der 1541; `CLR`/`RUN` schließen alle Dateien                                                                                                                                                                                                                        |
+| Fehler      | `?SYNTAX`, `?TYPE MISMATCH`, `?UNDEF'D STATEMENT`, `?NEXT WITHOUT FOR`, `?RETURN WITHOUT GOSUB`, `?OUT OF DATA`, `?DIVISION BY ZERO`, `?ILLEGAL QUANTITY`, `?BAD SUBSCRIPT`, `?FILE NOT FOUND`, `?DEVICE NOT PRESENT`, `?MISSING FILE NAME`, `?ILLEGAL DIRECT`, `?REDO FROM START`, `BREAK IN n`; Dateien: `?FILE NOT OPEN`, `?FILE OPEN`, `?FILE EXISTS`, `?WRITE PROTECT ON`, `?NOT INPUT/OUTPUT FILE` |
 
-**Bewusst nicht unterstützt:** `OPEN/CLOSE/PRINT#/GET#/INPUT#`, `VERIFY`, `CONT`, `WAIT`, `DEF FN`,
-`SIN/COS/TAN/ATN/LOG/EXP/FRE/POS/USR`, Bildschirmeditor mit Cursorsteuerung, Grafik-/Sprite-Register,
+**Bewusst nicht unterstützt:** relative Dateien, Drucker/Kommandokanal, `CMD`, `VERIFY`, `CONT`, `WAIT`, `USR`, Bildschirmeditor mit Cursorsteuerung, Grafik-/Sprite-Register,
 Maschinensprache. Solche Befehle liefern `?SYNTAX ERROR` plus Hinweis im Adventure-Protokoll. Der Interpreter
 behauptet keine vollständige V2-Kompatibilität.
 
@@ -129,13 +161,21 @@ max. 10 000 Elemente, Strings max. 255 Zeichen. `POKE`/`PEEK` wirken nur auf ein
 
 ### Laden & Starten
 
-- `LOAD"$",8` ersetzt den Programmspeicher durch das Directory (`programIsDirectory`); `LIST` zeigt es, `RUN`
-  darauf ergibt `?SYNTAX ERROR` (wie am Original).
+- `LOAD"$",8` ersetzt den Programmspeicher durch das Directory (`programIsDirectory`) und listet es im Direktmodus
+  sofort auf (Komfort; am Original war dafür `LIST` nötig, das weiterhin funktioniert). `RUN` darauf ergibt
+  `?SYNTAX ERROR` (wie am Original).
 - PRG-Dateien mit `appId` sind „Maschinenprogramme“ mit BASIC-Stub (`10 SYS2064`); `RUN` bzw. `SYS 2061/2064`
   startet die App. `LOAD` innerhalb eines Programms mit `,1` lädt nach, ohne das BASIC-Programm zu ersetzen, und
   startet es mit erhaltenen Variablen neu (klassisches Ladeprogramm-Muster, siehe `LADER`).
-- `SYS 64738` = Reset. Die Datasette ist nicht angeschlossen (`LOAD` ohne Gerät → `PRESS PLAY ON TAPE`, Abbruch).
-- Vereinfachte Befehle: `ZEIGE DATEIEN`/`DIR` → `LOAD"$",8` + `LIST`; `LADE SPIEL`/`STARTE PROGRAMM` →
+- `SYS 64738` (Reset-Einsprung des Originals) und `SYS 16384` = Reset.
+- Datasette (Gerät 1, Standard bei `LOAD` ohne Gerätenummer): zunächst abgestöpselt (`PRESS PLAY ON TAPE`, Abbruch).
+  `LEGE KASSETTE IN DATASETTE` steckt sie an (`flags.datasetteConnected`, Ort `datasette`); dann lädt `LOAD` das
+  Prüfband (`CASSETTE_PROGRAM` in `content/disks.ts`). Ein falscher Name spult das Band erfolglos durch.
+- **Sichtbarkeit:** `videoLines()` liefert nur, was auf dem Bildschirm wirklich zu sehen ist – Zeichen in
+  Hintergrundfarbe und ein abgeschaltetes Bild fehlen (Screenreader, Monitorbeschreibung, Tests). `raw = true` liest
+  den Bildschirmspeicher. Darauf beruht das unsichtbare Schlüsselfragment im LADER (Farbcode in einer REM-Zeile);
+  `afterBasic` erkennt Schlüsselteile erst, wenn sie sichtbar sind.
+- Vereinfachte Befehle: `ZEIGE DATEIEN`/`DIR` → `LOAD"$",8`; `LADE SPIEL`/`STARTE PROGRAMM` →
   `LOAD"*",8` + `RUN`. Die echten Befehle werden sichtbar mitgeschrieben.
 
 ### Apps
@@ -143,12 +183,12 @@ max. 10 000 Elemente, Strings max. 255 Zeichen. `POKE`/`PEEK` wirken nur auf ein
 `AppDef` (`sim/apps/types.ts`): `start`, `key`, optional `line`, `tick`, `inputMode` (`keys`/`line`), `render`. Der
 App-Zustand liegt serialisierbar in `computer.app`; der Bildschirm wird daraus abgeleitet.
 
-| App        | Inhalt                                                                                                                                                                                                               |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `wt07`     | Intro des unveröffentlichten Spiels: Phasen logo → title → credits → hiscore (Schleife, Takt 1,2 s, RETURN = weiterschalten). Die geheime Taste wirkt in der **gesamten** Credits-Phase – keine Reaktionszeit nötig. |
-| `modk`     | Verstecktes Modul: Diskette 2 fehlt → eingeschränkter Betrieb → Wahlhilfe → Mailbox (Nachrichten, System, Abmelden).                                                                                                 |
-| `archive`  | Jans Archiv: Rubriken, Suche, neue Einträge (Daten in `state.archive`).                                                                                                                                              |
-| `intruder` | Demo, drei Teile; Grafik per Canvas in der UI, Inhalte und Untertitel in der Engine.                                                                                                                                 |
+| App        | Inhalt                                                                                                                                                                                                                                    |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wt07`     | Intro des unveröffentlichten Spiels: Phasen logo → title → credits → hiscore (Schleife, Takt 1,2 s, RETURN = weiterschalten). Die geheime Taste wirkt in der **gesamten** Credits-Phase – keine Reaktionszeit nötig.                      |
+| `modk`     | Verstecktes Modul: Diskette 2 fehlt → eingeschränkter Betrieb → Wahlhilfe, Ersatzschlüssel (Menü 3) → Mailbox (Nachrichten, System, Abmelden). Rundschreiben mit Ersatzschlüssel entschlüsselt; `S` speichert die Rohdaten als SEQ-Datei. |
+| `archive`  | Jans Archiv: Rubriken, Suche, neue Einträge (Daten in `state.archive`).                                                                                                                                                                   |
+| `intruder` | Demo, drei Teile; Grafik per Canvas in der UI, Inhalte und Untertitel in der Engine.                                                                                                                                                      |
 
 ## Telefon & Datenleitung
 
@@ -159,12 +199,109 @@ Jans Leitung ist belegt, sobald der Hörer abgenommen ist; die Hausleitung kann 
 Koppler + Verbindungsbefehl im Terminalprogramm. Hörer heraus oder aufgelegt → `NO CARRIER`. Es gibt keinerlei
 echte Netzwerk- oder Telefonzugriffe.
 
+## Mailbox-System
+
+Inhalte in `content/networks.ts` (`MailboxSystem`), Logik in `engine/bbs.ts` (rein, getestet), Bedienung über zwei
+C64-Programme:
+
+| System            | Zugang                    | Programm                                       | Öffnungszeiten |
+| ----------------- | ------------------------- | ---------------------------------------------- | -------------- |
+| geheime Mailbox   | `access: 'module'`        | `MODUL K` (`sim/apps/modk.ts`, Auto-Anmeldung) | immer          |
+| `BIT-SCHUPPEN GT` | `access: 'public'`, Gäste | `TERMINAL` auf der Archivdiskette (`term.ts`)  | 18–24 Uhr      |
+| `DATENKELLER`     | `access: 'public'`, Gäste | `TERMINAL`                                     | 22–6 Uhr       |
+
+- **Öffnungszeiten** (`hours`, auch über Mitternacht): Außerhalb klingelt es ohne Modemton durch.
+- **Benutzerstatus**: `gast` (lesen) → `neu` (nach Anmeldung mit eigenem Handle) → `mitglied` (schreiben, private
+  Post, Downloads). Die Freischaltung durch den Sysop erfolgt nach `validateAfterMinutes` und wird bei der nächsten
+  Anmeldung ausgewertet (Zeitstempel statt Ereignis); dazu kommt die `memberMail` mit ihren Effekten.
+- **Bretter** (`boards`) mit Mindeststatus je Brett und je Nachricht (`minStatus`); Jans Beiträge werden in
+  `telecom.bbs[system].posts` gespeichert.
+- **Private Post**: nur an im System bekannte Handles (Sysop + Autoren). `replies` liefern verzögerte Antworten
+  (`afterMinutes`), die erst ab ihrem Zeitpunkt im Postfach erscheinen.
+- **Downloads**: echte BASIC-Programme, die auf die Diskette im Laufwerk geschrieben werden (Schreibschutz, freie
+  Blöcke und doppelte Namen werden geprüft); Dauer nach 300 Baud (254 Byte/Block, 30 Zeichen/s).
+- **Kosten**: laufen über den normalen Gebührenzähler der Verbindung; `onlineMinutes` zählt mit.
+- Das Modul verbindet sich nur mit der geheimen Mailbox, TERMINAL nicht mit ihr („unbekanntes Protokoll“).
+
+Neue Mailbox: Eintrag in `GAME_CONFIG.mailboxes` (Name, Nummer, Sysop, Zeiten), `MailboxSystem` in `networks.ts`,
+in `MAILBOXES` und `PHONEBOOK` eintragen. Integritäts- und Graph-Prüfungen erfassen Effekte von Nachrichten und
+`memberMail` automatisch.
+
+## Tagesablauf
+
+Jan verlässt den Schreibtisch nicht spielbar (GDD §3.1); Schule, Schlaf, Abendbrot und Clubabend sind **erzählte
+Zeitblöcke**. Kalender und Zeiten stehen in `GAME_CONFIG.calendar`, Geld in `GAME_CONFIG.household`, Ralfs Plan in
+`GAME_CONFIG.ralf.home`.
+
+- **Tägliche Ereignisse** (`daily: 'HH:MM'` in `content/events.ts`) werden beim Feuern für den nächsten Tag neu
+  eingeplant; Varianten entscheiden über Wochentag, Schultag, Datum, Abwesenheit.
+- **Zeitblock** (`absence`-Effekt bzw. `requestAbsence()`): Jan legt auf, `flags.away` wird gesetzt, die Zeit springt
+  bis zum Ende; Ereignisse dazwischen laufen normal (z. B. Post landet auf dem Tisch, Ralf ruft vergeblich an und
+  versucht es später erneut). Danach wird WARTE abgebrochen. Blöcke werden nicht verschachtelt.
+- **Schlafen:** `SCHLAFE` ab 21 Uhr; spätestens 01:30 schläft Jan ein. Geweckt wird 06:45 (Schultag) bzw. 09:30.
+- **Schule** Mo–Fr 07:15–13:30, Sa bis 12:00 (Samstagsunterricht), außer Buß- und Bettag (19.11.). **Abendbrot** 18:50–19:15 (ausgelassen, wenn Jan
+  online ist). **Vater** mahnt 22:30 vor Schultagen.
+- **Ralf** ist nach Wochenplan erreichbar (`ralfWhere()`); sonst nimmt seine Mutter ab und Ralf ruft ~10 Min. nach
+  seiner Heimkehr zurück (`ev_ralf_callback`). Ab 19:30 geht Seidel ans Telefon (bei Verdacht ≥ `noticeable` mit
+  Zögern). Samstag 13:00 (nach der Schule) ruft Ralf von selbst an. Spätere Gespräche: `RALF_LATER` in `content/dialogue.ts`.
+- **Post** Mo–Sa 10:30 (Samstag: Rundbrief des Computerclubs → Fakt `club_evening`). **Clubabend** Do 20.11.:
+  `GEHE ZUM CLUB` zwischen 18:30 und 19:30.
+- **Geld:** Samstag nach der Schule 10 DM Taschengeld; Sonntag beim Abendbrot liest der Vater den Gebührenzähler ab
+  (`costsAtLastReading`): 3 DM frei, den Rest zahlt Jan, fehlendes Geld wird vom nächsten Taschengeld abgezogen.
+- **Entwicklerkonsole:** `zeit 1986-11-17T10:00` springt zu einem Datum; Zeitblöcke laufen dabei mit ab.
+
+## Verdacht und Vertrauen
+
+Die verdeckten Werte `seidelSuspicion`, `ralfTrust`, `networkCredibility` (0–100) werden nie angezeigt (GDD §9.3).
+
+- **Benannte Schwellen** in `GAME_CONFIG.thresholds`, jeweils „ab diesem Wert“. Storydaten fragen nur Namen ab:
+  `{ rel: 'seidelSuspicion', atLeast: 'dangerous' }`, `{ rel: 'ralfTrust', below: 'trusting' }`. Ein Test prüft,
+  dass jeder verwendete Name existiert.
+- **Eine Stelle für Änderungen:** `changeRelationship()` in `engine/pressure.ts` (Effekt gleichen Namens); jede
+  Änderung samt Grund und Stufenwechsel steht im Debug-Log.
+- **Ankündigung vor dem Ende** (GDD §10.3): `GAME_CONFIG.terminal` deckelt einen Wert unter seiner Endschwelle, bis
+  das Warn-Flag gesetzt ist. Zwischen Warnung und Spielende liegt also immer mindestens eine weitere Handlung.
+- **Symptome** sind normale Trigger-Ereignisse in `content/events.ts` und Nachrichten mit `when` in
+  `content/networks.ts`:
+
+| Stufe Seidel | Wert | Symptom                                                                                   |
+| ------------ | ---- | ----------------------------------------------------------------------------------------- |
+| `noticeable` | 30   | Systemnachricht „PROTOKOLLIERUNG“ im Netz; online ein kurzer Moment des Stockens          |
+| `dangerous`  | 70   | Gegenstelle trennt, Testkennung 180 Min. gesperrt, ausdrücklicher Gedanke; anonymer Anruf |
+| `critical`   | 90   | Nachricht „LETZTE WARNUNG“, Gedanke + Systemhinweis, Warn-Flag `seidelFinalWarning`       |
+| `discovered` | 100  | Spielende `end_discovered` (`content/endings.ts`)                                         |
+
+- **Risiko** (`GAME_CONFIG.risk`): jede Anmeldung mit der Testkennung +3, je 5 Online-Minuten +1, Sendeversuch +2 (einmal
+  pro Verbindung), gelesene Nachrichten laut Content. Der normale Lösungsweg endet bei etwa 7.
+- **Kennungssperren** (`telecom.locks`, Effekt `lockAccount`): trennt eine laufende Verbindung; Modul und TERMINAL
+  lehnen die Anmeldung bis zum Ablauf ab.
+- **Anonymer Anruf**: klingelt erst, wenn die Leitung frei ist (sonst alle 20 Min. neuer Versuch); nimmt Jan nicht ab,
+  geht nach 3 Min. die Mutter ran.
+- **Spielende**: Flag `gameOver` = Ende-ID; die Engine nimmt danach nur noch Meta-Befehle (LADEN …) an. Die UI zeigt
+  ein Fenster mit „Letzten Schritt zurücknehmen“. Ein beendeter Spielstand wird nie automatisch gespeichert, der
+  Autosave bleibt also auf dem Stand vor der letzten Handlung.
+
+## Schlüssel-Strang
+
+Konfiguration in `GAME_CONFIG.keyStrand`, Verfahren in `src/engine/cipher.ts` (zyklische Verschiebung je
+Schlüsselziffer, „X“ als Worttrenner – bewusst in BASIC nachrechenbar). Das Chiffrat des Rundschreibens wird aus
+dem Klartext berechnet, nie von Hand gepflegt.
+
+| Fragment | Fundort                                                      | Erkennung                                  |
+| -------- | ------------------------------------------------------------ | ------------------------------------------ |
+| 1/3      | LADER Zeile 70, `REM` + Farbcode Blau (`content/disks.ts`)   | sichtbar auf dem Bildschirm (`afterBasic`) |
+| 2/3      | Nachricht `msg_key_leak` ab `partTwoFrom` (`when.timeAfter`) | Effekte der Nachricht                      |
+| 3/3      | Kassette (`ev_ralf_cassette`), Programm `PRUEFBAND3`         | sichtbar auf dem Bildschirm nach `RUN`     |
+
+`ev_key_first_part`/`ev_key_complete` (Trigger auf die Fakten) schalten P08/P09. Das Modul nimmt den
+Ersatzschlüssel ungeprüft an; erst `readWithKey` beim Lesen entscheidet (Klartext → `k01_decrypted`, P09 gelöst).
+
 ## Speicherformat
 
 ```json
 {
   "format": "rewind1986-save",
-  "schemaVersion": 1,
+  "schemaVersion": 6,
   "savedAt": "2026-10-31T12:00:00.000Z",
   "label": "Slot 1",
   "gameClock": "1986-11-14T16:42",
@@ -172,10 +309,15 @@ echte Netzwerk- oder Telefonzugriffe.
 }
 ```
 
+- Version 2 speichert den Bildschirm als Bildschirm-/Farbspeicher; Version-1-Stände (Textzeilen) werden beim Laden
+  migriert. Version 3 ergänzt Mailbox-Konten, Version 4 Kennungssperren und Risiko-Minuten, Version 5 den
+  Tagesablauf (tägliche Ereignisse, Zählerstand, Clubbrief), Version 6 den Schlüssel-Strang (LADER mit versteckter
+  Zeile, Kassette, Ort `datasette`, Ralfs Besuch; offene BASIC-Dateien in `computer.run.files`).
 - `parseSave()` prüft Größe (≤ 2 MB), JSON, Format und `schemaVersion` (neuere werden abgelehnt), führt Migrationen
   (`MIGRATIONS[n]` → n+1) aus und validiert den kompletten Zustand mit zod (Wertebereiche, Längen, Enums).
 - Slots in `localStorage`: `rewind1986.save.auto|1|2|3`; Einstellungen in `rewind1986.settings`.
-- Autosave nach jedem Befehl (außer Animationstakt), bei Meilenstein-Effekten und bei `pagehide`.
+- Autosave nach jedem Befehl (außer Animationstakt), bei Meilenstein-Effekten und bei `pagehide` – nie nach einem
+  Spielende.
 - Virtuelle Disketten sind Spielobjekte in `state.disks` – getrennt von der Browser-Speicherdatei.
 
 ## UI
@@ -188,17 +330,45 @@ echte Netzwerk- oder Telefonzugriffe.
 - Barrierefreiheit: sichtbarer Fokus, Tastaturbedienung, Untertitel für Töne, Laufschrift als Text, reduzierte
   Bewegung (keine Animationen, statische Demo-Frames), Textgröße, hoher Kontrast.
 
+## Entwicklerkonsole (`?dev=1`)
+
+`engine/dev.ts` (rein, getestet) + `ui/DevPanel.tsx` (nicht modale Seitenleiste). Aktiv mit `?dev=1` für die
+Browser-Sitzung, `?dev=0` schaltet ab. Ohne den Parameter wird nichts davon angezeigt.
+
+- **Befehle** (Command `{ type: 'dev', text }`): `fakt <id>`/`fakt -<id>`, `flag <id> <wert>`/`flag -<id>`,
+  `bez <id> <0–100>`, `rätsel <id> <status>` (auch rückwärts), `item <id> <ort>` (höchstens eine Diskette im
+  Laufwerk), `zeit +<min>`/`zeit <HH:MM>` (nur vorwärts, fällige Ereignisse feuern regulär), `ereignis <id> [+<min>]`,
+  `geld <DM>`. Ungültige Eingaben ändern nichts und schlagen ähnliche IDs vor. Jeder Eingriff steht als `dev …` im
+  `debugLog` – manipulierte Spielstände bleiben erkennbar.
+- **Meilensteine** (`MILESTONES`): entstehen durch Abspielen echter Spielbefehle ab Spielbeginn (deterministisch), nie
+  als handgebauter Zustand. Ein Test prüft, dass jeder Meilenstein seinen Zustand erreicht – bricht eine
+  Content-Änderung den Lösungsweg, schlägt er fehl.
+- **Content-Analyse**: `contentGraph()` (Ereignis/Dialog/Mailbox → Folgeereignis, Fakt, Rätsel, Flag),
+  `eventTable()` (Status, Auslöser-Bedingung jetzt erfüllt?), `puzzleTable()` (aktive Hilfestufe),
+  `contentWarnings()` (Ereignisse ohne Zeitpunkt/Auslöser/Einplanung, nie gesetzte Rätsel). Im Code ausgelöste
+  Ereignisse/Rätsel stehen in `CODE_TRIGGERS`; ein Test gleicht die Liste mit dem Quelltext ab.
+
 ## Tests
 
-| Datei                      | Abdeckung                                                                                                                          |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `src/tests/parser.test.ts` | Normalisierung, Partikelverben, Synonyme, Pronomen, Rückfragen, Tippfehler, Dialogthemen, historische Schranken (GDD §19.1, §19.3) |
-| `src/tests/time.test.ts`   | Uhr, chronologische Ereignisse bei WARTE 120, Unterbrechung, Idempotenz, Determinismus (§19.5)                                     |
-| `src/tests/c64.test.ts`    | BASIC-Teilmenge, Fehler, Schrittlimit, INPUT, Directory/Überschreiben, LOAD/SAVE, vereinfachte Befehle (§19.2)                     |
-| `src/tests/save.test.ts`   | Roundtrip, Fortsetzen nach Import, Ablehnung defekter/manipulierter Dateien (§19.5)                                                |
-| `src/tests/prolog.test.ts` | Prolog auf Engine-Ebene, Intro-Fairness, Mailbox ohne Diskette 2, Leitungsereignisse, Demo, Archiv, Content-Integrität (§19.4)     |
-| `e2e/prolog.spec.ts`       | Kompletter Prolog über die echte UI bis „Fortsetzung folgt“; Demo (Desktop Chrome + Pixel 7)                                       |
-| `e2e/save.spec.ts`         | Reload/Fortsetzen, Slot-Speichern, Export/Import, Fehlerfall, LADEN per Parser; Eingabetrennung, kein horizontales Scrollen        |
+| Datei                         | Abdeckung                                                                                                                                                                                                                         |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/tests/parser.test.ts`    | Normalisierung, Partikelverben, Synonyme, Pronomen, Rückfragen, Tippfehler, Dialogthemen, historische Schranken (GDD §19.1, §19.3)                                                                                                |
+| `src/tests/time.test.ts`      | Uhr, chronologische Ereignisse bei WARTE 120, Unterbrechung, Idempotenz, Determinismus (§19.5)                                                                                                                                    |
+| `src/tests/c64.test.ts`       | BASIC-Teilmenge, Fehler, Schrittlimit, INPUT, Directory/Überschreiben, LOAD/SAVE, vereinfachte Befehle (§19.2)                                                                                                                    |
+| `src/tests/video.test.ts`     | Zeichensatz, PETSCII, Steuercodes, logische Zeilen, Scrollen, Palette, Renderer, Startbild-Profile, POKE/PEEK, FRE, Mathe, DEF FN, Migration, keine ROM-Dateien                                                                   |
+| `src/tests/save.test.ts`      | Roundtrip, Fortsetzen nach Import, Ablehnung defekter/manipulierter Dateien (§19.5)                                                                                                                                               |
+| `src/tests/prolog.test.ts`    | Prolog auf Engine-Ebene, Intro-Fairness, Mailbox ohne Diskette 2, Leitungsereignisse, Demo, Archiv, Content-Integrität (§19.4)                                                                                                    |
+| `src/tests/bbs.test.ts`       | Öffnungszeiten, Handles, Gast/Anmeldung/Freischaltung, Bretter, Post mit Antwort, Download + RUN, Schreibschutz, NO CARRIER, zwei Systeme, Modul/TERMINAL-Trennung, Migration v2→v3                                               |
+| `src/tests/pressure.test.ts`  | Benannte Schwellen, Deckel bis zur Warnung, Risiko durch Anmeldung/Online-Zeit/Sendeversuch, alle Verdachtsstufen im Spiel, Sperre, anonymer Anruf, Spielende, Migration v3→v4                                                    |
+| `src/tests/routine.test.ts`   | Kalender, Weckzeiten, Ralfs Wochenplan, Schlafen/Einschlafen, Samstag (Taschengeld, Post, Ralf ruft an, Risiko beim Erzählen), Rückruf, Schultag, Abendbrot, Gebührenzähler mit Schulden, Clubabend, Meilenstein, Migration v4→v5 |
+| `src/tests/keystrand.test.ts` | Chiffre, unsichtbare REM-Zeile + POKE 53281, Lesertipps, kompletter Schlüsselweg (Netzmeldung, Kassette, Datasette, Ersatzschlüssel), Expertenweg mit eigenem BASIC, SEQ-Dateien, Migration v5→v6                                 |
+| `src/tests/dev.test.ts`       | Entwicklerbefehle, Zeitsprung, Meilensteine (Zustand, Determinismus, speicherbar), Content-Graph, `CODE_TRIGGERS` gegen Quelltext, keine toten Enden                                                                              |
+| `e2e/bbs.spec.ts`             | TERMINAL über die echte UI: Verbindung, Anmeldung, Brett lesen, Statusleiste                                                                                                                                                      |
+| `e2e/keystrand.spec.ts`       | Unsichtbare REM-Zeile über die echte UI: LIST zeigt sie nicht, nach `POKE 53281,0` erscheint sie                                                                                                                                  |
+| `e2e/gameover.spec.ts`        | Spielende-Fenster, gesperrte Eingabe, „Letzten Schritt zurücknehmen“ lädt den Stand davor                                                                                                                                         |
+| `e2e/dev.spec.ts`             | Konsole nur mit `?dev=1`, Befehle, Meilenstein laden, Graph/Ereignisse, Abschalten mit `?dev=0`                                                                                                                                   |
+| `e2e/prolog.spec.ts`          | Kompletter Prolog über die echte UI bis „Fortsetzung folgt“; Demo (Desktop Chrome + Pixel 7)                                                                                                                                      |
+| `e2e/save.spec.ts`            | Reload/Fortsetzen, Slot-Speichern, Export/Import, Fehlerfall, LADEN per Parser; Eingabetrennung, kein horizontales Scrollen                                                                                                       |
 
 ## Inhalte erweitern
 

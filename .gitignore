@@ -3,3 +3,6 @@ dist
 test-results
 playwright-report
 *.tsbuildinfo
+
+# graphify: lokal erzeugter Code-Graph (graphify update .)
+graphify-out

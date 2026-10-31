@@ -63,6 +63,7 @@ export const VERBS: VerbEntry[] = [
   L('leg lege legen steck stecke schieb schiebe tu tue pack packe', 'ein', 'insert'),
   L('leg lege steck stecke schieb schiebe tu tue', 'rein', 'insert'),
   L('leg lege steck stecke schieb schiebe tu tue', 'hinein', 'insert'),
+  L('steck stecke schliess schliesse', 'an', 'insert'),
   L('nimm nehme nehm hol hole zieh ziehe', 'heraus', 'eject'),
   L('nimm nehme nehm hol hole zieh ziehe', 'raus', 'eject'),
   L('wirf wirft', 'aus', 'eject'),

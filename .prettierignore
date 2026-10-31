@@ -3,3 +3,8 @@ node_modules
 docs/00-raw
 test-results
 playwright-report
+
+# von graphify erzeugt
+graphify-out
+.claude
+CLAUDE.md

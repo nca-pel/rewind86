@@ -1,3 +1,5 @@
+import { stringToPetscii } from '../c64/petscii';
+import { newline, printBytes } from '../c64/video';
 import type { ScreenState } from '../engine/types';
 
 export const COLS = 40;
@@ -11,23 +13,18 @@ export function toPetsciiText(s: string): string {
     .replace(/Ö/g, 'OE')
     .replace(/Ü/g, 'UE')
     .replace(/ß/g, 'SS')
-    .replace(/[^\x20-\x7E←]/g, '?');
+    .replace(/[^\x20-\x7E←↑£π]/g, '?');
 }
 
-function trim(screen: ScreenState): void {
-  if (screen.lines.length > ROWS) screen.lines.splice(0, screen.lines.length - ROWS);
+/** Text an der Cursorposition ausgeben (ohne Zeilenende). */
+export function printText(screen: ScreenState, text: string): void {
+  printBytes(screen, stringToPetscii(toPetsciiText(text)));
 }
 
-/** Eine logische Zeile ausgeben – wird bei 40 Zeichen umbrochen. */
+/** Eine logische Zeile ausgeben und mit RETURN abschließen. */
 export function printLine(screen: ScreenState, text: string): void {
-  const t = toPetsciiText(text);
-  if (t.length === 0) screen.lines.push('');
-  for (let i = 0; i < t.length; i += COLS) screen.lines.push(t.slice(i, i + COLS));
-  trim(screen);
-}
-
-export function clearScreen(screen: ScreenState): void {
-  screen.lines = [];
+  printText(screen, text);
+  newline(screen);
 }
 
 export function centered(text: string): string {

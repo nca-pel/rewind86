@@ -44,7 +44,7 @@ export const PUZZLES: PuzzleDef[] = [
         hints: [
           'Die Diskette muss irgendwie in den Computer.',
           'Leg die Diskette ins Laufwerk und schalte den C64 ein. Dann schau dir am C64 an, was drauf ist.',
-          'LEGE DISKETTE INS LAUFWERK, SCHALTE COMPUTER EIN. Am C64: LOAD"$",8 und LIST zeigen das Verzeichnis, LOAD"*",8 und RUN starten das erste Programm. (Kurz: ZEIGE DATEIEN / LADE SPIEL.)',
+          'LEGE DISKETTE INS LAUFWERK, SCHALTE COMPUTER EIN. Am C64: LOAD"$",8 zeigt das Verzeichnis, LOAD"*",8 und RUN starten das erste Programm. (Kurz: ZEIGE DATEIEN / LADE SPIEL.)',
         ],
       },
     ],
@@ -154,9 +154,73 @@ export const PUZZLES: PuzzleDef[] = [
     stages: [
       {
         hints: [
-          'Für heute hast du herausgefunden, was ohne Diskette 2 möglich ist.',
-          'Schreib dir deine Gedanken in den Notizblock – oder pflege dein C64-Archiv.',
-          'Der spielbare Ausschnitt endet hier. (TODO-STORY: Fortsetzung, GDD Akt 2.)',
+          'Diskette 2 hast du nicht. Aber vielleicht verrät das Netz mit der Zeit mehr darüber.',
+          'Das Netz lebt: Neue Meldungen erscheinen erst nach und nach. Schau in ein paar Tagen wieder hinein – vorsichtig, jede Anmeldung fällt auf.',
+          'Ab Montag, 17.11., steht im Netz eine neue Systemmeldung. Wähle dich mit dem Modul ein und lies die Nachrichten.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'P08',
+    title: 'Schlüssel zusammensetzen',
+    strand: 'Schlüssel',
+    order: 8,
+    historicalStatus: 'fictional',
+    stages: [
+      {
+        when: { notFact: 'key_part_1' },
+        hints: [
+          '»Teil 1: wie üblich auf der Arbeitskopie (Sichtschutz).« Auf Ralfs Diskette gibt es nur wenige Dateien.',
+          'Im LADER steht eine Zeile, die leer aussieht. Text kann auch da sein, wenn man ihn nicht sieht – denk an den Bildschirmrand in INTRUDER, oder lies die LESERTIPPS in der Zeitschrift.',
+          'Lade den LADER (LOAD"LADER",8) und ändere vor dem LIST die Hintergrundfarbe: POKE 53281,0 und dann LIST.',
+        ],
+      },
+      {
+        when: { notFact: 'key_part_2' },
+        hints: [
+          'Ein weiterer Teil kommt vielleicht aus dem Netz selbst.',
+          'Schau ab Montag, 17.11., wieder in die Nachrichten des geheimen Netzes.',
+          'Wähle dich mit dem Modul ein (Menüpunkt 1) und lies die Systemmeldung »SCHLUESSELWECHSEL«.',
+        ],
+      },
+      {
+        when: { notFact: 'cassette' },
+        hints: [
+          '»Teil 3: Prüfband, geht per Boten.« Ein Band – wer kommt an Seidels Sachen heran?',
+          'Ralf wohnt bei Seidel. Halte die Freundschaft warm – vielleicht findet er etwas.',
+          'Am Buß- und Bettag (Mi., 19.11.) bringt Ralf nachmittags eine Kassette vorbei. Warte bis dahin (oder SCHLAFE).',
+        ],
+      },
+      {
+        when: { notFlag: 'datasetteConnected' },
+        hints: [
+          'Eine Datenkassette braucht das passende Gerät.',
+          'Deine alte Datasette steht abgestöpselt hinter dem Monitor.',
+          'LEGE KASSETTE IN DATASETTE – Jan schließt sie dabei gleich an. Dann am C64: LOAD und RUN.',
+        ],
+      },
+      {
+        hints: [
+          'Die Kassette steckt in der Datasette. Jetzt muss der C64 sie lesen.',
+          'Gerät 1 ist die Datasette – und der Standard bei LOAD ohne Gerätenummer.',
+          'Am C64: LOAD (oder LOAD"PRUEFBAND3",1), danach RUN. Wenn du die Kassette noch nicht eingelegt hast: LEGE KASSETTE IN DATASETTE.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'P09',
+    title: 'Rundschreiben entschlüsseln',
+    strand: 'Schlüssel',
+    order: 9,
+    historicalStatus: 'fictional',
+    stages: [
+      {
+        hints: [
+          'Du hast zwölf Ziffern. Das Modul kennt einen Ersatz, wenn Diskette 2 fehlt.',
+          'Im Menü des Moduls gibt es »Ersatzschlüssel eingeben«. Danach das Rundschreiben noch einmal lesen.',
+          'Modul: 3 drücken, die drei Teile in der Reihenfolge 1-2-3 eintippen, RETURN. Dann einwählen und das Rundschreiben von K-01 lesen. (Profis: Im Rundschreiben S = Rohdaten auf eine beschreibbare Diskette speichern und selbst in BASIC entschlüsseln.)',
         ],
       },
     ],

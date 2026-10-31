@@ -1,4 +1,12 @@
-import type { AudioCueId, GameState, LogEntry, UiEffect } from './types';
+import type { AbsenceKind, AudioCueId, GameState, LogEntry, UiEffect } from './types';
+
+export interface PendingAbsence {
+  kind: AbsenceKind;
+  /** Ende in Spielminuten */
+  untilMin: number;
+  text: string;
+  backText?: string;
+}
 
 const MAX_HISTORY = 400;
 const MAX_DEBUG = 200;
@@ -10,6 +18,10 @@ export class Ctx {
   readonly audio: AudioCueId[] = [];
   /** Wird von unterbrechenden Ereignissen gesetzt, um WARTE abzubrechen. */
   interrupted = false;
+  /** Angeforderter Zeitblock (Schule, Schlaf …), wird von advanceTime() abgearbeitet. */
+  absence: PendingAbsence | null = null;
+  /** Läuft gerade ein Zeitblock? (keine verschachtelten Blöcke) */
+  inAbsence = false;
 
   constructor(public state: GameState) {}
 

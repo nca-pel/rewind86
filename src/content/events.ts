@@ -7,6 +7,8 @@ export interface EventDef {
   at?: string;
   /** Bedingungsereignis: wird nach jedem Schritt geprüft und feuert einmal. */
   trigger?: Condition;
+  /** Täglich zu dieser Uhrzeit (HH:MM); wird nach dem Feuern für den nächsten Tag neu eingeplant. */
+  daily?: string;
   /** Darf mehrfach feuern (Alltags-/Erinnerungsereignis). Sonst strikt einmalig. */
   repeatable?: boolean;
   /** Unterbricht WARTE. */
@@ -17,6 +19,61 @@ export interface EventDef {
 
 const START = GAME_CONFIG.startDate;
 const day = START.slice(0, 10);
+const CAL = GAME_CONFIG.calendar;
+/** Samstag, der Tag nach Spielbeginn */
+const DAY2 = '1986-11-15';
+
+/** HH:MM plus Minuten (innerhalb eines Tages) */
+function addHm(t: string, minutes: number): string {
+  const [h, m] = t.split(':').map(Number);
+  const total = h * 60 + m + minutes;
+  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+const DINNER_END = addHm(CAL.dinner, CAL.dinnerMinutes);
+const SCHOOL_JAN = `im ${GAME_CONFIG.schools.jan}`;
+const SCHOOL_BACK =
+  'Kurz nach halb zwei bist du wieder zu Hause. Nach dem Mittagessen sitzt du endlich wieder an deinem Schreibtisch.';
+
+/** Ralf ruft an (späteres Telefonat); der Grund bestimmt die Begrüßung beim Abheben. */
+function ralfRings(reason: 'saturday' | 'callback'): GameEffect[] {
+  return [
+    { type: 'setFlag', id: 'ralfCallReason', value: reason },
+    { type: 'telecom', op: 'ring', who: 'ralf' },
+    { type: 'audio', cue: 'phone_ring' },
+    { type: 'say', kind: 'caption', text: '[Das Telefon klingelt.]' },
+    { type: 'say', text: 'Das Telefon auf deinem Schreibtisch klingelt.' },
+    { type: 'scheduleEvent', id: 'ev_ring_reminder', inMinutes: 4 },
+    { type: 'scheduleEvent', id: 'ev_ralf_ring_end', inMinutes: 9 },
+  ];
+}
+
+/** Ralfs Kassette (Schlüsselteil 3): Klingeln an der Haustür */
+function cassetteArrives(): GameEffect[] {
+  return [
+    { type: 'audio', cue: 'doorbell' },
+    { type: 'say', kind: 'caption', text: '[Es klingelt an der Haustür.]' },
+  ];
+}
+
+function ralfAtDoor(line: string): GameEffect[] {
+  return [
+    {
+      type: 'say',
+      text: 'Schritte auf der Treppe, dann steht Ralf in der Tür, die Jacke noch an. Er sieht sich um, als könnte jemand mithören.',
+    },
+    { type: 'say', kind: 'dialog', speaker: 'RALF', text: line },
+    { type: 'say', text: 'Er drückt dir eine Kassette in die Hand.' },
+  ];
+}
+
+function cassetteGiven(): GameEffect[] {
+  return [
+    { type: 'moveItem', id: 'cassette', to: 'inventory' },
+    { type: 'discoverFact', id: 'cassette' },
+    { type: 'setFlag', id: 'cassetteDelivered', value: true },
+    { type: 'ui', effect: { type: 'autosave', reason: 'Kassette erhalten' } },
+  ];
+}
 
 export const EVENTS: EventDef[] = [
   {
@@ -42,7 +99,7 @@ export const EVENTS: EventDef[] = [
     interrupts: true,
     variants: [
       {
-        when: { ringing: true },
+        when: { all: [{ ringing: true }, { notFlag: 'away' }] },
         effects: [
           { type: 'audio', cue: 'phone_ring' },
           { type: 'say', kind: 'caption', text: '[Das Telefon klingelt weiter.]' },
@@ -193,7 +250,7 @@ export const EVENTS: EventDef[] = [
           {
             type: 'say',
             kind: 'system',
-            text: '— Ende des spielbaren Ausschnitts. Fortsetzung folgt. —\nDu kannst weiterspielen: Notizen ergänzen, die Demo »1001« ansehen, BASIC ausprobieren oder dein Archiv pflegen.',
+            text: '— Ende des Prologs. Fortsetzung folgt … —\nDie nächsten Tage laufen weiter: Schule, Ralf, Mailboxen, BASIC. Behalte das Netz im Auge – vorsichtig. Was auf Diskette 2 steht, findet sich vielleicht auch auf anderem Weg.',
           },
           { type: 'setFlag', id: 'sliceEnded', value: true },
           { type: 'puzzle', id: 'P07', status: 'discovered' },
@@ -201,6 +258,416 @@ export const EVENTS: EventDef[] = [
           { type: 'ui', effect: { type: 'autosave', reason: 'Ende des Ausschnitts' } },
         ],
       },
+    ],
+  },
+
+  // ── Seidels Verdacht: erzählerische Symptome an benannten Schwellen (GDD §9.3/§10.3) ──────────
+  // Werte steigen durch riskantes Verhalten im geheimen Netz (GAME_CONFIG.risk). Die Stufen
+  // bauen aufeinander auf; das Spielende ist erst nach der letzten Warnung erreichbar.
+  {
+    id: 'ev_susp_noticeable',
+    trigger: { rel: 'seidelSuspicion', atLeast: 'noticeable' },
+    variants: [
+      {
+        when: { online: true },
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Hat die Verbindung eben kurz gestockt? Für einen Moment stand der Cursor still, als würde am anderen Ende jemand mitlesen.',
+          },
+        ],
+      },
+      { effects: [] },
+    ],
+  },
+  {
+    id: 'ev_susp_dangerous',
+    trigger: { rel: 'seidelSuspicion', atLeast: 'dangerous' },
+    variants: [
+      {
+        effects: [
+          { type: 'lockAccount', system: 'secret', minutes: GAME_CONFIG.risk.lockMinutes },
+          { type: 'discoverFact', id: 'account_locked' },
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Gesperrt. Das ist kein Zufall – irgendwer hat gemerkt, dass ein Testzugang benutzt wird, der nie benutzt werden sollte. Wenn du so weitermachst, findet er heraus, wer dahintersteckt.',
+          },
+          { type: 'scheduleEvent', id: 'ev_anon_call', inMinutes: 45 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_anon_call',
+    repeatable: true,
+    interrupts: true,
+    variants: [
+      // Solange Jan oder jemand anderes die Leitung belegt, versucht es der Anrufer später noch einmal.
+      { when: { flag: 'anonCallDone' }, effects: [] },
+      {
+        when: { any: [{ lineBusy: true }, { ringing: true }] },
+        effects: [{ type: 'scheduleEvent', id: 'ev_anon_call', inMinutes: 20 }],
+      },
+      {
+        effects: [
+          { type: 'telecom', op: 'ring', who: 'anon' },
+          { type: 'audio', cue: 'phone_ring' },
+          { type: 'say', kind: 'caption', text: '[Das Telefon klingelt.]' },
+          { type: 'say', text: 'Das Telefon auf deinem Schreibtisch klingelt.' },
+          { type: 'scheduleEvent', id: 'ev_anon_call_end', inMinutes: 3 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_anon_call_end',
+    variants: [
+      {
+        when: { ringing: true },
+        effects: [
+          { type: 'telecom', op: 'stopRinging' },
+          { type: 'setFlag', id: 'anonCallDone', value: true },
+          {
+            type: 'say',
+            text: 'Unten nimmt deine Mutter ab. »Keller? … Hallo?« Eine Pause. »Aufgelegt. Komisch.«',
+          },
+        ],
+      },
+      { effects: [] },
+    ],
+  },
+  {
+    id: 'ev_susp_critical',
+    trigger: { rel: 'seidelSuspicion', atLeast: 'critical' },
+    variants: [
+      {
+        effects: [
+          { type: 'setFlag', id: 'seidelFinalWarning', value: true },
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Dir wird kalt. Wer auch immer hinter diesem Netz steckt, ist dir dicht auf den Fersen. Noch ein Ausflug mit dieser Kennung – und er weiß, wer du bist.',
+          },
+          {
+            type: 'say',
+            kind: 'system',
+            text: '(Warnung: Weitere riskante Zugriffe auf das geheime Netz beenden das Spiel. Jetzt wäre ein guter Moment zum Speichern.)',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_susp_discovered',
+    trigger: {
+      all: [{ rel: 'seidelSuspicion', atLeast: 'discovered' }, { flag: 'seidelFinalWarning' }],
+    },
+    variants: [{ effects: [{ type: 'gameOver', ending: 'end_discovered' }] }],
+  },
+
+  // ── Tagesablauf (GDD §10.2): erzählte Zeitblöcke und Alltagsereignisse ───────────────────────────
+  {
+    id: 'ev_school',
+    daily: CAL.schoolFrom,
+    variants: [
+      {
+        when: { all: [{ schoolDay: true }, { notFlag: 'away' }, { weekday: 'Samstag' }] },
+        effects: [
+          {
+            type: 'absence',
+            kind: 'school',
+            until: CAL.schoolUntilSaturday,
+            text: 'Samstag – und trotzdem Schule. Nur vier Stunden, aber die ziehen sich wie Kaugummi. Alle denken schon ans Wochenende.',
+            backText: 'Mittags bist du wieder zu Hause. Endlich Wochenende – zumindest der Rest davon.',
+          },
+        ],
+      },
+      {
+        when: { all: [{ schoolDay: true }, { notFlag: 'away' }, { weekday: 'Montag' }] },
+        effects: [
+          {
+            type: 'absence',
+            kind: 'school',
+            until: CAL.schoolUntil,
+            text: `Montag. Ab ins ${GAME_CONFIG.schools.jan.split(' ')[0]}. Erste Stunde Mathe, dann Deutsch, dann zwei Stunden Englisch, in denen du kein Wort mitbekommst – in Gedanken sitzt du die ganze Zeit vor deinem Monitor.`,
+            backText: SCHOOL_BACK,
+          },
+        ],
+      },
+      {
+        when: { all: [{ schoolDay: true }, { notFlag: 'away' }] },
+        effects: [
+          {
+            type: 'absence',
+            kind: 'school',
+            until: CAL.schoolUntil,
+            text: `Schule. Sechs Stunden ${SCHOOL_JAN} – Kreidestaub, Overheadprojektor, Pausenhof. In Gedanken bist du die ganze Zeit an deinem Schreibtisch.`,
+            backText: SCHOOL_BACK,
+          },
+        ],
+      },
+      { effects: [] },
+    ],
+  },
+  {
+    id: 'ev_dinner',
+    daily: CAL.dinner,
+    variants: [
+      { when: { flag: 'away' }, effects: [] },
+      {
+        when: { online: true },
+        effects: [
+          { type: 'say', kind: 'dialog', speaker: 'MUTTER', text: '(von unten) »Jan! Abendbrot!«' },
+          {
+            type: 'say',
+            text: 'Du rufst »Gleich!« – und bleibst sitzen. Mitten in einer Verbindung legt man nicht einfach auf.',
+          },
+          { type: 'setFlag', id: 'missedDinner', value: true },
+        ],
+      },
+      {
+        effects: [
+          {
+            type: 'absence',
+            kind: 'meal',
+            until: DINNER_END,
+            text: 'Deine Mutter ruft zum Abendbrot. Unten gibt es Schnittchen und Tee, im Fernsehen laufen die Nachrichten, und dein Vater kommentiert den Wetterbericht.',
+            backText: 'Satt und ein bisschen ungeduldig gehst du wieder nach oben an deinen Schreibtisch.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_meter',
+    daily: addHm(CAL.dinner, 10),
+    variants: [
+      { when: { weekday: GAME_CONFIG.household.meterReadingWeekday }, effects: [{ type: 'meterReading' }] },
+      { effects: [] },
+    ],
+  },
+  {
+    id: 'ev_bedtime',
+    daily: CAL.bedtimeWarning,
+    variants: [
+      {
+        when: { all: [{ schoolTomorrow: true }, { notFlag: 'away' }, { lineBusy: true }] },
+        effects: [
+          { type: 'say', text: 'Es klopft. Dein Vater steckt den Kopf zur Tür herein.' },
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'VATER',
+            text: '»Jan, es ist halb elf. Morgen ist Schule. Leg das Telefon weg und mach das Licht aus.«',
+          },
+        ],
+      },
+      {
+        when: { all: [{ schoolTomorrow: true }, { notFlag: 'away' }] },
+        effects: [
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'VATER',
+            text: '(durch die Tür) »Licht aus, Jan! Morgen ist Schule.«',
+          },
+        ],
+      },
+      { effects: [] },
+    ],
+  },
+  {
+    id: 'ev_forced_sleep',
+    daily: CAL.forcedSleep,
+    variants: [{ when: { flag: 'away' }, effects: [] }, { effects: [{ type: 'sleep', forced: true }] }],
+  },
+  {
+    id: 'ev_pocket_money',
+    daily: GAME_CONFIG.household.pocketMoneyAt,
+    variants: [{ when: { weekday: 'Samstag' }, effects: [{ type: 'pocketMoney' }] }, { effects: [] }],
+  },
+  {
+    id: 'ev_mail',
+    daily: CAL.mail,
+    variants: [
+      {
+        when: { all: [{ date: '1986-11-15' }, { notFlag: 'away' }] },
+        effects: [
+          { type: 'moveItem', id: 'club_letter', to: 'desk' },
+          {
+            type: 'say',
+            text: 'Deine Mutter kommt herein und legt dir einen Umschlag auf den Schreibtisch.',
+          },
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'MUTTER',
+            text: '»Post für dich. Vom Computerclub, glaub ich.«',
+          },
+        ],
+      },
+      {
+        when: { date: '1986-11-15' },
+        effects: [
+          { type: 'moveItem', id: 'club_letter', to: 'desk' },
+          { type: 'say', text: '(Währenddessen legt deine Mutter einen Brief auf deinen Schreibtisch.)' },
+        ],
+      },
+      // TODO-STORY: Briefe und Pakete für Akt 2 (Ereignisse je Datum ergänzen)
+      { effects: [] },
+    ],
+  },
+
+  // ── Ralf nach Wochenplan ───────────────────────────────────────────────────────────────────────
+  {
+    id: 'ev_ralf_saturday',
+    at: `${DAY2}T13:00`,
+    repeatable: true,
+    interrupts: true,
+    variants: [
+      { when: { flag: 'ralfSaturdayDone' }, effects: [] },
+      {
+        when: { any: [{ lineBusy: true }, { ringing: true }, { flag: 'away' }] },
+        effects: [{ type: 'scheduleEvent', id: 'ev_ralf_saturday', inMinutes: 20 }],
+      },
+      { effects: [...ralfRings('saturday')] },
+    ],
+  },
+  {
+    id: 'ev_ralf_callback',
+    repeatable: true,
+    interrupts: true,
+    variants: [
+      { when: { notFlag: 'ralfCallbackPending' }, effects: [] },
+      {
+        when: { any: [{ lineBusy: true }, { ringing: true }, { flag: 'away' }] },
+        effects: [{ type: 'scheduleEvent', id: 'ev_ralf_callback', inMinutes: 20 }],
+      },
+      { effects: [{ type: 'setFlag', id: 'ralfCallbackPending', value: false }, ...ralfRings('callback')] },
+    ],
+  },
+  {
+    id: 'ev_ralf_ring_end',
+    repeatable: true,
+    variants: [
+      {
+        when: { ringing: true },
+        effects: [
+          { type: 'telecom', op: 'stopRinging' },
+          { type: 'cancelEvent', id: 'ev_ring_reminder' },
+          {
+            type: 'say',
+            text: 'Unten nimmt deine Mutter ab. Kurz darauf ruft sie hoch: »Jan! Das war Ralf. Du sollst ihn zurückrufen!«',
+          },
+          { type: 'setFlag', id: 'ralfSaturdayDone', value: true },
+        ],
+      },
+      { effects: [] },
+    ],
+  },
+
+  // ── Schlüssel-Strang (P07–P09): drei Fragmente des Schlüssels von Diskette 2 ─────────────────────
+  {
+    id: 'ev_ralf_cassette',
+    at: GAME_CONFIG.keyStrand.cassetteAt,
+    repeatable: true,
+    interrupts: true,
+    variants: [
+      { when: { flag: 'cassetteDelivered' }, effects: [] },
+      {
+        when: { any: [{ flag: 'away' }, { ringing: true }] },
+        effects: [{ type: 'scheduleEvent', id: 'ev_ralf_cassette', inMinutes: 30 }],
+      },
+      {
+        when: { rel: 'ralfTrust', below: 'trusting' },
+        effects: [
+          ...cassetteArrives(),
+          {
+            type: 'say',
+            text: 'Kurz darauf kommt deine Mutter die Treppe hoch. »Das war Ralf. Er hatte es eilig, wollte nicht reinkommen – das soll ich dir geben.« Sie drückt dir eine Kassette in die Hand.',
+          },
+          ...cassetteGiven(),
+        ],
+      },
+      {
+        when: { flag: 'ralfKnowsModule' },
+        effects: [
+          ...cassetteArrives(),
+          ...ralfAtDoor(
+            '»Du wolltest doch alles, was mit dem Spiel zu tun hat. Seidel hat sein Arbeitszimmer ausgemistet, da stand ein Karton für den Sperrmüll. Die hier lag ganz unten. Steht WT-07 drauf – wie auf der Diskette.«',
+          ),
+          ...cassetteGiven(),
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'RALF',
+            text: '»Und Jan – sei vorsichtig mit dem Modul-Kram, ja? Seidel ist komisch drauf in letzter Zeit.« Dann ist er wieder weg.',
+          },
+          { type: 'audio', cue: 'door' },
+        ],
+      },
+      {
+        effects: [
+          ...cassetteArrives(),
+          ...ralfAtDoor(
+            '»Seidel hat sein Arbeitszimmer ausgemistet. Im Karton für den Sperrmüll lag die hier – steht WT-07 drauf, wie auf der Diskette. Vielleicht ist da noch was vom Spiel drauf. Du hast doch noch deine alte Datasette.«',
+          ),
+          ...cassetteGiven(),
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'RALF',
+            text: '»Meine Mutter wartet unten im Auto. Erzähl mir, was drauf ist!« Dann ist er wieder weg.',
+          },
+          { type: 'audio', cue: 'door' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_key_first_part',
+    trigger: { any: [{ fact: 'key_part_1' }, { fact: 'key_part_2' }, { fact: 'key_part_3' }] },
+    variants: [{ effects: [{ type: 'puzzle', id: 'P08', status: 'discovered' }] }],
+  },
+  {
+    id: 'ev_key_complete',
+    trigger: { all: [{ fact: 'key_part_1' }, { fact: 'key_part_2' }, { fact: 'key_part_3' }] },
+    variants: [
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: `Drei Teile, zwölf Ziffern: ${GAME_CONFIG.keyStrand.parts.join(' ')}. Ohne Diskette 2 fragt das Modul nach einem »Ersatzschlüssel« – genau dafür.`,
+          },
+          { type: 'discoverFact', id: 'key_complete' },
+          { type: 'puzzle', id: 'P08', status: 'solved' },
+          { type: 'puzzle', id: 'P09', status: 'discovered' },
+        ],
+      },
+    ],
+  },
+
+  // ── Computerclub (Kontakt zu GHOST, GDD §3.4) ──────────────────────────────────────────────────
+  {
+    id: 'ev_club_reminder',
+    at: `${GAME_CONFIG.club.eveningDate}T${GAME_CONFIG.club.leaveFrom}`,
+    variants: [
+      {
+        when: { all: [{ fact: 'club_evening' }, { notFlag: 'away' }] },
+        effects: [
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'MUTTER',
+            text: '(von unten) »Jan, ist heute nicht dein Computerclub? Wenn du hinwillst, musst du langsam los!«',
+          },
+          { type: 'say', kind: 'system', text: '(GEHE ZUM CLUB – bis 19:30 Uhr.)' },
+        ],
+      },
+      { effects: [] },
     ],
   },
 ];

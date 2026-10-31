@@ -2,18 +2,34 @@
  * Simulierter Commodore 64 (kein Emulator): BASIC-V2-Teilmenge, 1541-Laufwerk mit virtuellen
  * Disketten und programmartige "Apps" für Maschinenprogramme.
  */
-import { DISK_ITEM_TO_IMAGE } from '../content/objects';
+import { GAME_CONFIG } from '../content/config';
+import { CASSETTE_PROGRAM } from '../content/disks';
 import type { Ctx } from '../engine/context';
 import { discoverFact } from '../engine/effects';
-import { bootScreen } from '../engine/state';
+import { bootProfile, bootScreen } from '../engine/state';
 import type { C64Key, GameState, ProgramLine, VirtualDisk, VirtualFile } from '../engine/types';
 import { archiveApp } from './apps/archive';
+import { diskInDrive } from './drive';
 import { intruderApp } from './apps/intruder';
+import { termApp } from './apps/term';
 import { modkApp } from './apps/modk';
 import type { AppDef, AppResult, Rendered } from './apps/types';
 import { wt07App } from './apps/wt07';
 import { BasicError, Interpreter, newRun, type BasicHost, type RunStatus } from './basic/interpreter';
-import { COLS, ROWS, printLine, toPetsciiText } from './screen';
+import { printLine, toPetsciiText } from './screen';
+import { TEXT_COLS } from '../c64/geometry';
+import { stringToPetscii, textToScreen } from '../c64/petscii';
+import {
+  clearVideo,
+  createVideo,
+  newline,
+  peekVideo,
+  pokeVideo,
+  printBytes,
+  videoFromLines,
+  videoLines,
+  type VideoState,
+} from '../c64/video';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const APPS: Record<string, AppDef<any>> = {
@@ -21,32 +37,10 @@ export const APPS: Record<string, AppDef<any>> = {
   modk: modkApp,
   archive: archiveApp,
   intruder: intruderApp,
+  term: termApp,
 };
 
-const COLOR_CODES: Record<number, number> = {
-  144: 0,
-  5: 1,
-  28: 2,
-  159: 3,
-  156: 4,
-  30: 5,
-  31: 6,
-  158: 7,
-  129: 8,
-  149: 9,
-  150: 10,
-  151: 11,
-  152: 12,
-  153: 13,
-  154: 14,
-  155: 15,
-};
-
-export function diskInDrive(state: GameState): VirtualDisk | null {
-  const item = Object.entries(state.itemLocations).find(([, loc]) => loc === 'drive')?.[0];
-  if (!item) return null;
-  return state.disks[DISK_ITEM_TO_IMAGE[item]] ?? null;
-}
+export { diskInDrive };
 
 export function visibleFiles(state: GameState, disk: VirtualDisk): VirtualFile[] {
   return disk.files.filter((f) => !f.hiddenUntilFact || state.knownFacts.includes(f.hiddenUntilFact));
@@ -83,44 +77,29 @@ function matchFile(files: VirtualFile[], pattern: string): VirtualFile | undefin
 
 /** BASIC-Host: verbindet den Interpreter mit Bildschirm, Speicher und Laufwerk. */
 class Machine implements BasicHost {
-  open = false;
   minutes = 0;
   constructor(private ctx: Ctx) {}
 
   private get comp() {
     return this.ctx.state.computer;
   }
-  private get lines() {
-    return this.comp.screen.lines;
-  }
-  private trim(): void {
-    if (this.lines.length > ROWS) this.lines.splice(0, this.lines.length - ROWS);
+  private get video(): VideoState {
+    return this.comp.screen;
   }
 
+  /** Ausgabe als PETSCII-Bytes über die Bildschirmroutine (Steuercodes werden ausgeführt). */
   write(text: string): void {
-    for (const ch of toPetsciiText(text)) {
-      if (!this.open || this.lines[this.lines.length - 1].length >= COLS) {
-        this.lines.push('');
-        this.open = true;
-      }
-      this.lines[this.lines.length - 1] += ch;
-    }
-    this.trim();
+    printBytes(this.video, stringToPetscii(text));
   }
   newline(): void {
-    if (!this.open) this.lines.push('');
-    this.open = false;
-    this.trim();
+    newline(this.video);
   }
+  /** Spalte innerhalb der logischen Zeile (0–79), wie sie TAB, Komma und POS verwenden */
   column(): number {
-    return this.open ? this.lines[this.lines.length - 1].length % COLS : 0;
+    return this.video.cx + (this.video.links[this.video.cy] ? TEXT_COLS : 0);
   }
-  clearScreen(): void {
-    this.comp.screen.lines = [];
-    this.open = false;
-  }
-  setTextColor(code: number): void {
-    if (COLOR_CODES[code] !== undefined) this.comp.screen.text = COLOR_CODES[code];
+  bytesFree(): number {
+    return bootProfile().bytesFree;
   }
   note(text: string): void {
     this.ctx.say(text, 'system');
@@ -132,14 +111,7 @@ class Machine implements BasicHost {
     secondary: number,
     inProgram: boolean,
   ): 'basic' | 'machine' | 'error' {
-    if (device === 1) {
-      this.write('PRESS PLAY ON TAPE');
-      this.newline();
-      this.note(
-        'Die Datasette ist gar nicht angeschlossen. Du drückst RUN/STOP. (Laden von Diskette: Gerät 8, z. B. LOAD"$",8)',
-      );
-      return 'error';
-    }
+    if (device === 1) return this.loadTape(name);
     if (device !== 8) throw new BasicError('DEVICE NOT PRESENT');
     if (!name) throw new BasicError('MISSING FILE NAME');
     this.write(`SEARCHING FOR ${name}`);
@@ -177,6 +149,97 @@ class Machine implements BasicHost {
     return 'basic';
   }
 
+  /** Laden von der Datasette (Gerät 1): nur Ralfs Prüfband enthält ein Programm */
+  private loadTape(name: string | null): 'basic' | 'error' {
+    const s = this.ctx.state;
+    this.write('PRESS PLAY ON TAPE');
+    this.newline();
+    if (!s.flags.datasetteConnected) {
+      this.note(
+        'Die Datasette ist gar nicht angeschlossen. Du drückst RUN/STOP. (Laden von Diskette: Gerät 8, z. B. LOAD"$",8)',
+      );
+      return 'error';
+    }
+    if (s.itemLocations.cassette !== 'datasette') {
+      this.note('Du drückst PLAY – aber in der Datasette liegt keine Kassette. Du drückst RUN/STOP.');
+      return 'error';
+    }
+    this.write('OK');
+    this.newline();
+    this.write(name ? `SEARCHING FOR ${name}` : 'SEARCHING');
+    this.newline();
+    this.ctx.cue('drive');
+    const prog = CASSETTE_PROGRAM;
+    if (name && !(name === prog.name || (name.endsWith('*') && prog.name.startsWith(name.slice(0, -1))))) {
+      this.minutes += 6;
+      this.note(
+        `Du drückst PLAY. Das Band läuft und läuft – bis zum Ende. Unter diesem Namen ist nichts drauf. Du spulst zurück und drückst RUN/STOP.`,
+      );
+      return 'error';
+    }
+    this.write(`FOUND ${prog.name}`);
+    this.newline();
+    this.write('LOADING');
+    this.newline();
+    this.minutes += 3;
+    this.note(
+      'Du drückst PLAY. Die Datasette surrt, der Bildschirm wird kurz leer – dann ist das Programm drin.',
+    );
+    this.comp.program = parseBasicLines(prog.basic);
+    this.comp.programIsDirectory = false;
+    this.comp.loaded = { name: prog.name, diskId: 'tape' };
+    return 'basic';
+  }
+
+  openFile(
+    device: number,
+    _secondary: number,
+    spec: string,
+  ): { mode: 'r' | 'w'; name: string; data: string } {
+    if (device === 3) throw new BasicError('NOT INPUT FILE');
+    if (device !== 8) throw new BasicError('DEVICE NOT PRESENT');
+    const [rawName, , rawMode] = toPetsciiText(spec).split(',');
+    const name = (rawName ?? '').replace(/^\d*:/, '').trim().slice(0, 16);
+    if (!name) throw new BasicError('MISSING FILE NAME');
+    this.ctx.cue('drive');
+    const disk = diskInDrive(this.ctx.state);
+    if (!disk) {
+      this.note('Die rote LED der 1541 blinkt: keine Diskette im Laufwerk.');
+      throw new BasicError('FILE NOT FOUND');
+    }
+    if ((rawMode ?? 'R').trim().startsWith('W')) {
+      if (disk.writeProtected) {
+        this.note('Die rote LED der 1541 blinkt: Die Diskette ist schreibgeschützt.');
+        throw new BasicError('WRITE PROTECT ON');
+      }
+      if (disk.files.some((f) => f.name === name)) {
+        this.note('Die rote LED blinkt: Eine Datei mit diesem Namen gibt es schon.');
+        throw new BasicError('FILE EXISTS');
+      }
+      return { mode: 'w', name, data: '' };
+    }
+    const file = visibleFiles(this.ctx.state, disk).find(
+      (f) => f.name === name || (name.endsWith('*') && f.name.startsWith(name.slice(0, -1))),
+    );
+    if (!file || file.type !== 'SEQ') {
+      this.note('Die rote LED der 1541 blinkt.');
+      throw new BasicError('FILE NOT FOUND');
+    }
+    return { mode: 'r', name: file.name, data: file.textContent ?? '' };
+  }
+
+  writeFile(name: string, data: string): void {
+    const disk = diskInDrive(this.ctx.state);
+    this.ctx.cue('drive');
+    if (!disk || disk.writeProtected) {
+      this.note('Die rote LED der 1541 blinkt: Die Datei konnte nicht geschrieben werden.');
+      return;
+    }
+    const blocks = Math.max(1, Math.ceil(data.length / 254));
+    disk.files.push({ name, type: 'SEQ', blocks, textContent: data });
+    this.minutes += 1;
+  }
+
   save(name: string, device: number): void {
     if (device !== 8) {
       this.write('PRESS RECORD & PLAY ON TAPE');
@@ -203,22 +266,18 @@ class Machine implements BasicHost {
   }
 
   sys(addr: number): 'app' | 'reset' | 'none' {
-    if (addr === 64738) return 'reset';
+    // 64738 = Reset-Einsprung des Betriebssystems; 16384 als bequemer Reset im Spiel
+    if (addr === 64738 || addr === 16384) return 'reset';
     if ((addr === 2061 || addr === 2064) && this.comp.loaded?.appId) return 'app';
     this.note('Ein SYS ins Blaue. Zum Glück passiert nichts.');
     return 'none';
   }
   poke(addr: number, value: number): void {
+    if (pokeVideo(this.video, addr, value)) return;
     this.comp.memory[String(addr)] = value;
-    if (addr === 53280) this.comp.screen.border = value & 15;
-    if (addr === 53281) this.comp.screen.background = value & 15;
-    if (addr === 646) this.comp.screen.text = value & 15;
   }
   peek(addr: number): number {
-    if (addr === 53280) return this.comp.screen.border | 240;
-    if (addr === 53281) return this.comp.screen.background | 240;
-    if (addr === 646) return this.comp.screen.text;
-    return this.comp.memory[String(addr)] ?? 0;
+    return peekVideo(this.video, addr) ?? this.comp.memory[String(addr)] ?? 0;
   }
   getProgram(): ProgramLine[] {
     return this.comp.program;
@@ -245,7 +304,9 @@ export function startApp(ctx: Ctx, id: string): number {
 export function exitApp(ctx: Ctx): void {
   const comp = ctx.state.computer;
   comp.app = null;
-  comp.screen = { lines: ['READY.'], border: 14, background: 6, text: 14 };
+  const p = bootProfile();
+  comp.screen = createVideo({ border: p.border, background: p.background, text: p.text });
+  printLine(comp.screen, p.ready);
 }
 
 function applyAppResult(ctx: Ctx, res: AppResult): number {
@@ -261,7 +322,6 @@ function runBasic(ctx: Ctx, fn: (i: Interpreter) => RunStatus): number {
   const comp = ctx.state.computer;
   comp.run ??= newRun(ctx.state.rngSeed);
   const m = new Machine(ctx);
-  m.open = comp.run.awaitingInput !== null;
   const interp = new Interpreter(m, comp.run);
   const status = fn(interp);
   let minutes = m.minutes;
@@ -274,17 +334,53 @@ function runBasic(ctx: Ctx, fn: (i: Interpreter) => RunStatus): number {
     powerOnReset(ctx);
     return minutes;
   }
-  if (m.open) m.newline();
-  m.write('READY.');
+  if (m.column() > 0) m.newline();
+  m.write(bootProfile().ready);
   m.newline();
   afterBasic(ctx);
   return minutes;
 }
 
+const KEY_PART = /TEIL ([123])\/3:\s*(\d{4})/g;
+
+/**
+ * Schlüsselfragmente zählen erst, wenn sie wirklich auf dem Bildschirm zu sehen sind – Text in Hintergrundfarbe
+ * (Zeile 70 des LADERs) bleibt verborgen, bis jemand die Farben ändert.
+ */
+function keyPartsOnScreen(ctx: Ctx): void {
+  const s = ctx.state;
+  const visible = videoLines(s.computer.screen).join('\n');
+  for (const m of visible.matchAll(KEY_PART)) {
+    const n = Number(m[1]);
+    if (m[2] !== GAME_CONFIG.keyStrand.parts[n - 1] || s.knownFacts.includes(`key_part_${n}`)) continue;
+    ctx.say(
+      n === 1
+        ? 'Da steht ja doch etwas in Zeile 70! Blau auf Blau geschrieben – auf Seidels schwarzem Hintergrund wäre es ihm nie aufgefallen. Ein Schlüsselteil.'
+        : `»TEIL ${n}/3: ${m[2]}« – noch ein Stück des Schlüssels.`,
+      'thought',
+    );
+    discoverFact(ctx, `key_part_${n}`);
+  }
+  if (
+    s.computer.loaded?.name === 'LADER' &&
+    !s.knownFacts.includes('key_part_1') &&
+    !s.knownFacts.includes('empty_rem') &&
+    /^70 REM\s*$/m.test(visible) &&
+    videoLines(s.computer.screen, null, true).some((l) => l.includes('TEIL 1/3'))
+  ) {
+    ctx.say(
+      'Zeile 70: ein REM, hinter dem nichts steht. Wer schreibt denn eine leere Bemerkung in einen Lader?',
+      'thought',
+    );
+    discoverFact(ctx, 'empty_rem');
+  }
+}
+
 /** Narrative Beobachtungen nach Bildschirmausgaben (nur im Adventure-Protokoll). */
 function afterBasic(ctx: Ctx): void {
   const s = ctx.state;
-  const screen = s.computer.screen.lines.join('\n');
+  keyPartsOnScreen(ctx);
+  const screen = videoLines(s.computer.screen).join('\n');
   if (s.computer.loaded?.diskId === 'game') {
     if (
       s.computer.programIsDirectory &&
@@ -333,7 +429,7 @@ export function powerOff(ctx: Ctx): void {
   comp.run = null;
   comp.program = [];
   comp.loaded = null;
-  comp.screen = { lines: [], border: 14, background: 6, text: 14 };
+  comp.screen = createVideo();
   ctx.state.telecom.connectedSystemId = null;
   ctx.state.telecom.currentUserHandle = null;
 }
@@ -377,8 +473,7 @@ export function c64Line(ctx: Ctx, rawText: string): number {
   }
 
   if (comp.run?.awaitingInput) {
-    const lines = comp.screen.lines;
-    lines[lines.length - 1] = (lines[lines.length - 1] + text).slice(0, COLS);
+    printLine(comp.screen, text);
     return runBasic(ctx, (i) => i.provideInput(text));
   }
 
@@ -388,16 +483,11 @@ export function c64Line(ctx: Ctx, rawText: string): number {
 
   if (SIMPLE_DIR.test(cmd)) {
     ctx.say(
-      '(Vereinfachter Befehl → LOAD"$",8 und LIST. Achtung: Das überschreibt das BASIC-Programm im Speicher.)',
+      '(Vereinfachter Befehl → LOAD"$",8. Achtung: Das überschreibt das BASIC-Programm im Speicher.)',
       'system',
     );
     typed(ctx, 'LOAD"$",8');
-    let min = runBasic(ctx, (i) => i.execDirect('LOAD"$",8'));
-    if (comp.programIsDirectory) {
-      typed(ctx, 'LIST');
-      min += runBasic(ctx, (i) => i.execDirect('LIST'));
-    }
-    return min;
+    return runBasic(ctx, (i) => i.execDirect('LOAD"$",8'));
   }
   if (SIMPLE_RUN.test(cmd)) {
     ctx.say('(Vereinfachter Befehl → LOAD"*",8 und RUN)', 'system');
@@ -413,7 +503,7 @@ export function c64Line(ctx: Ctx, rawText: string): number {
     printLine(comp.screen, '?SYNTAX  ERROR');
     printLine(comp.screen, 'READY.');
     ctx.say(
-      'Der C64 versteht nur BASIC. Nützlich: LOAD"$",8 und LIST (Verzeichnis), LOAD"NAME",8 und RUN (Programm starten), LIST, NEW. Vereinfacht geht auch: ZEIGE DATEIEN, LADE SPIEL.',
+      'Der C64 versteht nur BASIC. Nützlich: LOAD"$",8 (Verzeichnis), LOAD"NAME",8 und RUN (Programm starten), LIST, NEW. Vereinfacht geht auch: ZEIGE DATEIEN, LADE SPIEL.',
       'system',
     );
     return 0;
@@ -456,7 +546,7 @@ export function c64Key(ctx: Ctx, key: C64Key): number {
     return 0;
   }
   if (key === 'CLRHOME') {
-    comp.screen.lines = [];
+    clearVideo(comp.screen);
     return 0;
   }
   if (key === 'RETURN') return c64Line(ctx, '');
@@ -470,32 +560,49 @@ export function c64Tick(ctx: Ctx): void {
   if (def.tick) applyAppResult(ctx, def.tick(ctx, comp.app));
 }
 
-export function renderC64(state: GameState): Rendered & { powerOn: boolean; tickMs: number | null } {
+/** Alles, was die Oberfläche zum Zeichnen des C64-Bildschirms braucht */
+export interface C64View {
+  powerOn: boolean;
+  /** Vollständiger Bildschirmzustand (Bildschirm-RAM, Farben, Register) */
+  video: VideoState;
+  /** Position des Eingabecursors; null = kein Cursor (Tastenmodus, ausgeschaltet) */
+  cursor: { x: number; y: number } | null;
+  /** Bildschirminhalt als Text (Screenreader, Tests) */
+  lines: string[];
+  inputMode: Rendered['inputMode'];
+  flash?: boolean;
+  demoScreen?: number;
+  tickMs: number | null;
+}
+
+export function renderC64(state: GameState): C64View {
   const comp = state.computer;
   if (!comp.powerOn)
-    return {
-      lines: [],
-      border: 0,
-      background: 0,
-      text: 0,
-      inputMode: 'basic',
-      cursor: false,
-      powerOn: false,
-      tickMs: null,
-    };
+    return { powerOn: false, video: comp.screen, cursor: null, lines: [], inputMode: 'basic', tickMs: null };
   if (comp.app) {
     const def = APPS[comp.app.id];
     const r = def.render(state, comp.app);
-    return { cursor: false, ...r, inputMode: def.inputMode(comp.app), powerOn: true, tickMs: def.tickMs };
+    const inputMode = def.inputMode(comp.app);
+    const video = r.video ?? videoFromLines(r.lines, r, textToScreen);
+    const cursor = inputMode === 'line' ? { x: 0, y: Math.min(r.lines.length, 24) } : null;
+    return {
+      powerOn: true,
+      video,
+      cursor,
+      lines: videoLines(video, cursor),
+      inputMode,
+      flash: r.flash,
+      demoScreen: r.demoScreen,
+      tickMs: def.tickMs,
+    };
   }
+  const cursor = { x: comp.screen.cx, y: comp.screen.cy };
   return {
-    lines: comp.screen.lines,
-    border: comp.screen.border,
-    background: comp.screen.background,
-    text: comp.screen.text,
-    inputMode: 'basic',
-    cursor: !comp.run?.awaitingInput,
     powerOn: true,
+    video: comp.screen,
+    cursor,
+    lines: videoLines(comp.screen, cursor),
+    inputMode: 'basic',
     tickMs: null,
   };
 }

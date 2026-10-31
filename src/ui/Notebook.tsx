@@ -130,7 +130,7 @@ export function Notebook({ game }: { game: GameUi }) {
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            placeholder="z. B. M.S."
+            placeholder="Begriff A"
             aria-label="Vermutung: erster Begriff"
             maxLength={60}
           />
@@ -138,7 +138,7 @@ export function Notebook({ game }: { game: GameUi }) {
           <input
             value={target}
             onChange={(e) => setTarget(e.target.value)}
-            placeholder="z. B. Seidel"
+            placeholder="Begriff B"
             aria-label="Vermutung: zweiter Begriff"
             maxLength={60}
           />

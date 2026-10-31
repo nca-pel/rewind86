@@ -1,3 +1,4 @@
+import { MAILBOXES } from '../content/networks';
 import type { GameUi } from '../app/useGame';
 import { useSettings } from '../app/settings';
 import { audio } from '../audio/audio';
@@ -10,8 +11,11 @@ export function StatusBar({ game }: { game: GameUi }) {
   const state = game.state!;
   const { settings, update } = useSettings();
   const t = state.telecom;
-  const line = t.connectedSystemId
-    ? 'online'
+  const sys = t.connectedSystemId ? MAILBOXES[t.connectedSystemId] : null;
+  const line = sys
+    ? sys.access === 'public'
+      ? `online (${sys.name})`
+      : 'online'
     : t.ringing
       ? 'klingelt'
       : t.handset !== 'cradle'
@@ -40,7 +44,9 @@ export function StatusBar({ game }: { game: GameUi }) {
         </div>
         <div>
           <dt>Leitung</dt>
-          <dd className={`line-${line.split(' ')[0]}`}>{line}</dd>
+          <dd className={`line-${line.split(' ')[0]}`} data-testid="line-state">
+            {line}
+          </dd>
         </div>
       </dl>
       <div className="inventory" aria-label="Inventar">

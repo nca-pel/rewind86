@@ -10,6 +10,13 @@ verstecktes Kommunikationsmodul.
 Verbindliche Spezifikation: [`docs/00-raw/REWIND_1986_GDD.md`](docs/00-raw/REWIND_1986_GDD.md), Auftrag:
 [`docs/00-raw/idee.md`](docs/00-raw/idee.md).
 
+## C64-Bildschirm und Startmeldung
+
+Der C64-Bildschirm ist eine eigene Simulation (`src/c64/`): PAL-Geometrie, berechnete Farbpalette, eigener
+Zeichensatz, Bildschirmspeicher mit PETSCII-Steuercodes und Röhreneffekte – ohne Original-ROMs. Die Einschaltmeldung
+ist austauschbar; eine markenfreie Variante baut man mit `VITE_C64_BOOT_PROFILE=neutral npm run build`. Details:
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#startbildschirm-austauschen).
+
 ## Voraussetzungen
 
 - Node.js ≥ 20 (getestet mit 22), npm ≥ 10
@@ -128,7 +135,7 @@ Freie deutsche Sätze, Groß-/Kleinschreibung und Umlaute (`ö`/`oe`) egal. Beis
 
 ```
 SCHAU DICH UM            UNTERSUCHE DISKETTE        ÖFFNE SCHUBLADE
-NIMM HÖRER / HEBE AB     FRAGE RALF NACH DEM SPIEL  REDE MIT RALF ÜBER SEIDEL
+NIMM HÖRER / HEBE AB     FRAGE RALF NACH DEM SPIEL  REDE MIT RALF ÜBER TRAINING
 LEGE AUF                 WARTE / WARTE 30           LEGE DISKETTE INS LAUFWERK
 SCHALTE COMPUTER EIN     STELLE RADIO AUF BFBS      LIES ZEICHENTABELLE
 WÄHLE 12345              RUFE RALF AN               LEGE HÖRER IN DEN KOPPLER
@@ -170,19 +177,61 @@ Autosave nach jedem Befehl und bei Meilensteinen (Slot „Auto“), drei manuell
 1. `NIMM HÖRER`, mit Ralf reden, `LEGE AUF`, `WARTE` → Ralf bringt die Diskette und muss zum Training.
 2. `LEGE DISKETTE INS LAUFWERK`, `SCHALTE COMPUTER EIN`; am C64 `LOAD"*",8` + `RUN`.
 3. Im Intro mit RETURN bis zu den Credits; dort `←` drücken → „MODUL K“ verlangt Diskette 2.
-4. `J` (eingeschränkter Betrieb), `1` → „Ersatzwahl: siehe LADER“. Modul verlassen (`RUN/STOP`, `3`).
+4. `J` (eingeschränkter Betrieb), `1` → „Ersatzwahl: siehe LADER“. Modul verlassen (`RUN/STOP`, `4`).
 5. `LOAD"LADER",8` + `LIST` → `910 DATA 52,49,57,55,51`. Päckchen öffnen, `LIES TABELLE` → 48 = „0“ … → **41973**.
 6. Modul erneut starten, `1`; im Adventure `WÄHLE 41973`, `LEGE HÖRER IN DEN KOPPLER`; am C64 RETURN.
 7. Nachrichten lesen (`1`, `1`, `2`), abmelden (`4`), `LEGE AUF` → Ende des Ausschnitts.
 
 Optional: Diskette `1001` aus der Schublade → Demo INTRUDER; Archivdiskette → Jans Archivprogramm.
 
+Nebenspur Mailbox: `LIES KLEINANZEIGEN` → BIT-SCHUPPEN GT (ab 18 Uhr). Archivdiskette einlegen, `LOAD"TERMINAL",8` +
+`RUN`, `WÄHLE 23586`, Hörer in den Koppler, RETURN, eigenen Namen eingeben, `J`. Nach der Freischaltung (später erneut
+anrufen) gibt es Post, Downloads und die Mailboxliste mit dem nächtlichen DATENKELLER.
+
+Nach dem Ausschnitt laufen die Tage als Alltag weiter: `SCHLAFE` ab 21 Uhr, Schule montags bis samstags, Abendbrot,
+Taschengeld am Samstag und sonntags die Abrechnung des Gebührenzählers. Ralf ist nach seinem Wochenplan erreichbar
+(`RUFE RALF AN`) und ruft sonst zurück; der Computerclub schickt einen Rundbrief (`GEHE ZUM CLUB` am Donnerstag).
+
+Schlüssel-Strang (Diskette 2 rekonstruieren):
+
+1. Im LADER ist Zeile 70 scheinbar leer: `LOAD"LADER",8`, `POKE 53281,0`, `LIST` → **Teil 1: 7302** (Tipp: `LIES
+LESERTIPPS` in der Zeitschrift).
+2. Ab Montag, 17.11., steht im Netz die Meldung „SCHLUESSELWECHSEL“ → **Teil 2: 1958**.
+3. Mittwoch, 19.11., 15 Uhr bringt Ralf eine Kassette. `LEGE KASSETTE IN DATASETTE`, am C64 `LOAD` und `RUN` →
+   **Teil 3: 4426**.
+4. Modul starten, `3`, `730219584426` + RETURN, einwählen, Rundschreiben von K-01 lesen → Klartext. Expertenweg: im
+   Rundschreiben `S` (Rohdaten auf die Archivdiskette) und mit `OPEN`/`INPUT#` selbst entschlüsseln.
+
+Vorsicht im geheimen Netz: Wer sich immer wieder mit der Testkennung anmeldet oder lange online bleibt, fällt auf.
+Das Spiel kündigt Folgen deutlich an (Systemnachrichten, Sperre, eine letzte Warnung), bevor es vorbei ist; nach einem
+Spielende lässt sich der letzte Schritt zurücknehmen.
+
 </details>
+
+## Entwicklerkonsole
+
+`http://…/?dev=1` blendet unten links einen **DEV**-Knopf ein (für die Browser-Sitzung; `?dev=0` schaltet ab):
+Fakten/Flags/Rätsel/Gegenstände setzen, Zeit vorspulen, Ereignisse auslösen, Meilenstein-Spielstände laden
+(„Geheimer Modus“, „Online“, „Ende des Ausschnitts“ …) und den Ereignis-/Rätselgraph prüfen. `hilfe` in der
+Konsole listet alle Befehle. Eingriffe werden im Debug-Log des Spielstands markiert.
+
+## Code-Graph für Claude Code (graphify)
+
+Damit Claude Code beim Arbeiten am Code weniger Dateien roh lesen muss, ist
+[graphify](https://github.com/Graphify-Labs/graphify) projektbezogen eingebunden (`CLAUDE.md`, `.claude/`).
+Der Graph wird lokal aus dem Syntaxbaum erzeugt – ohne LLM, ohne API-Kosten – und ist nicht eingecheckt:
+
+```bash
+uv tool install graphifyy   # einmalig (Befehl heißt graphify)
+graphify update .           # Graph nach graphify-out/ bauen bzw. aktualisieren (~3 s)
+graphify hook install       # optional: bei Commit/Checkout automatisch aktualisieren
+```
 
 ## Dokumentation
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) – Engine, Parser, C64-Teilmenge, Events, Speicherformat
-- [`docs/STORY_OPEN_QUESTIONS.md`](docs/STORY_OPEN_QUESTIONS.md) – bewusst offene Storypunkte und Platzhalter
+- [`docs/STORY_DECISIONS.md`](docs/STORY_DECISIONS.md) – im Storyworkshop getroffene Entscheidungen (enthält Spoiler)
+- [`docs/STORY_OPEN_QUESTIONS.md`](docs/STORY_OPEN_QUESTIONS.md) – was innerhalb dieser Entscheidungen noch offen ist
 - [`docs/NEXT_STEPS.md`](docs/NEXT_STEPS.md) – priorisierter Ausbauplan und Abschlussprotokoll
 
 ## Rechte und Fiktion

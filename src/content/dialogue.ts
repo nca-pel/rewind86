@@ -1,4 +1,5 @@
 import type { Condition, GameEffect } from '../engine/types';
+import { GAME_CONFIG } from './config';
 
 export interface TopicDef {
   id: string;
@@ -37,6 +38,22 @@ export const TOPICS: TopicDef[] = [
   },
   { id: 'disk2', label: 'Diskette 2', aliases: ['disk2', 'zweite', 'schluesseldiskette', '2'] },
   { id: 'schule', label: 'die Schule', aliases: ['schule', 'hausaufgaben', 'klausur', 'lehrer'] },
+  {
+    id: 'modul',
+    label: 'den versteckten Modus',
+    aliases: [
+      'modul',
+      'modus',
+      'versteckt',
+      'versteckte',
+      'versteckten',
+      'geheim',
+      'geheime',
+      'geheimen',
+      'trick',
+    ],
+  },
+  { id: 'club', label: 'den Computerclub', aliases: ['club', 'computerclub', 'clubabend', 'jugendzentrum'] },
 ];
 
 export const TOPIC_BY_ID: Record<string, TopicDef> = Object.fromEntries(TOPICS.map((t) => [t.id, t]));
@@ -50,8 +67,111 @@ export interface DialogueEntry {
   effects?: GameEffect[];
 }
 
+const LATER: Condition = { flag: 'ralfDelivered' };
+
+/**
+ * Spätere Telefonate mit Ralf (nach der Übergabe). Stehen vor den Prolog-Einträgen, damit sie dort gewinnen.
+ * TODO-STORY: Ausbau des Ralf-Strangs (Überzeugen, Loyalitätskrise) mit Akt 2–4.
+ */
+const RALF_LATER: DialogueEntry[] = [
+  {
+    npc: 'ralf',
+    topic: 'spiel',
+    when: LATER,
+    speaker: 'RALF',
+    text: `»${GAME_CONFIG.unreleasedGame.workingTitle}? Eine Wirtschaftssimulation? Ich dachte, da wird wenigstens geballert. Na super – da hab ich ja was riskiert für nix.«`,
+  },
+  {
+    npc: 'ralf',
+    topic: 'modul',
+    when: { all: [LATER, { fact: 'needs_disk2' }, { notFlag: 'ralfKnowsModule' }] },
+    speaker: 'RALF',
+    text: '»Ein versteckter Modus? In dem Spiel von meinem Alten? Echt jetzt?« Er wird leiser. »Der hat in letzter Zeit dauernd so komische Disketten rumliegen … Soll ich mal gucken, ob da eine zweite ist? Oder ihn ganz unauffällig fragen?«',
+    effects: [
+      { type: 'setFlag', id: 'ralfKnowsModule', value: true },
+      { type: 'discoverFact', id: 'ralf_knows_module' },
+      { type: 'changeRelationship', id: 'ralfTrust', delta: 5 },
+      // Ralf ist neugierig und kein guter Lügner – das Risiko, dass Seidel etwas merkt, steigt.
+      { type: 'changeRelationship', id: 'seidelSuspicion', delta: 8 },
+    ],
+  },
+  {
+    npc: 'ralf',
+    topic: 'modul',
+    when: { all: [LATER, { flag: 'ralfKnowsModule' }] },
+    speaker: 'RALF',
+    text: '»Keine Sorge, ich hab nix gesagt. Aber sein Schrank im Arbeitszimmer ist neuerdings abgeschlossen. Keine Chance.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'modul',
+    when: LATER,
+    speaker: 'RALF',
+    text: '»Was für ein Modus? Erzähl halt, wenn du was weißt.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'disk2',
+    when: { all: [LATER, { flag: 'ralfKnowsModule' }] },
+    speaker: 'RALF',
+    text: '»Eine Diskette 2 hab ich nie gesehen. Wenn, dann liegt die in dem abgeschlossenen Schrank.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'seidel',
+    when: { all: [LATER, { rel: 'seidelSuspicion', atLeast: 'noticeable' }] },
+    speaker: 'RALF',
+    text: '»Der ist seit zwei Tagen total komisch. Hängt dauernd im Arbeitszimmer am Telefon und macht die Tür zu. Meine Mutter sagt, Stress bei der Arbeit.«',
+    effects: [{ type: 'discoverFact', id: 'seidel_phones' }],
+  },
+  {
+    npc: 'ralf',
+    topic: 'seidel',
+    when: LATER,
+    speaker: 'RALF',
+    text: '»Wie immer. Redet nicht, guckt Nachrichten, sitzt im Arbeitszimmer. Hauptsache, er merkt nichts von der Kopie.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'diskette',
+    when: LATER,
+    speaker: 'RALF',
+    text: '»Pass bloß drauf auf. Wenn mein Alter rauskriegt, dass ich an seinem Kram war, hab ich Hausarrest bis Weihnachten.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'training',
+    when: LATER,
+    speaker: 'RALF',
+    text: '»Dienstag, Donnerstag und Freitag ab halb fünf. Samstagnachmittag haben wir Spiel. Sonst bin ich meistens zu Hause.«',
+    effects: [{ type: 'discoverFact', id: 'ralf_schedule' }],
+  },
+  {
+    npc: 'ralf',
+    topic: 'treffen',
+    when: LATER,
+    speaker: 'RALF',
+    text: '»Diese Woche wird schwierig. Training, Mathe-Klausur, und am Sonntag müssen wir zu Oma. Ruf einfach an.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'schule',
+    when: LATER,
+    speaker: 'RALF',
+    text: `»Dienstag Mathe-Klausur. Frag nicht. Bei uns am ${GAME_CONFIG.schools.ralf.replace(' Rheda', '')} sind die Lehrer echt gnadenlos.«`,
+  },
+  {
+    npc: 'ralf',
+    topic: 'club',
+    when: LATER,
+    speaker: 'RALF',
+    text: '»Dein Computerclub? Da sitzen doch nur Leute, die über Disketten reden. Nix für mich. Früher, als wir noch nebeneinander gewohnt haben, hast du mich da auch nie hingekriegt.«',
+  },
+];
+
 /** Antworten werden in Reihenfolge geprüft; der erste Eintrag mit erfüllter Bedingung gewinnt. */
 export const DIALOGUE: DialogueEntry[] = [
+  ...RALF_LATER,
   {
     npc: 'ralf',
     topic: 'spiel',

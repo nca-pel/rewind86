@@ -1,8 +1,11 @@
-import type { GameEffect } from '../engine/types';
+import { K01_CIPHERTEXT, groups } from '../engine/cipher';
+import type { Condition, GameEffect } from '../engine/types';
 import { GAME_CONFIG } from './config';
 
 const N = GAME_CONFIG.secretNetwork;
 const B = GAME_CONFIG.unreleasedGame.buildCode;
+
+export type BbsStatus = 'gast' | 'neu' | 'mitglied';
 
 export interface MailboxMessage {
   id: string;
@@ -12,6 +15,36 @@ export interface MailboxMessage {
   encrypted: boolean;
   body: string[];
   effects: GameEffect[];
+  /** Nur sichtbar ab diesem Benutzerstatus (Standard: gast) */
+  minStatus?: BbsStatus;
+  /** Nur sichtbar, solange die Bedingung gilt (z. B. Tonfall je nach Verdachtsstufe) */
+  when?: Condition;
+}
+
+export interface BoardDef {
+  id: string;
+  name: string;
+  /** Lesen ab diesem Status; Schreiben immer erst als Mitglied */
+  minStatus: BbsStatus;
+  messages: MailboxMessage[];
+}
+
+/** Herunterladbares Programm – landet als echte Datei auf der Diskette im Laufwerk */
+export interface DownloadDef {
+  name: string;
+  blocks: number;
+  description: string;
+  basic: string[];
+}
+
+/** Automatische Antwort auf private Post an einen Benutzer des Systems */
+export interface AutoReply {
+  to: string;
+  afterMinutes: number;
+  from: string;
+  subject: string;
+  body: string[];
+  effects?: GameEffect[];
 }
 
 export interface MailboxSystem {
@@ -19,34 +52,27 @@ export interface MailboxSystem {
   name: string;
   phoneNumber: string;
   baud: number;
-  /** Handle, mit dem sich ein Programm automatisch anmeldet */
-  autoHandle: string;
-  access: 'restricted' | 'full';
+  /**
+   * 'module': nur mit dem Kommunikationsmodul (automatische Anmeldung mit autoHandle);
+   * 'public': normales Terminalprogramm, Gäste willkommen.
+   */
+  access: 'module' | 'public';
+  /** Handle, mit dem sich das Modul automatisch anmeldet (nur access 'module') */
+  autoHandle?: string;
+  sysop?: string;
+  /** Öffnungszeiten (HH:MM, über Mitternacht möglich); fehlt = rund um die Uhr */
+  hours?: { from: string; to: string };
+  /** Spielminuten bis zur Freischaltung neuer Benutzer */
+  validateAfterMinutes?: number;
+  welcome: string[];
+  boards: BoardDef[];
+  downloads: DownloadDef[];
+  replies: AutoReply[];
+  /** Begrüßungspost nach der Freischaltung */
+  memberMail?: { from: string; subject: string; body: string[]; effects?: GameEffect[] };
   historicalStatus: 'fictional';
-  messages: MailboxMessage[];
   sysinfo: string[];
   sysinfoEffects: GameEffect[];
-}
-
-/**
- * Deterministisch erzeugte Fünfergruppen als Chiffre-Platzhalter.
- * TODO-STORY: echtes Verfahren/Klartext der Nachricht offen (GDD §13.4, §22.6).
- */
-function cipherGroups(seed: number, count: number): string[] {
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let x = seed;
-  const groups: string[] = [];
-  for (let g = 0; g < count; g++) {
-    let s = '';
-    for (let i = 0; i < 5; i++) {
-      x = (x * 1103515245 + 12345) % 2147483648;
-      s += letters[x % 26];
-    }
-    groups.push(s);
-  }
-  const lines: string[] = [];
-  for (let i = 0; i < groups.length; i += 5) lines.push(groups.slice(i, i + 5).join(' '));
-  return lines;
 }
 
 export const SECRET_MAILBOX: MailboxSystem = {
@@ -55,40 +81,127 @@ export const SECRET_MAILBOX: MailboxSystem = {
   phoneNumber: N.phoneNumber,
   baud: 300,
   autoHandle: N.testHandle,
-  access: 'restricted',
+  access: 'module',
   historicalStatus: 'fictional',
-  messages: [
+  welcome: [],
+  downloads: [],
+  replies: [],
+  boards: [
     {
-      id: 'msg_k01_all',
-      from: N.senderHandle,
-      to: 'ALLE',
-      subject: '######## [VERSCHL.]',
-      encrypted: true,
-      body: ['SCHLUESSEL FEHLT - ROHDATEN:', '', ...cipherGroups(1986, 30), '', '-- ENDE --'],
-      effects: [
-        { type: 'discoverFact', id: 'encrypted_msg' },
-        { type: 'changeRelationship', id: 'seidelSuspicion', delta: 2 },
-      ],
-    },
-    {
-      id: 'msg_sys_test',
-      from: 'SYSTEM',
-      to: N.testHandle,
-      subject: 'TESTZUGANG',
-      encrypted: false,
-      body: [
-        `TESTZUGANG ${N.testHandle} AKTIV.`,
-        '',
-        'KENNUNG WURDE MIT ARBEITSKOPIE',
-        `${B} AUSGELIEFERT.`,
-        'ABGLEICH: OK.',
-        '',
-        'TESTZUGAENGE WERDEN NACH ABSCHLUSS',
-        'DER ERPROBUNG GELOESCHT.',
-      ],
-      effects: [
-        { type: 'discoverFact', id: 'wt07_trace' },
-        { type: 'changeRelationship', id: 'seidelSuspicion', delta: 1 },
+      id: 'post',
+      name: 'NACHRICHTEN',
+      minStatus: 'gast',
+      messages: [
+        {
+          id: 'msg_k01_all',
+          from: N.senderHandle,
+          to: 'ALLE',
+          subject: '######## [VERSCHL.]',
+          encrypted: true,
+          // Echtes Chiffrat (src/engine/cipher.ts); mit Schlüssel zeigt das Modul den Klartext.
+          body: ['SCHLUESSEL FEHLT - ROHDATEN:', '', ...groups(K01_CIPHERTEXT), '', '-- ENDE --'],
+          effects: [
+            { type: 'discoverFact', id: 'encrypted_msg' },
+            { type: 'changeRelationship', id: 'seidelSuspicion', delta: 2 },
+            {
+              type: 'say',
+              kind: 'thought',
+              text: 'Lauter Buchstabensalat in Fünfergruppen. Ohne Schlüssel keine Chance.',
+            },
+          ],
+        },
+        {
+          id: 'msg_sys_test',
+          from: 'SYSTEM',
+          to: N.testHandle,
+          subject: 'TESTZUGANG',
+          encrypted: false,
+          body: [
+            `TESTZUGANG ${N.testHandle} AKTIV.`,
+            '',
+            'KENNUNG WURDE MIT ARBEITSKOPIE',
+            `${B} AUSGELIEFERT.`,
+            'ABGLEICH: OK.',
+            '',
+            'TESTZUGAENGE WERDEN NACH ABSCHLUSS',
+            'DER ERPROBUNG GELOESCHT.',
+          ],
+          effects: [
+            { type: 'discoverFact', id: 'wt07_trace' },
+            { type: 'changeRelationship', id: 'seidelSuspicion', delta: 1 },
+            {
+              type: 'say',
+              kind: 'thought',
+              text: `»${B}« – das steht auf Ralfs Diskette! Dieses Netz und das Spiel von Ralfs Stiefvater gehören zusammen.`,
+            },
+          ],
+        },
+        // Schlüssel-Strang (P07/P08): eine Meldung, die nur K-01 hätte erreichen sollen – Seidels Fehler.
+        {
+          id: 'msg_key_leak',
+          from: 'SYSTEM',
+          to: 'ALLE',
+          subject: 'SCHLUESSELWECHSEL',
+          encrypted: false,
+          when: { timeAfter: GAME_CONFIG.keyStrand.partTwoFrom },
+          body: [
+            'SCHLUESSELWECHSEL ZUM 21.11.',
+            `EMPFAENGER: ${N.senderHandle} (PERSOENLICH)`,
+            'VERTEILER : ALLE',
+            '',
+            `K-SCHLUESSEL TEIL 2/3: ${GAME_CONFIG.keyStrand.parts[1]}`,
+            '',
+            'TEIL 1/3: WIE UEBLICH AUF DER',
+            '          ARBEITSKOPIE (SICHTSCHUTZ)',
+            'TEIL 3/3: PRUEFBAND, GEHT PER BOTEN',
+          ],
+          effects: [
+            { type: 'discoverFact', id: 'key_part_2' },
+            { type: 'discoverFact', id: 'key_leak' },
+            { type: 'puzzle', id: 'P07', status: 'solved' },
+            { type: 'puzzle', id: 'P08', status: 'discovered' },
+            { type: 'changeRelationship', id: 'seidelSuspicion', delta: 1 },
+            {
+              type: 'say',
+              kind: 'thought',
+              text: `»Empfänger: ${N.senderHandle} – Verteiler: ALLE.« Da hat jemand den falschen Knopf erwischt. Ein Drittel des Schlüssels steht hier im Klartext – und der Rest ist auf der Arbeitskopie und auf irgendeinem Band?`,
+            },
+          ],
+        },
+        // Symptome von Seidels Verdacht (GDD §9.3: sichtbar nur als Tonfall von Nachrichten).
+        // TODO-STORY: Wortlaut und ob Seidel selbst schreibt, ist offen.
+        {
+          id: 'msg_sys_watch',
+          from: 'SYSTEM',
+          to: 'ALLE',
+          subject: 'PROTOKOLLIERUNG',
+          encrypted: false,
+          when: { rel: 'seidelSuspicion', atLeast: 'noticeable' },
+          body: [
+            'UNGEWOEHNLICHE AKTIVITAET AUF',
+            'TESTZUGAENGEN FESTGESTELLT.',
+            '',
+            'ALLE ZUGRIFFE WERDEN AB SOFORT',
+            'PROTOKOLLIERT.',
+          ],
+          effects: [{ type: 'discoverFact', id: 'net_watch' }],
+        },
+        {
+          id: 'msg_sys_final',
+          from: 'SYSTEM',
+          to: N.testHandle,
+          subject: 'LETZTE WARNUNG',
+          encrypted: false,
+          when: { rel: 'seidelSuspicion', atLeast: 'critical' },
+          body: [
+            `KENNUNG ${N.testHandle}:`,
+            'UNBEFUGTE NUTZUNG.',
+            '',
+            'BEI WEITEREM ZUGRIFF WIRD DER',
+            'ANSCHLUSS DES ANRUFERS ERMITTELT.',
+          ],
+          effects: [{ type: 'discoverFact', id: 'final_warning' }],
+        },
       ],
     },
   ],
@@ -102,10 +215,250 @@ export const SECRET_MAILBOX: MailboxSystem = {
   sysinfoEffects: [{ type: 'discoverFact', id: 'never_logged_in' }],
 };
 
-export const MAILBOXES: Record<string, MailboxSystem> = { secret: SECRET_MAILBOX };
+const BS = GAME_CONFIG.mailboxes.bitschuppen;
+const DK = GAME_CONFIG.mailboxes.datenkeller;
+
+/** Erste reguläre Mailbox (Kleinanzeige im Heimcomputer-Journal) – freiwillige Spur. */
+export const BITSCHUPPEN: MailboxSystem = {
+  id: 'bitschuppen',
+  name: BS.name,
+  phoneNumber: BS.phoneNumber,
+  baud: 300,
+  access: 'public',
+  sysop: BS.sysop,
+  hours: BS.hours,
+  validateAfterMinutes: BS.validateAfterMinutes,
+  historicalStatus: 'fictional',
+  welcome: [
+    `*** ${BS.name} ***`,
+    `SYSOP: ${BS.sysop}  -  300 BAUD 8N1`,
+    `GEOEFFNET ${BS.hours.from}-${BS.hours.to} UHR`,
+    'BITTE NICHT LAENGER ALS 30 MINUTEN -',
+    'ANDERE WOLLEN AUCH REIN!',
+  ],
+  boards: [
+    {
+      id: 'allgemein',
+      name: 'ALLGEMEIN',
+      minStatus: 'gast',
+      messages: [
+        {
+          id: 'bs_regeln',
+          from: BS.sysop,
+          to: 'ALLE',
+          subject: 'REGELN - BITTE LESEN',
+          encrypted: false,
+          body: [
+            '1. KEINE RAUBKOPIEN, KEINE CRACKS.',
+            '2. ECHTER NAME BEIM SYSOP, HANDLE',
+            '   IM BRETT IST OK.',
+            '3. GAESTE KOENNEN LESEN. SCHREIBEN',
+            '   UND DOWNLOADS ERST NACH',
+            '   FREISCHALTUNG (DAUERT ETWAS).',
+            '4. MAX. 30 MINUTEN PRO ANRUF.',
+            '',
+            'VIEL SPASS! ' + BS.sysop,
+          ],
+          effects: [],
+        },
+        {
+          id: 'bs_gebuehren',
+          from: 'KALLE',
+          to: 'ALLE',
+          subject: 'TELEFONRECHNUNG...',
+          encrypted: false,
+          body: [
+            'MEIN VATER HAT DIE RECHNUNG GESEHEN.',
+            '38 MARK. ICH BIN JETZT ERSTMAL',
+            'EIN PAAR WOCHEN OFFLINE. GRUESSE',
+            'AN ALLE, KALLE',
+          ],
+          effects: [],
+        },
+        {
+          id: 'bs_liste',
+          from: BS.sysop,
+          to: 'ALLE',
+          subject: 'MAILBOXLISTE OWL',
+          encrypted: false,
+          minStatus: 'mitglied',
+          body: [
+            'ANDERE BOXEN IN DER GEGEND:',
+            '',
+            `${pad(BS.name, 16)} ${BS.phoneNumber}  ${BS.hours.from}-${BS.hours.to}`,
+            `${pad(DK.name, 16)} ${DK.phoneNumber}  ${DK.hours.from}-${DK.hours.to}`,
+            '',
+            'WEITERE NUMMERN BITTE AN MICH.',
+          ],
+          effects: [{ type: 'discoverFact', id: 'bbs_datenkeller' }],
+        },
+      ],
+    },
+    {
+      id: 'c64',
+      name: 'C64-ECKE',
+      minStatus: 'gast',
+      messages: [
+        {
+          id: 'bs_intruder',
+          from: 'ZAPPO',
+          to: 'ALLE',
+          subject: 'INTRUDER VON 1001',
+          encrypted: false,
+          body: [
+            'HAT JEMAND DIE INTRUDER-DEMO SCHON',
+            'GESEHEN? DIE SCHREIBEN TEXT IN DEN',
+            'RAHMEN! WIE GEHT DAS UEBERHAUPT??',
+          ],
+          effects: [],
+        },
+        {
+          id: 'bs_koppler',
+          from: BS.sysop,
+          to: 'ZAPPO',
+          subject: 'RE: KOPPLER PFEIFT',
+          encrypted: false,
+          body: [
+            'WENN DER KOPPLER DAUERND AUSSTEIGT:',
+            'HOERER FESTER IN DIE MUFFEN UND',
+            'DIE TUER ZU. JEDES GERAEUSCH IM',
+            'ZIMMER STOERT DIE UEBERTRAGUNG.',
+          ],
+          effects: [],
+        },
+      ],
+    },
+    {
+      id: 'markt',
+      name: 'MARKT',
+      minStatus: 'mitglied',
+      messages: [
+        {
+          id: 'bs_markt1',
+          from: 'BIRGIT',
+          to: 'ALLE',
+          subject: 'VERKAUFE DATASETTE',
+          encrypted: false,
+          body: ['DATASETTE, GEHT EINWANDFREI. 30 DM', 'ODER TAUSCH GEGEN LEERDISKETTEN.'],
+          effects: [],
+        },
+      ],
+    },
+  ],
+  downloads: [
+    {
+      name: 'BIORHYTHMUS',
+      blocks: 4,
+      description: 'BERECHNET DEINE TAGESFORM',
+      basic: [
+        '10 PRINT CHR$(147);"BIORHYTHMUS"',
+        '20 INPUT "TAGE SEIT GEBURT";T',
+        '30 K=SIN(6.28319*T/23):S=SIN(6.28319*T/28)',
+        '40 G=SIN(6.28319*T/33)',
+        '50 PRINT "KOERPER: ";INT(K*100);"%"',
+        '60 PRINT "SEELE  : ";INT(S*100);"%"',
+        '70 PRINT "GEIST  : ";INT(G*100);"%"',
+      ],
+    },
+    {
+      name: 'ZAHLENRATEN',
+      blocks: 2,
+      description: 'KLASSIKER FUER ZWISCHENDURCH',
+      basic: [
+        '10 Z=INT(RND(0)*100)+1:V=0',
+        '20 INPUT "DEIN TIP (1-100)";T:V=V+1',
+        '30 IF T<Z THEN PRINT "ZU KLEIN":GOTO 20',
+        '40 IF T>Z THEN PRINT "ZU GROSS":GOTO 20',
+        '50 PRINT "RICHTIG! VERSUCHE:";V',
+      ],
+    },
+  ],
+  replies: [
+    {
+      to: BS.sysop,
+      afterMinutes: 15,
+      from: BS.sysop,
+      subject: 'RE: HALLO',
+      body: ['HI, DANKE FUER DIE NACHRICHT!', 'SCHOEN, DASS DU DABEI BIST.', 'GRUSS ' + BS.sysop],
+    },
+  ],
+  memberMail: {
+    from: BS.sysop,
+    subject: 'FREIGESCHALTET',
+    body: [
+      'HALLO UND WILLKOMMEN!',
+      'DU BIST JETZT FREIGESCHALTET:',
+      'SCHREIBEN, POST UND DOWNLOADS.',
+      'IM BRETT ALLGEMEIN STEHT JETZT AUCH',
+      'DIE MAILBOXLISTE FUER OWL.',
+      'GRUSS ' + BS.sysop,
+    ],
+    effects: [{ type: 'discoverFact', id: 'bbs_member' }],
+  },
+  sysinfo: [
+    `SYSTEM  : ${BS.name}`,
+    `SYSOP   : ${BS.sysop}`,
+    'RECHNER : C64 + 1541 + KOPPLER',
+    `ZEITEN  : TAEGLICH ${BS.hours.from}-${BS.hours.to}`,
+  ],
+  sysinfoEffects: [],
+};
+
+/** Zweites reguläres System: nur nachts, Nummer aus der Mailboxliste. */
+export const DATENKELLER: MailboxSystem = {
+  id: 'datenkeller',
+  name: DK.name,
+  phoneNumber: DK.phoneNumber,
+  baud: 300,
+  access: 'public',
+  sysop: DK.sysop,
+  hours: DK.hours,
+  validateAfterMinutes: DK.validateAfterMinutes,
+  historicalStatus: 'fictional',
+  welcome: [`>>> ${DK.name} <<<`, 'NACHTBETRIEB. LEISE SEIN.', `SYSOP: ${DK.sysop}`],
+  boards: [
+    {
+      id: 'keller',
+      name: 'KELLERGEFLUESTER',
+      minStatus: 'gast',
+      messages: [
+        {
+          id: 'dk_hallo',
+          from: DK.sysop,
+          to: 'ALLE',
+          subject: 'NEU HIER?',
+          encrypted: false,
+          body: [
+            'DER KELLER IST NUR NACHTS OFFEN,',
+            'TAGSUEBER BRAUCHT MEINE MUTTER DAS',
+            'TELEFON. WER STOERT, FLIEGT.',
+          ],
+          // TODO-STORY: Rolle des Datenkellers im Vollspiel offen (mögliche Spur, Gerüchte-Brett).
+          effects: [],
+        },
+      ],
+    },
+  ],
+  downloads: [],
+  replies: [],
+  sysinfo: [`SYSTEM  : ${DK.name}`, `SYSOP   : ${DK.sysop}`, `ZEITEN  : ${DK.hours.from}-${DK.hours.to}`],
+  sysinfoEffects: [],
+};
+
+export const MAILBOXES: Record<string, MailboxSystem> = {
+  secret: SECRET_MAILBOX,
+  bitschuppen: BITSCHUPPEN,
+  datenkeller: DATENKELLER,
+};
 
 /** Fiktives Telefonbuch: Nummer → Ziel. Keine Nummer wird jemals real gewählt. */
 export const PHONEBOOK: Record<string, { kind: 'person' | 'carrier'; id: string }> = {
   [GAME_CONFIG.ralf.phoneNumber]: { kind: 'person', id: 'ralf' },
   [N.phoneNumber]: { kind: 'carrier', id: 'secret' },
+  [BS.phoneNumber]: { kind: 'carrier', id: 'bitschuppen' },
+  [DK.phoneNumber]: { kind: 'carrier', id: 'datenkeller' },
 };
+
+function pad(s: string, n: number): string {
+  return (s + ' '.repeat(n)).slice(0, n);
+}

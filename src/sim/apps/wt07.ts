@@ -113,7 +113,8 @@ export const wt07App: AppDef<Wt07State> = {
         break;
       case 'title':
         L[5] = centered(`*** ${G.workingTitle} ***`);
-        L[7] = centered('(ARBEITSTITEL)');
+        L[7] = centered(G.genre);
+        L[8] = centered('(ARBEITSTITEL)');
         L[12] = centered('EIN SPIEL IN ENTWICKLUNG');
         L[20] = centered('LEERTASTE = START');
         L[22] = centered('RETURN = WEITER');

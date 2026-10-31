@@ -5,11 +5,13 @@
  * - Harte Schrittbegrenzung: Endlosschleifen werden nach MAX_STEPS mit "BREAK IN n" beendet.
  * - Der Laufzeitzustand (BasicRun) ist serialisierbar, damit INPUT-Pausen gespeichert werden können.
  */
-import type { BasicRun, ProgramLine } from '../../engine/types';
-import { BasicSyntaxError, canonicalVar, tokenize, type Token } from './tokenizer';
+import type { BasicRun, OpenFile, ProgramLine } from '../../engine/types';
+import { BasicSyntaxError, canonicalVar, crunchedLength, tokenize, type Token } from './tokenizer';
 
 export const MAX_STEPS = 50_000;
 const MAX_STACK = 64;
+/** Größter Betrag im 5-Byte-Fließkommaformat des Originals */
+const MAX_FLOAT = 1.70141183e38;
 const DIRECT = -1;
 
 export type Value = number | string;
@@ -22,11 +24,13 @@ export class BasicError extends Error {
 
 /** Schnittstelle zum simulierten C64 (Bildschirm, Laufwerk, Speicher) */
 export interface BasicHost {
+  /** Ausgabe; Zeichencodes sind PETSCII-Bytes (Steuercodes wie CHR$(147) wirken auf dem Bildschirm) */
   write(text: string): void;
   newline(): void;
+  /** Spalte in der logischen Bildschirmzeile (0–79) */
   column(): number;
-  clearScreen(): void;
-  setTextColor(code: number): void;
+  /** Freier BASIC-Speicher nach dem Einschalten (Grundlage für FRE) */
+  bytesFree(): number;
   /** Liefert 'basic' (Programm ersetzt), 'machine' (Maschinenprogramm geladen) oder 'error' */
   load(
     name: string | null,
@@ -35,6 +39,13 @@ export interface BasicHost {
     inProgram: boolean,
   ): 'basic' | 'machine' | 'error';
   save(name: string, device: number): void;
+  /**
+   * Sequenzielle Datei öffnen (OPEN lfn,8,sa,"NAME,S,R" bzw. ",S,W"): liefert beim Lesen den Inhalt
+   * (Zeilen durch CHR$(13) getrennt) oder wirft einen BasicError.
+   */
+  openFile(device: number, secondary: number, spec: string): { mode: 'r' | 'w'; name: string; data: string };
+  /** Beim CLOSE einer Schreibdatei: Inhalt auf die Diskette schreiben */
+  writeFile(name: string, data: string): void;
   /** true = eine App wurde gestartet, Interpreter stoppt */
   sys(addr: number): 'app' | 'reset' | 'none';
   poke(addr: number, value: number): void;
@@ -177,7 +188,6 @@ export class Interpreter {
       }
     }
     this.run.awaitingInput = null;
-    this.host.newline();
     return this.loop();
   }
 
@@ -195,7 +205,17 @@ export class Interpreter {
     let steps = 0;
     while (true) {
       const { line, stmt } = this.run.pc;
-      const sts = this.statements(line === DIRECT ? DIRECT : line);
+      let sts: Token[][] | null;
+      try {
+        sts = this.statements(line === DIRECT ? DIRECT : line);
+      } catch (e) {
+        // Unbekannte Zeichen in einer Programmzeile fallen erst beim Ausführen auf – wie am Original
+        if (e instanceof BasicError || e instanceof BasicSyntaxError) {
+          this.reportError(e instanceof BasicError ? e : new BasicError('SYNTAX'), line);
+          return 'ready';
+        }
+        throw e;
+      }
       if (!sts) {
         // Zeile existiert nicht mehr (z. B. nach NEW)
         return 'ready';
@@ -304,7 +324,14 @@ export class Interpreter {
       case 'DATA':
         return { k: 'next' };
       case 'PRINT':
+        if (this.isOp('#')) return this.execPrintFile();
         return this.execPrint();
+      case 'OPEN':
+        return this.execOpen();
+      case 'CLOSE': {
+        this.closeFile(this.intArg(0, 255));
+        return { k: 'next' };
+      }
       case 'GOTO':
         return this.jumpTo(this.lineNumber(), false);
       case 'GOSUB': {
@@ -329,8 +356,10 @@ export class Interpreter {
       case 'STOP':
         return { k: 'break' };
       case 'INPUT':
+        if (this.isOp('#')) return this.execInputFile();
         return this.execInput();
       case 'GET': {
+        if (this.isOp('#')) return this.execGetFile();
         const name = this.varName();
         this.assign(name, name.endsWith('$') ? '' : 0);
         return { k: 'next' };
@@ -424,6 +453,8 @@ export class Interpreter {
         if (isSub) this.run.gosubStack.push({ line: this.run.pc.line, stmt: this.run.pc.stmt + 1 });
         return this.jumpTo(targets[v - 1], false);
       }
+      case 'DEF':
+        return this.execDef();
       case 'CONT':
         throw new BasicError("CAN'T CONTINUE");
       default:
@@ -445,6 +476,9 @@ export class Interpreter {
   }
 
   private clearVars(): void {
+    delete this.run.fns;
+    // CLR/RUN schließen alle Dateien (ungeschriebene Puffer gehen verloren, wie am Original)
+    delete this.run.files;
     this.run.vars = {};
     this.run.arrays = {};
     this.run.forStack = [];
@@ -552,13 +586,182 @@ export class Interpreter {
   }
 
   private writeString(s: string): void {
-    for (const ch of s) {
-      const code = ch.charCodeAt(0);
-      if (code === 147) this.host.clearScreen();
-      else if (code === 13) this.host.newline();
-      else if (code < 32 || (code >= 128 && code < 160)) this.host.setTextColor(code);
-      else this.host.write(ch);
+    this.host.write(s);
+  }
+
+  // ------------------------------------------------------------------ Dateien (OPEN/CLOSE/PRINT#/INPUT#/GET#)
+
+  private file(lfn: number, mode: 'r' | 'w'): OpenFile {
+    const f = this.run.files?.[String(lfn)];
+    if (!f) throw new BasicError('FILE NOT OPEN');
+    if (f.mode !== mode) throw new BasicError(mode === 'r' ? 'NOT INPUT FILE' : 'NOT OUTPUT FILE');
+    return f;
+  }
+
+  /** Statusvariable ST: 64 = Dateiende erreicht */
+  private setStatus(f: OpenFile): void {
+    this.run.vars.ST = f.pos >= f.data.length ? 64 : 0;
+  }
+
+  private execOpen(): Signal {
+    const lfn = this.intArg(1, 255);
+    let dev = 1;
+    let sec = 0;
+    let spec = '';
+    if (this.isOp(',')) {
+      this.p++;
+      dev = this.intArg(0, 31);
+      if (this.isOp(',')) {
+        this.p++;
+        sec = this.intArg(0, 255);
+        if (this.isOp(',')) {
+          this.p++;
+          spec = this.str(this.expr());
+        }
+      }
     }
+    if (this.run.files?.[String(lfn)]) throw new BasicError('FILE OPEN');
+    if (Object.keys(this.run.files ?? {}).length >= 10) throw new BasicError('TOO MANY FILES');
+    const r = this.host.openFile(dev, sec, spec);
+    this.run.files = { ...(this.run.files ?? {}), [String(lfn)]: { ...r, pos: 0 } };
+    this.run.vars.ST = 0;
+    return { k: 'next' };
+  }
+
+  private closeFile(lfn: number): void {
+    const f = this.run.files?.[String(lfn)];
+    if (!f) return;
+    delete this.run.files![String(lfn)];
+    if (f.mode === 'w') this.host.writeFile(f.name, f.data);
+  }
+
+  private fileNumber(): number {
+    this.expectOp('#');
+    const lfn = this.intArg(0, 255);
+    return lfn;
+  }
+
+  /** PRINT#n,… – wie PRINT, aber in die Datei; Zeilenende ist CHR$(13) */
+  private execPrintFile(): Signal {
+    const f = this.file(this.fileNumber(), 'w');
+    let newline = true;
+    if (this.isOp(',')) this.p++;
+    while (!this.atEnd()) {
+      if (this.isOp(';') || this.isOp(',')) {
+        this.p++;
+        newline = false;
+        continue;
+      }
+      newline = true;
+      const v = this.expr();
+      f.data += typeof v === 'number' ? printNumber(v) : v;
+    }
+    if (newline) f.data += '\r';
+    if (f.data.length > 20_000) throw new BasicError('DISK FULL');
+    return { k: 'next' };
+  }
+
+  /** INPUT#n,A$,…: liest bis Komma oder CHR$(13) */
+  private execInputFile(): Signal {
+    const f = this.file(this.fileNumber(), 'r');
+    do {
+      this.expectOp(',');
+      const name = this.varName();
+      const idx = this.indexArgs();
+      let raw = '';
+      while (f.pos < f.data.length) {
+        const ch = f.data[f.pos++];
+        if (ch === '\r' || ch === ',') break;
+        raw += ch;
+      }
+      raw = raw.replace(/^ +/, '');
+      if (name.endsWith('$')) this.assign(name, raw.slice(0, 88), idx);
+      else {
+        const n = Number(raw.trim() === '' ? 0 : raw);
+        if (Number.isNaN(n)) throw new BasicError('FILE DATA');
+        this.assign(name, n, idx);
+      }
+    } while (this.isOp(','));
+    this.setStatus(f);
+    return { k: 'next' };
+  }
+
+  /** GET#n,A$: genau ein Zeichen (am Dateiende "") */
+  private execGetFile(): Signal {
+    const f = this.file(this.fileNumber(), 'r');
+    this.expectOp(',');
+    const name = this.varName();
+    const idx = this.indexArgs();
+    const ch = f.pos < f.data.length ? f.data[f.pos++] : '';
+    if (name.endsWith('$')) this.assign(name, ch, idx);
+    else this.assign(name, ch === '' ? 0 : Number(ch) || 0, idx);
+    this.setStatus(f);
+    return { k: 'next' };
+  }
+
+  /** DEF FN A(X)=Ausdruck – nur im Programm erlaubt */
+  private execDef(): Signal {
+    if (this.run.pc.line === DIRECT) throw new BasicError('ILLEGAL DIRECT');
+    if (!this.isKw('FN')) throw new BasicError('SYNTAX');
+    this.p++;
+    const name = canonicalVar(this.varName());
+    if (name.endsWith('$') || name.endsWith('%')) throw new BasicError('SYNTAX');
+    this.expectOp('(');
+    const param = canonicalVar(this.varName());
+    if (param.endsWith('$') || param.endsWith('%')) throw new BasicError('SYNTAX');
+    this.expectOp(')');
+    this.expectOp('=');
+    const body = this.toks.slice(this.p).map((t) => ({ t: t.t, v: t.v }));
+    if (body.length === 0) throw new BasicError('SYNTAX');
+    this.run.fns = { ...(this.run.fns ?? {}), [name]: { param, body } };
+    return { k: 'next' };
+  }
+
+  private fnDepth = 0;
+
+  /** FN A(x): Parameter vorübergehend belegen, Funktionsterm auswerten */
+  private callFn(): number {
+    const name = canonicalVar(this.varName());
+    const def = this.run.fns?.[name];
+    if (!def) throw new BasicError("UNDEF'D FUNCTION");
+    this.expectOp('(');
+    const arg = this.num(this.expr());
+    this.expectOp(')');
+    if (this.fnDepth >= MAX_STACK) throw new BasicError('OUT OF MEMORY');
+    const savedToks = this.toks;
+    const savedP = this.p;
+    const had = Object.prototype.hasOwnProperty.call(this.run.vars, def.param);
+    const old = this.run.vars[def.param];
+    this.run.vars[def.param] = arg;
+    this.fnDepth++;
+    try {
+      this.toks = def.body as Token[];
+      this.p = 0;
+      const v = this.num(this.expr());
+      if (!this.atEnd()) throw new BasicError('SYNTAX');
+      return v;
+    } finally {
+      this.fnDepth--;
+      this.toks = savedToks;
+      this.p = savedP;
+      if (had) this.run.vars[def.param] = old;
+      else delete this.run.vars[def.param];
+    }
+  }
+
+  /** Freier Speicher wie FRE(0): Programm, Variablen, Felder und Strings belegen Platz */
+  private freeBytes(): number {
+    const prog = this.host.programIsDirectory() ? [] : this.host.getProgram();
+    let used = 2 + prog.reduce((a, l) => a + 5 + crunchedLength(l.text), 0);
+    for (const v of Object.values(this.run.vars)) used += 7 + (typeof v === 'string' ? v.length : 0);
+    for (const [name, arr] of Object.entries(this.run.arrays)) {
+      const per = name.endsWith('%') ? 2 : name.endsWith('$') ? 3 : 5;
+      used += 5 + 2 * arr.dims.length + arr.data.length * per;
+      if (name.endsWith('$')) used += arr.data.reduce<number>((a, s) => a + String(s).length, 0);
+    }
+    const free = Math.max(0, this.host.bytesFree() - used);
+    // Das Original liefert eine vorzeichenbehaftete 16-Bit-Zahl: über 32767 wird es negativ.
+    return free > 32767 ? free - 65536 : free;
   }
 
   private execIf(): Signal {
@@ -654,6 +857,10 @@ export class Interpreter {
         }
       }
     }
+    this.listLines(from, to);
+  }
+
+  private listLines(from = 0, to = 63999): void {
     const prog = this.host.getProgram();
     const lines = this.host.programIsDirectory() ? prog : [...prog].sort((a, b) => a.num - b.num);
     if (this.host.column() > 0) this.host.newline();
@@ -684,6 +891,8 @@ export class Interpreter {
     if (r === 'error') return { k: 'end' };
     this.reindex();
     if (inProgram) return { k: 'restart' };
+    // Komfort: Das Verzeichnis erscheint direkt nach dem Laden (am Original folgt erst LIST).
+    if (name === '$' && this.host.programIsDirectory()) this.listLines();
     return { k: 'end' };
   }
 
@@ -692,6 +901,10 @@ export class Interpreter {
   private num(v: Value): number {
     if (typeof v !== 'number') throw new BasicError('TYPE MISMATCH');
     return v;
+  }
+  private checked(n: number): number {
+    if (!Number.isFinite(n) || Math.abs(n) > MAX_FLOAT) throw new BasicError('OVERFLOW');
+    return n;
   }
   private str(v: Value): string {
     if (typeof v !== 'string') throw new BasicError('TYPE MISMATCH');
@@ -766,10 +979,10 @@ export class Interpreter {
         if (typeof l === 'string' && typeof r === 'string') {
           l = l + r;
           if (l.length > 255) throw new BasicError('STRING TOO LONG');
-        } else l = this.num(l) + this.num(r);
+        } else l = this.checked(this.num(l) + this.num(r));
       } else if (this.isOp('-')) {
         this.p++;
-        l = this.num(l) - this.num(this.term());
+        l = this.checked(this.num(l) - this.num(this.term()));
       } else return l;
     }
   }
@@ -779,12 +992,12 @@ export class Interpreter {
     for (;;) {
       if (this.isOp('*')) {
         this.p++;
-        l = this.num(l) * this.num(this.unary());
+        l = this.checked(this.num(l) * this.num(this.unary()));
       } else if (this.isOp('/')) {
         this.p++;
         const r = this.num(this.unary());
         if (r === 0) throw new BasicError('DIVISION BY ZERO');
-        l = this.num(l) / r;
+        l = this.checked(this.num(l) / r);
       } else return l;
     }
   }
@@ -805,7 +1018,11 @@ export class Interpreter {
     let l = this.primary();
     while (this.isOp('^')) {
       this.p++;
-      l = Math.pow(this.num(l), this.num(this.primary()));
+      const base = this.num(l);
+      const exp = this.num(this.primary());
+      if (base < 0 && !Number.isInteger(exp)) throw new BasicError('ILLEGAL QUANTITY');
+      if (base === 0 && exp < 0) throw new BasicError('DIVISION BY ZERO');
+      l = this.checked(Math.pow(base, exp));
     }
     return l;
   }
@@ -911,6 +1128,32 @@ export class Interpreter {
           if (n < 0 || n > 65535) throw new BasicError('ILLEGAL QUANTITY');
           return this.host.peek(n);
         }
+        case 'SIN':
+          return Math.sin(this.num(a()[0]));
+        case 'COS':
+          return Math.cos(this.num(a()[0]));
+        case 'TAN': {
+          const n = this.num(a()[0]);
+          if (Math.abs(Math.cos(n)) < 1e-12) throw new BasicError('DIVISION BY ZERO');
+          return this.checked(Math.tan(n));
+        }
+        case 'ATN':
+          return Math.atan(this.num(a()[0]));
+        case 'LOG': {
+          const n = this.num(a()[0]);
+          if (n <= 0) throw new BasicError('ILLEGAL QUANTITY');
+          return Math.log(n);
+        }
+        case 'EXP':
+          return this.checked(Math.exp(this.num(a()[0])));
+        case 'FRE':
+          a();
+          return this.freeBytes();
+        case 'POS':
+          a();
+          return this.host.column();
+        case 'FN':
+          return this.callFn();
       }
     }
     throw new BasicError('SYNTAX');

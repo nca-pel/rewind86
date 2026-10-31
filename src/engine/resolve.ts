@@ -22,7 +22,7 @@ export function isReachable(state: GameState, id: string): boolean {
   if (o.partOf) return isReachable(state, o.partOf);
   if (o.portable) {
     const loc = state.itemLocations[id];
-    if (loc === 'inventory' || loc === 'desk' || loc === 'drive') return true;
+    if (loc === 'inventory' || loc === 'desk' || loc === 'drive' || loc === 'datasette') return true;
     if (loc === 'drawer') return state.objectStates.drawer?.open === true;
     if (loc === 'package') return state.objectStates.package?.open === true;
     return false;

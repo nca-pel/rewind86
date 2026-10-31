@@ -1,4 +1,5 @@
 import type { Ctx } from '../../engine/context';
+import type { VideoState } from '../../c64/video';
 import type { AppState, C64Key, GameState } from '../../engine/types';
 
 export interface Rendered {
@@ -12,6 +13,8 @@ export interface Rendered {
   demoScreen?: number;
   /** Zeilenweise Textfarben (Index → C64-Farbe) */
   lineColors?: Record<number, number>;
+  /** Optional: kompletter Bildschirm (Bildschirmcodes, Farben je Zelle) statt Textzeilen */
+  video?: VideoState;
   inputMode: 'basic' | 'keys' | 'line';
   cursor: boolean;
 }

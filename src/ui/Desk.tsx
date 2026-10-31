@@ -81,8 +81,8 @@ export function Desk({ state, onSelect, selected }: Props) {
     onSelect,
     selected: selected === id,
   });
-  const screenColor = c64.powerOn ? C64_PALETTE[c64.background] : '#1a1d1a';
-  const borderColor = c64.powerOn ? C64_PALETTE[c64.border] : '#121412';
+  const screenColor = c64.powerOn ? C64_PALETTE[c64.video.background] : '#1a1d1a';
+  const borderColor = c64.powerOn ? C64_PALETTE[c64.video.border] : '#121412';
 
   return (
     <svg
@@ -214,7 +214,7 @@ export function Desk({ state, onSelect, selected }: Props) {
                   y={104 + i * 12}
                   width={Math.min(200, l.trimEnd().length * 5)}
                   height="5"
-                  fill={C64_PALETTE[c64.text]}
+                  fill={C64_PALETTE[c64.video.text]}
                   opacity="0.85"
                 />
               ) : null,

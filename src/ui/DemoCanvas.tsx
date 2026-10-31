@@ -1,7 +1,22 @@
 /** Canvas-Effekte der INTRUDER-Demo: Rasterbalken, Sprites, Laufschrift, Rahmen-Scroller, Sternenfeld. */
 import { useEffect, useRef } from 'react';
 import { INTRUDER_SCREENS } from '../sim/apps/intruder';
+import { PALETTE_RGB, drawCharsToContext, textToScreen } from '../c64';
 import { C64_PALETTE } from './palette';
+
+/** Text im eigenen Zeichensatz zeichnen (scale = Pixelgröße) */
+function text(
+  g: CanvasRenderingContext2D,
+  s: string,
+  x: number,
+  y: number,
+  color: number | ((i: number) => number),
+  scale = 1,
+  yOffset?: (i: number) => number,
+): void {
+  const rgb = typeof color === 'number' ? PALETTE_RGB[color] : (i: number) => PALETTE_RGB[color(i)];
+  drawCharsToContext(g, textToScreen(s), x, y, rgb, scale, yOffset);
+}
 
 const W = 384;
 const H = 272;
@@ -15,7 +30,7 @@ export function DemoCanvas({ screen, reduced }: { screen: number; reduced: boole
     const canvas = ref.current;
     const g = canvas?.getContext('2d');
     if (!canvas || !g) return;
-    const text = INTRUDER_SCREENS[screen].scroller;
+    const scroller = INTRUDER_SCREENS[screen].scroller;
     const stars = Array.from({ length: 90 }, (_, i) => ({
       x: (i * 97) % W,
       y: (i * 53) % H,
@@ -28,8 +43,6 @@ export function DemoCanvas({ screen, reduced }: { screen: number; reduced: boole
       const t = frame;
       g.fillStyle = '#000';
       g.fillRect(0, 0, W, H);
-      g.font = '8px "Press Start 2P", monospace';
-      g.textBaseline = 'top';
 
       if (screen === 0) {
         for (let i = 0; i < 7; i++) {
@@ -38,9 +51,7 @@ export function DemoCanvas({ screen, reduced }: { screen: number; reduced: boole
           g.fillStyle = col;
           g.fillRect(0, y, W, 4);
         }
-        g.font = '24px "Press Start 2P", monospace';
-        g.fillStyle = C64_PALETTE[Math.floor(t / 6) % 16 || 1];
-        g.fillText('INTRUDER', BX + 16, BY + 20);
+        text(g, 'INTRUDER', BX + 16, BY + 20, Math.floor(t / 6) % 16 || 1, 4);
         for (let i = 0; i < 8; i++) {
           const x = BX + 20 + i * 36;
           const y = BY + 120 + Math.abs(Math.sin((t + i * 10) / 15)) * -40;
@@ -58,43 +69,42 @@ export function DemoCanvas({ screen, reduced }: { screen: number; reduced: boole
         }
         g.fillStyle = C64_PALETTE[6];
         g.fillRect(BX, BY, W - 2 * BX, H - 2 * BY);
-        g.font = '16px "Press Start 2P", monospace';
-        g.fillStyle = C64_PALETTE[1];
-        g.fillText('NO BORDER', BX + 48, BY + 80);
+        text(g, 'NO BORDER', BX + 48, BY + 80, 1, 2);
       } else {
         for (const s of stars) {
           const x = (s.x - t * s.z + W * 10) % W;
           g.fillStyle = C64_PALETTE[s.z === 3 ? 1 : s.z === 2 ? 15 : 11];
           g.fillRect(x, s.y, s.z, 1);
         }
-        g.font = '32px "Press Start 2P", monospace';
-        g.fillStyle = C64_PALETTE[7];
-        g.fillText('1001', BX + 96, BY + 70);
+        text(g, '1001', BX + 96, BY + 70, 7, 4);
       }
 
       // Laufschrift (Teil 2: unten im Rahmen)
-      g.font = '8px "Press Start 2P", monospace';
       const y = screen === 1 ? H - 22 : H - BY - 20;
       if (reduced) {
-        g.fillStyle = C64_PALETTE[1];
-        const words = text.split(' ');
+        const words = scroller.split(' ');
         let line = '';
         let ly = screen === 1 ? H - 30 : H - BY - 40;
         for (const w of words) {
           if ((line + w).length > 44) {
-            g.fillText(line, 8, ly);
+            text(g, line, 8, ly, 1);
             ly += 10;
             line = '';
           }
           line += w + ' ';
         }
-        g.fillText(line, 8, ly);
+        text(g, line, 8, ly, 1);
       } else {
-        const x = W - ((t * 2) % (text.length * 8 + W));
-        for (let i = 0; i < text.length; i++) {
-          g.fillStyle = C64_PALETTE[[1, 7, 13, 3, 14][(i + Math.floor(t / 4)) % 5]];
-          g.fillText(text[i], x + i * 8, y + Math.sin((x + i * 8) / 20) * 3);
-        }
+        const x = W - ((t * 2) % (scroller.length * 8 + W));
+        text(
+          g,
+          scroller,
+          x,
+          y,
+          (i) => [1, 7, 13, 3, 14][(i + Math.floor(t / 4)) % 5],
+          1,
+          (i) => Math.round(Math.sin((x + i * 8) / 20) * 3),
+        );
       }
       frame++;
       if (!reduced) raf = requestAnimationFrame(draw);

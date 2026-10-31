@@ -59,7 +59,7 @@ export const intruderApp: AppDef<IntruderState> = {
       if (app.screen === cfg.hintScreen && !ctx.state.knownFacts.includes('demo_border')) {
         ctx.say(cfg.hintThought, 'thought');
         discoverFact(ctx, 'demo_border');
-        // TODO-STORY: cfg.hintLink verweist später auf ein konkretes Rätsel.
+        // hintLink: Der Rand-Trick ist der Denkanstoß für das unsichtbare Schlüsselfragment (P08).
         if (cfg.hintLink) discoverFact(ctx, cfg.hintLink.factId);
       }
     }

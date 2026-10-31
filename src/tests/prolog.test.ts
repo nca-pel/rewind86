@@ -5,6 +5,8 @@ import { MAILBOXES } from '../content/networks';
 import { PUZZLES } from '../content/puzzles';
 import { GAME_CONFIG } from '../content/config';
 import type { GameEffect } from '../engine/types';
+import { milestoneState } from '../engine/dev';
+import { step } from '../engine/engine';
 import { Session } from './helpers';
 
 /** Spielt den vertikalen Ausschnitt bis zur Mailbox durch (reiner Textweg, ohne Debugwerkzeuge). */
@@ -103,7 +105,7 @@ describe('Prolog (GDD §19.4, §18.1)', () => {
     s.key('1'); // Verbindung → Hinweis auf LADER
     expect(s.screen()).toContain('ERSATZWAHL: SIEHE LADER');
     s.key('RUNSTOP');
-    s.key('3'); // Modul beenden
+    s.key('4'); // Modul beenden
     s.c('LOAD"LADER",8');
     s.c('LIST');
     expect(s.has('data_lines')).toBe(true);
@@ -238,7 +240,8 @@ describe('Content-Integrität', () => {
     ...EVENTS.flatMap((e) => e.variants.flatMap((v) => v.effects)),
     ...DIALOGUE.flatMap((d) => d.effects ?? []),
     ...Object.values(MAILBOXES).flatMap((m) => [
-      ...m.messages.flatMap((x) => x.effects),
+      ...m.boards.flatMap((b) => b.messages.flatMap((x) => x.effects)),
+      ...(m.memberMail?.effects ?? []),
       ...m.sysinfoEffects,
     ]),
   ];
@@ -270,9 +273,15 @@ describe('Content-Integrität', () => {
     expect(s.state.itemLocations).toEqual(before);
     expect(s.state.telecom.ringing).toBe('ralf');
   });
-  test('Offene Storypunkte bleiben als Platzhalter markiert', () => {
-    expect(GAME_CONFIG.ghost.civilIdentity).toBe('GHOST_CIVIL_IDENTITY_TBD');
-    expect(GAME_CONFIG.unreleasedGame.workingTitle).toBe('WORKING_TITLE_TBD');
-    expect(GAME_CONFIG.intruder.hintLink).toBeNull();
+  test('Storyentscheidungen übernommen; GHOST bleibt im Spieltext unenthüllt', () => {
+    expect(GAME_CONFIG.unreleasedGame.workingTitle).toBe('FERNHANDEL');
+    expect(GAME_CONFIG.secretNetwork.nodeName).toBe('KNOTEN WEST');
+    // Der INTRUDER-Hinweis ist mit dem Schlüsselfragment-Rätsel verknüpft
+    expect(GAME_CONFIG.intruder.hintLink?.puzzleId).toBe('P08');
+    // Keine Enthüllung im Ausschnitt: weder GHOST noch seine Identität tauchen in Spieltexten auf
+    const s = new Session(false);
+    s.state = milestoneState('end', step)!;
+    const text = s.state.history.map((l) => l.text).join('\n');
+    expect(text).not.toMatch(/GHOST|Computerclub|Betreuer/i);
   });
 });

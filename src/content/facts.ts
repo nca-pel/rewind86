@@ -53,7 +53,7 @@ export const FACTS: FactDef[] = [
   {
     id: 'credits_ms',
     category: 'personen',
-    text: 'In den Credits des Intros steht als Programmierer nur »M.S.« – Martin Seidel?',
+    text: 'In den Credits des Intros steht als Programmierer nur »M.S.«.',
   },
   {
     id: 'intro_arrow',
@@ -119,6 +119,111 @@ export const FACTS: FactDef[] = [
     id: 'never_logged_in',
     category: 'verdacht',
     text: `${C.secretNetwork.testHandle} war laut System vorher noch nie angemeldet. Fällt das jemandem auf?`,
+  },
+  {
+    id: 'club_evening',
+    category: 'personen',
+    text: `Rundbrief vom Computerclub: Clubabend am Donnerstag, ${C.club.eveningDate.slice(8, 10)}.${C.club.eveningDate.slice(5, 7)}., 19 Uhr im Jugendzentrum. Die Club-Mailbox ist der ${C.mailboxes.bitschuppen.name} (Tel. ${C.mailboxes.bitschuppen.phoneNumber}).`,
+  },
+  {
+    id: 'ralf_schedule',
+    category: 'personen',
+    text: 'Ralf hat dienstags, donnerstags und freitags ab halb fünf Training, samstags nach der Schule ein Spiel. Sonst ist er meist zu Hause.',
+  },
+  {
+    id: 'ralf_knows_module',
+    category: 'verdacht',
+    text: 'Ralf weiß jetzt vom versteckten Modus. Hoffentlich hält er dicht.',
+  },
+  {
+    id: 'seidel_phones',
+    category: 'verdacht',
+    text: 'Ralf erzählt: Seidel telefoniert seit Tagen hinter verschlossener Tür im Arbeitszimmer.',
+  },
+  {
+    id: 'net_watch',
+    category: 'verdacht',
+    text: `Neue Systemmeldung im Netz: Zugriffe auf Testzugänge werden jetzt protokolliert. Jemand schaut genauer hin.`,
+  },
+  {
+    id: 'account_locked',
+    category: 'verdacht',
+    text: `${C.secretNetwork.testHandle} wurde gesperrt – vorübergehend. Zu viele Zugriffe fallen auf.`,
+  },
+  {
+    id: 'anon_call',
+    category: 'verdacht',
+    text: 'Ein Anruf ohne Stimme: Jemand hat zugehört und wieder aufgelegt. Zufall?',
+  },
+  {
+    id: 'final_warning',
+    category: 'verdacht',
+    text: `Letzte Warnung im Netz: Bei weiteren Zugriffen mit ${C.secretNetwork.testHandle} wird der Anschluss ermittelt.`,
+  },
+  {
+    id: 'bbs_bitschuppen',
+    category: 'kanaele',
+    text: `Kleinanzeige: Mailbox »${C.mailboxes.bitschuppen.name}«, Tel. ${C.mailboxes.bitschuppen.phoneNumber}, täglich ${C.mailboxes.bitschuppen.hours.from}–${C.mailboxes.bitschuppen.hours.to} Uhr. Gäste willkommen.`,
+  },
+  {
+    id: 'bbs_member',
+    category: 'kanaele',
+    text: `Im ${C.mailboxes.bitschuppen.name} bist du jetzt freigeschaltet: schreiben, private Post, Downloads.`,
+  },
+  {
+    id: 'bbs_datenkeller',
+    category: 'kanaele',
+    text: `Mailbox »${C.mailboxes.datenkeller.name}«, Tel. ${C.mailboxes.datenkeller.phoneNumber} – nur nachts (${C.mailboxes.datenkeller.hours.from}–${C.mailboxes.datenkeller.hours.to} Uhr).`,
+  },
+  {
+    id: 'hidden_text',
+    category: 'codes',
+    text: 'Lesertipp: Farbcodes in REM-Zeilen können Text beim LIST unsichtbar machen (Schrift = Hintergrundfarbe). Hintergrund ändern: POKE 53281,<Farbe>.',
+  },
+  {
+    id: 'empty_rem',
+    category: 'codes',
+    text: 'Im LADER steht in Zeile 70 ein REM, hinter dem scheinbar nichts kommt.',
+  },
+  {
+    id: 'key_leak',
+    category: 'verdacht',
+    text: `Systemmeldung »SCHLUESSELWECHSEL«: eigentlich nur für ${C.secretNetwork.senderHandle}, aber an ALLE verteilt. Der Schlüssel besteht aus drei Teilen – einer steckt auf der Arbeitskopie, einer kommt »per Band«.`,
+  },
+  {
+    id: 'key_part_1',
+    category: 'codes',
+    text: `Schlüsselteil 1/3: ${C.keyStrand.parts[0]} (unsichtbar im LADER, Zeile 70).`,
+  },
+  {
+    id: 'key_part_2',
+    category: 'codes',
+    text: `Schlüsselteil 2/3: ${C.keyStrand.parts[1]} (aus der fehlgeleiteten Systemmeldung).`,
+  },
+  {
+    id: 'key_part_3',
+    category: 'codes',
+    text: `Schlüsselteil 3/3: ${C.keyStrand.parts[2]} (vom Prüfband).`,
+  },
+  {
+    id: 'cassette',
+    category: 'dinge',
+    text: 'Ralf hat dir eine Kassette aus Seidels Sperrmüllkarton gebracht: »WT-07 PRÜFBAND 3«. Ein Datenband für die Datasette.',
+  },
+  {
+    id: 'key_complete',
+    category: 'codes',
+    text: 'Alle drei Schlüsselteile zusammen ergeben zwölf Ziffern. Das Modul fragt nach genau so einem Schlüssel (Menüpunkt 3).',
+  },
+  {
+    id: 'cipher_method',
+    category: 'codes',
+    text: 'Das Verfahren ist simpel: Jede Schlüsselziffer verschiebt den Buchstaben an ihrer Stelle im Alphabet, »X« trennt die Wörter.',
+  },
+  {
+    id: 'k01_decrypted',
+    category: 'verdacht',
+    text: `Klartext des Rundschreibens von ${C.secretNetwork.senderHandle}: »Operation REWIND beginnt Freitag.« Alle Kennungen sollen sich bereithalten, Testzugänge werden abgeschaltet.`,
   },
   {
     id: 'demo_seen',

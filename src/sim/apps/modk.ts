@@ -3,23 +3,42 @@
  * Ohne Diskette 2 nur eingeschränkter Betrieb – aber der erste Netzkontakt ist möglich (GDD §7.5).
  */
 import { GAME_CONFIG } from '../../content/config';
-import { MAILBOXES } from '../../content/networks';
+import { MAILBOXES, type MailboxMessage } from '../../content/networks';
+import { FULL_KEY, K01_CIPHERTEXT, decrypt, groups, readable } from '../../engine/cipher';
+import { evalCondition } from '../../engine/conditions';
 import type { Ctx } from '../../engine/context';
 import { applyEffects, discoverFact, scheduleEvent, setPuzzle } from '../../engine/effects';
-import type { AppState } from '../../engine/types';
+import { changeRelationship, lockNote, lockedUntil } from '../../engine/pressure';
+import type { AppState, GameState } from '../../engine/types';
+import { diskInDrive } from '../drive';
 import { centered } from '../screen';
 import { pad, type AppDef } from './types';
 
-type Screen = 'insert' | 'nokey' | 'menu' | 'status' | 'dial' | 'online' | 'list' | 'read' | 'sys';
+type Screen = 'insert' | 'nokey' | 'menu' | 'status' | 'dial' | 'key' | 'online' | 'list' | 'read' | 'sys';
 
 export interface ModkState extends AppState {
   id: 'modk';
   screen: Screen;
   note: string | null;
   msg: number;
+  /** Sendeversuch in dieser Verbindung schon als Risiko verbucht */
+  sendTried?: boolean;
+  /** Von Hand eingegebener Ersatzschlüssel (gilt, solange das Modul läuft) */
+  key?: string;
+  /** Eingabe im Schlüsseldialog */
+  keyInput?: string;
 }
 
+const KEY_LENGTH = GAME_CONFIG.keyStrand.parts.join('').length;
+const K01 = 'msg_k01_all';
+
 const N = GAME_CONFIG.secretNetwork;
+const ONLINE_SCREENS: Screen[] = ['online', 'list', 'read', 'sys'];
+
+/** Nachrichten, die beim aktuellen Stand sichtbar sind (Tonfall je nach Verdachtsstufe) */
+export function visibleMessages(state: GameState): MailboxMessage[] {
+  return MAILBOXES.secret.boards[0].messages.filter((m) => evalCondition(state, m.when));
+}
 
 export function modkDropCarrier(ctx: Ctx): void {
   const app = ctx.state.computer.app;
@@ -32,10 +51,24 @@ export function modkDropCarrier(ctx: Ctx): void {
 
 function tryConnect(ctx: Ctx, app: ModkState): number {
   const t = ctx.state.telecom;
+  if (t.handset === 'coupler' && t.call?.kind === 'carrier' && t.call.with && t.call.with !== 'secret') {
+    app.note = 'GEGENSTELLE UNBEKANNT';
+    return 1;
+  }
   if (t.handset === 'coupler' && t.call?.kind === 'carrier' && t.call.with) {
     const box = MAILBOXES[t.call.with];
+    const until = lockedUntil(ctx.state, box.id);
+    if (until) {
+      t.call.kind = 'dead';
+      ctx.state.objectStates.coupler.carrier = false;
+      app.note = lockNote(until);
+      ctx.say('Das Netz nimmt die Kennung nicht an und legt sofort wieder auf.');
+      return 1;
+    }
     t.connectedSystemId = box.id;
-    t.currentUserHandle = box.autoHandle;
+    app.sendTried = false;
+    changeRelationship(ctx, 'seidelSuspicion', GAME_CONFIG.risk.secretLogin, 'Anmeldung');
+    t.currentUserHandle = box.autoHandle ?? null;
     app.screen = 'online';
     app.note = null;
     ctx.cue('modem');
@@ -72,7 +105,63 @@ function logoff(ctx: Ctx, app: ModkState): void {
     'Die Gegenstelle legt auf. Aus dem Koppler tutet nur noch das Besetztzeichen – du solltest auflegen.',
   );
   const read = ctx.state.telecom.messageReadIds;
-  if (MAILBOXES.secret.messages.every((m) => read.includes(m.id))) setPuzzle(ctx, 'P06', 'solved');
+  const story = MAILBOXES.secret.boards[0].messages.filter((m) => !m.when);
+  if (story.every((m) => read.includes(m.id))) setPuzzle(ctx, 'P06', 'solved');
+}
+
+/** Rundschreiben mit dem eingegebenen Schlüssel gelesen: Klartext erkannt oder weiter Salat */
+function readWithKey(ctx: Ctx, app: ModkState): void {
+  if (!app.key) return;
+  const s = ctx.state;
+  if (app.key === FULL_KEY) {
+    if (s.knownFacts.includes('k01_decrypted')) return;
+    ctx.say(
+      'Die Buchstaben ordnen sich. Zwischen den X stehen Wörter – echte Wörter. »OPERATION REWIND BEGINNT FREITAG.« Freitag, das ist in ein paar Tagen.',
+      'thought',
+    );
+    discoverFact(ctx, 'k01_decrypted');
+    discoverFact(ctx, 'cipher_method');
+    setPuzzle(ctx, 'P09', 'solved');
+    return;
+  }
+  const plain = decrypt(K01_CIPHERTEXT, app.key);
+  const right = [...plain].filter((c, i) => c === decrypt(K01_CIPHERTEXT, FULL_KEY)[i]).length;
+  ctx.say(
+    right > plain.length / 3
+      ? 'Stellenweise sieht das fast nach Wörtern aus – aber nur stellenweise. Irgendwelche Ziffern stimmen noch nicht.'
+      : 'Immer noch Buchstabensalat. Der Schlüssel stimmt so nicht.',
+    'thought',
+  );
+}
+
+/** Rohdaten des Rundschreibens als sequenzielle Datei auf die Diskette im Laufwerk schreiben */
+function saveRaw(ctx: Ctx, app: ModkState): number {
+  const disk = diskInDrive(ctx.state);
+  const name = GAME_CONFIG.keyStrand.rawFileName;
+  ctx.cue('drive');
+  if (!disk) {
+    app.note = 'KEINE DISKETTE IN LAUFWERK 8';
+    return 0;
+  }
+  if (disk.writeProtected) {
+    app.note = 'SCHREIBSCHUTZ - ANDERE DISK!';
+    return 0;
+  }
+  if (disk.files.some((f) => f.name === name)) {
+    app.note = `${name} EXISTIERT BEREITS`;
+    return 0;
+  }
+  const data = groups(K01_CIPHERTEXT).join('\r') + '\r';
+  disk.files.push({ name, type: 'SEQ', blocks: 1, textContent: data });
+  app.note = `GESPEICHERT: ${name} (SEQ)`;
+  if (!ctx.state.flags.rawSaved) {
+    ctx.state.flags.rawSaved = true;
+    ctx.say(
+      `Die Rohdaten liegen jetzt als Datei ${name} auf der Diskette. Ein eigenes BASIC-Programm könnte sie mit OPEN und INPUT# lesen – und rechnen.`,
+      'thought',
+    );
+  }
+  return 1;
 }
 
 export const modkApp: AppDef<ModkState> = {
@@ -84,6 +173,11 @@ export const modkApp: AppDef<ModkState> = {
   key(ctx, app, key) {
     const k = key.toUpperCase();
     const online = ctx.state.telecom.connectedSystemId !== null;
+    if (!online && ONLINE_SCREENS.includes(app.screen)) {
+      // Gegenstelle hat getrennt (z. B. Sperre); der Bildschirm zeigt bereits das Menü –
+      // die Taste gilt also schon dem Menü.
+      app.screen = 'menu';
+    }
     switch (app.screen) {
       case 'insert':
         if (k === 'RETURN') {
@@ -120,8 +214,32 @@ export const modkApp: AppDef<ModkState> = {
         } else if (k === '2') {
           app.screen = 'status';
           discoverFact(ctx, 'test_handle');
-        } else if (k === '3' || k === 'RUNSTOP') return { exit: true };
+        } else if (k === '3') {
+          app.screen = 'key';
+          app.keyInput = '';
+        } else if (k === '4' || k === 'RUNSTOP') return { exit: true };
         return {};
+      case 'key': {
+        const input = app.keyInput ?? '';
+        if (/^\d$/.test(k) && input.length < KEY_LENGTH) app.keyInput = input + k;
+        else if (k === 'DEL') app.keyInput = input.slice(0, -1);
+        else if (k === 'RUNSTOP') {
+          app.screen = 'menu';
+          app.note = null;
+        } else if (k === 'RETURN') {
+          if (input.length === 0) {
+            app.key = undefined;
+            app.note = 'SCHLUESSEL GELOESCHT';
+            app.screen = 'menu';
+          } else if (input.length < KEY_LENGTH) app.note = `${KEY_LENGTH} ZIFFERN NOETIG`;
+          else {
+            app.key = input;
+            app.note = 'ERSATZSCHLUESSEL GESETZT (UNGEPRUEFT)';
+            app.screen = 'menu';
+          }
+        }
+        return {};
+      }
       case 'status':
         app.screen = 'menu';
         return {};
@@ -133,14 +251,14 @@ export const modkApp: AppDef<ModkState> = {
         }
         return {};
       case 'online':
-        if (!online) {
-          app.screen = 'menu';
-          app.note = 'NO CARRIER';
-          return {};
-        }
         if (k === '1') app.screen = 'list';
-        else if (k === '2') app.note = 'GESPERRT: SCHLUESSEL FEHLT';
-        else if (k === '3') {
+        else if (k === '2') {
+          app.note = 'GESPERRT: SCHLUESSEL FEHLT';
+          if (!app.sendTried) {
+            app.sendTried = true;
+            changeRelationship(ctx, 'seidelSuspicion', GAME_CONFIG.risk.secretSendAttempt, 'Sendeversuch');
+          }
+        } else if (k === '3') {
           app.screen = 'sys';
           applyEffects(ctx, MAILBOXES.secret.sysinfoEffects);
         } else if (k === '4') logoff(ctx, app);
@@ -148,7 +266,7 @@ export const modkApp: AppDef<ModkState> = {
         else return {};
         return { minutes: 1 };
       case 'list': {
-        const msgs = MAILBOXES.secret.messages;
+        const msgs = visibleMessages(ctx.state);
         const n = parseInt(k, 10);
         if (n >= 1 && n <= msgs.length) {
           app.msg = n - 1;
@@ -157,22 +275,20 @@ export const modkApp: AppDef<ModkState> = {
           if (!ctx.state.telecom.messageReadIds.includes(m.id)) {
             ctx.state.telecom.messageReadIds.push(m.id);
             applyEffects(ctx, m.effects);
-            if (m.encrypted)
-              ctx.say('Lauter Buchstabensalat in Fünfergruppen. Ohne Schlüssel keine Chance.', 'thought');
-            else
-              ctx.say(
-                `»${GAME_CONFIG.unreleasedGame.buildCode}« – das steht auf Ralfs Diskette! Dieses Netz und das Spiel von Ralfs Stiefvater gehören zusammen.`,
-                'thought',
-              );
           }
+          if (m.id === K01) readWithKey(ctx, app);
           return { minutes: 1 };
         }
         if (k === 'RETURN' || k === 'RUNSTOP') app.screen = 'online';
         return {};
       }
-      case 'read':
+      case 'read': {
+        const m = visibleMessages(ctx.state)[app.msg];
+        if (m?.id === K01 && k === 'S') return { minutes: saveRaw(ctx, app) };
+        app.note = null;
         app.screen = 'list';
         return {};
+      }
       case 'sys':
         app.screen = 'online';
         return {};
@@ -184,7 +300,11 @@ export const modkApp: AppDef<ModkState> = {
     const L: string[] = [];
     const head = `** ${N.moduleName} ** V0.7`;
     const colors: Record<number, number> = { 0: 1 };
-    switch (app.screen) {
+    // Hat die Gegenstelle getrennt, zeigt das Modul sofort wieder sein Menü.
+    const dropped = !state.telecom.connectedSystemId && ONLINE_SCREENS.includes(app.screen);
+    const screen = dropped ? 'menu' : app.screen;
+    const note = dropped ? 'NO CARRIER' : app.note;
+    switch (screen) {
       case 'insert':
         L.push(head, '', 'SCHLUESSELDISKETTE (2)', 'IN LAUFWERK 8 EINLEGEN.', '', 'WEITER: RETURN');
         break;
@@ -200,9 +320,26 @@ export const modkApp: AppDef<ModkState> = {
           '',
           ' 1  VERBINDUNG HERSTELLEN',
           ' 2  KENNUNG / STATUS',
-          ' 3  ENDE',
+          ' 3  ERSATZSCHLUESSEL EINGEBEN',
+          ' 4  ENDE',
+        );
+        if (app.key) L.splice(3, 0, 'ERSATZSCHLUESSEL: GESETZT');
+        break;
+      case 'key': {
+        const input = app.keyInput ?? '';
+        L.push(
+          head,
+          '',
+          'OHNE DISK 2: ERSATZSCHLUESSEL',
+          `(${KEY_LENGTH} ZIFFERN, WIRD NICHT GEPRUEFT)`,
+          '',
+          `> ${input}${'.'.repeat(KEY_LENGTH - input.length)}`,
+          '',
+          'DEL = LOESCHEN   RETURN = UEBERNEHMEN',
+          'RUN/STOP = ZURUECK',
         );
         break;
+      }
       case 'status':
         L.push(
           head,
@@ -247,30 +384,30 @@ export const modkApp: AppDef<ModkState> = {
         break;
       case 'list':
         L.push('NACHRICHTEN', '----------------------------------------');
-        MAILBOXES.secret.messages.forEach((m, i) => {
+        visibleMessages(state).forEach((m, i) => {
           const read = state.telecom.messageReadIds.includes(m.id) ? ' ' : '*';
           L.push(`${read}${i + 1} ${pad(m.from, 6)}> ${pad(m.to, 6)} ${m.subject}`.slice(0, 40));
         });
         L.push('', 'NUMMER = LESEN   RETURN = ZURUECK');
         break;
       case 'read': {
-        const m = MAILBOXES.secret.messages[app.msg];
-        L.push(
-          `VON: ${m.from}   AN: ${m.to}`,
-          `BETR: ${m.subject}`,
-          '----------------------------------------',
-          ...m.body,
-          '',
-          'TASTE = ZURUECK',
-        );
+        const m = visibleMessages(state)[app.msg] ?? visibleMessages(state)[0];
+        const head3 = [`VON: ${m.from}   AN: ${m.to}`, `BETR: ${m.subject}`, '-'.repeat(40)];
+        if (m.id === K01 && app.key) {
+          const plain = decrypt(K01_CIPHERTEXT, app.key);
+          L.push(...head3, 'MIT ERSATZSCHLUESSEL:', '', ...groups(plain));
+          if (app.key === FULL_KEY) L.push('', 'KLARTEXT:', ...readable(plain));
+          L.push('', 'S = ROHDATEN SPEICHERN  TASTE = ZURUECK');
+        } else if (m.id === K01) L.push(...head3, ...m.body, '', 'S = ROHDATEN SPEICHERN  TASTE = ZURUECK');
+        else L.push(...head3, ...m.body, '', 'TASTE = ZURUECK');
         break;
       }
       case 'sys':
         L.push('SYSTEMINFORMATION', '', ...MAILBOXES.secret.sysinfo, '', 'TASTE = ZURUECK');
         break;
     }
-    if (app.note) {
-      L.push('', app.note);
+    if (note) {
+      L.push('', note);
       colors[L.length - 1] = 2;
     }
     return { lines: L, border: 0, background: 0, text: 5, lineColors: colors, cursor: true };
