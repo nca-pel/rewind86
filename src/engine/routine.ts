@@ -5,6 +5,7 @@
 import { GAME_CONFIG } from '../content/config';
 import { addMinutes, formatClock, formatDm, fromMinutes, toMinutes, weekday } from './clock';
 import type { Ctx } from './context';
+import { isHard } from './difficulty';
 import type { AbsenceKind } from './types';
 
 const CAL = GAME_CONFIG.calendar;
@@ -147,7 +148,9 @@ export function meterReading(ctx: Ctx): void {
   const t = s.telecom;
   const since = Math.round((s.phoneCostsDm - t.costsAtLastReading) * 100) / 100;
   t.costsAtLastReading = s.phoneCostsDm;
-  const share = Math.max(0, Math.round((since - HOUSE.freePhoneDm) * 100) / 100);
+  const hard = isHard(s);
+  const free = hard ? GAME_CONFIG.hard.freePhoneDm : HOUSE.freePhoneDm;
+  const share = Math.max(0, Math.round((since - free) * 100) / 100);
   ctx.debug(`meter ${since} DM, Jans Anteil ${share} DM`);
   if (share <= 0) {
     ctx.say(
@@ -164,7 +167,9 @@ export function meterReading(ctx: Ctx): void {
   ctx.say(
     angry
       ? `Dein Vater kommt mit seinem Heftchen vom Gebührenzähler zurück und legt es wortlos neben deinen Teller. ${formatDm(since)} in einer Woche. »Jan. Das ist kein Spaß mehr. Du zahlst deinen Anteil, und ab jetzt will ich wissen, wen du da anrufst.«`
-      : `Dein Vater liest den Gebührenzähler ab und rechnet nach. »${formatDm(since)} diese Woche. Drei Mark zahlen wir, den Rest du.«`,
+      : hard
+        ? `Dein Vater liest den Gebührenzähler ab und rechnet nach. »${formatDm(since)} diese Woche. Wer telefoniert, zahlt. Das hatten wir so abgemacht.«`
+        : `Dein Vater liest den Gebührenzähler ab und rechnet nach. »${formatDm(since)} diese Woche. Drei Mark zahlen wir, den Rest du.«`,
     'dialog',
     'VATER',
   );
@@ -174,4 +179,15 @@ export function meterReading(ctx: Ctx): void {
       : `Du zahlst ${formatDm(paid)} aus deiner Kasse.`,
   );
   if (angry) s.flags.fatherAngryPhone = true;
+  // Schwer: Bei hoher Rechnung (oder Schulden) kommt ein Schloss an die Wählscheibe.
+  if (hard && (since >= GAME_CONFIG.hard.phoneLockFromDm || debt > 0)) {
+    const until = addMinutes(s.gameClock, GAME_CONFIG.hard.phoneLockHours * 60);
+    s.flags.phoneLockedUntil = until;
+    ctx.say(
+      'Dann holt er ein kleines Messingschloss aus der Küchenschublade, geht mit dir nach oben und steckt es in die Wählscheibe deines Telefons. »Bis morgen Abend bleibt das dran. Abnehmen darfst du, wählen nicht.«',
+      'dialog',
+      'VATER',
+    );
+    ctx.debug(`Telefonschloss bis ${until}`);
+  }
 }

@@ -7,6 +7,7 @@ import { GAME_CONFIG } from '../../content/config';
 import { MAILBOXES, SECRET_SENDS, type MailboxMessage, type SecretSend } from '../../content/networks';
 import { FULL_KEY, K01_CIPHERTEXT, decrypt, groups, readable } from '../../engine/cipher';
 import { evalCondition } from '../../engine/conditions';
+import { riskConfig } from '../../engine/difficulty';
 import type { Ctx } from '../../engine/context';
 import { applyEffects, discoverFact, scheduleEvent, setPuzzle } from '../../engine/effects';
 import { changeRelationship, lockNote, lockedUntil } from '../../engine/pressure';
@@ -86,7 +87,7 @@ function tryConnect(ctx: Ctx, app: ModkState): number {
     }
     t.connectedSystemId = box.id;
     app.sendTried = false;
-    changeRelationship(ctx, 'seidelSuspicion', GAME_CONFIG.risk.secretLogin, 'Anmeldung');
+    changeRelationship(ctx, 'seidelSuspicion', riskConfig(ctx.state).secretLogin, 'Anmeldung');
     t.currentUserHandle = box.autoHandle ?? null;
     app.screen = 'online';
     app.note = null;
@@ -145,9 +146,10 @@ function readWithKey(ctx: Ctx, app: ModkState): void {
   }
   const plain = decrypt(K01_CIPHERTEXT, app.key);
   const right = [...plain].filter((c, i) => c === decrypt(K01_CIPHERTEXT, FULL_KEY)[i]).length;
+  // Ein Fragment an der richtigen Stelle ergibt ein Drittel richtiger Buchstaben – sichtbar als Wortfetzen.
   ctx.say(
-    right > plain.length / 3
-      ? 'Stellenweise sieht das fast nach Wörtern aus – aber nur stellenweise. Irgendwelche Ziffern stimmen noch nicht.'
+    right >= plain.length / 4
+      ? 'Stellenweise sieht das fast nach Wörtern aus – aber nur stellenweise. Ein Teil des Schlüssels sitzt richtig, der Rest noch nicht.'
       : 'Immer noch Buchstabensalat. Der Schlüssel stimmt so nicht.',
     'thought',
   );
@@ -284,7 +286,12 @@ export const modkApp: AppDef<ModkState> = {
           app.note = 'GESPERRT: SCHLUESSEL FEHLT';
           if (!app.sendTried) {
             app.sendTried = true;
-            changeRelationship(ctx, 'seidelSuspicion', GAME_CONFIG.risk.secretSendAttempt, 'Sendeversuch');
+            changeRelationship(
+              ctx,
+              'seidelSuspicion',
+              riskConfig(ctx.state).secretSendAttempt,
+              'Sendeversuch',
+            );
           }
         } else if (k === '3') {
           app.screen = 'sys';
@@ -326,7 +333,7 @@ export const modkApp: AppDef<ModkState> = {
         if (n >= 1 && n <= sends.length) {
           const x = sends[n - 1];
           ctx.state.flags[`sent_${x.id}`] = true;
-          changeRelationship(ctx, 'seidelSuspicion', GAME_CONFIG.risk.secretSend, 'Senden');
+          changeRelationship(ctx, 'seidelSuspicion', riskConfig(ctx.state).secretSend, 'Senden');
           applyEffects(ctx, x.effects);
           app.screen = 'online';
           app.note = `GESENDET AN ${x.to}`;

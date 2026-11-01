@@ -2,6 +2,7 @@
  * Öffentliche Engine-Schnittstelle: step(state, command) → neuer Zustand + Ausgaben.
  * Rein und deterministisch: kein Date.now(), kein Math.random(), keine DOM-Zugriffe.
  */
+import { applyDifficulty, isHard } from './difficulty';
 import { parseAdventure, splitCommands, type Intent } from '../parser/adventure';
 import { c64Key, c64Line, c64Tick } from '../sim/c64';
 import { giveHint, runIntent } from './actions';
@@ -58,7 +59,13 @@ export function step(state: GameState, cmd: Command): StepResult {
     case 'start':
       if (s.mode === 'title') {
         s.mode = 'desk';
+        applyDifficulty(s, cmd.difficulty);
         ctx.say(introText(s));
+        if (isHard(s))
+          ctx.say(
+            '(Schwierigkeit: SCHWER. Die Zeitschrift verrät weniger, das Netz ist misstrauischer, und die Telefonrechnung zahlst du selbst.)',
+            'system',
+          );
         ctx.say(
           '(Tippe HILFE für Beispielbefehle. Klick auf Gegenstände am Schreibtisch, um sie dir anzusehen.)',
           'system',

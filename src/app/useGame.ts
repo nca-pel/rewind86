@@ -4,7 +4,7 @@ import { FERNHANDEL_BPM, fernhandelStep } from '../audio/fernhandelSong';
 import { radioPlaylist, type RadioStation } from '../audio/radioProgram';
 import { step } from '../engine/engine';
 import { createInitialState } from '../engine/state';
-import type { Command, GameState, UiEffect } from '../engine/types';
+import type { Command, GameState, UiEffect, Difficulty } from '../engine/types';
 import { recordMiss } from './playtestLog';
 import { isSlot, readSlot, writeSlot } from './storage';
 
@@ -17,7 +17,7 @@ function autosave(s: GameState): void {
 export interface GameUi {
   state: GameState | null;
   dispatch: (cmd: Command) => void;
-  newGame: () => void;
+  newGame: (difficulty?: Difficulty) => void;
   loadState: (s: GameState, message?: string) => void;
   toTitle: () => void;
   toast: string | null;
@@ -152,15 +152,18 @@ export function useGame(): GameUi {
     [commit, handleUi],
   );
 
-  const newGame = useCallback(() => {
-    const s = createInitialState();
-    const r = step(s, { type: 'start' });
-    commit(r.state);
-    setDetail(null);
-    setSliceEnd(false);
-    setDemoMusic(false);
-    writeSlot('auto', r.state);
-  }, [commit]);
+  const newGame = useCallback(
+    (difficulty: Difficulty = 'normal') => {
+      const s = createInitialState();
+      const r = step(s, { type: 'start', difficulty });
+      commit(r.state);
+      setDetail(null);
+      setSliceEnd(false);
+      setDemoMusic(false);
+      writeSlot('auto', r.state);
+    },
+    [commit],
+  );
 
   const undoGameOver = useCallback(() => {
     const r = readSlot('auto');

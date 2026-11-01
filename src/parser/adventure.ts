@@ -95,13 +95,29 @@ function parsePhrase(tokens: string[], raw: string): Intent | null {
   return null;
 }
 
+/** HILFE <Thema>: Wörter, die zur ausführlichen C64-Hilfe führen */
+const HELP_TOPICS: Record<string, string> = {
+  c64: 'c64',
+  basic: 'c64',
+  computer: 'c64',
+  commodore: 'c64',
+  befehle: 'c64',
+  diskette: 'c64',
+  disketten: 'c64',
+  laufwerk: 'c64',
+  datasette: 'c64',
+  tasten: 'c64',
+};
+
 function parseMeta(tokens: string[], raw: string): Intent | null {
   const phrase = parsePhrase(tokens, raw);
   if (phrase) return phrase;
   const [w0, w1] = tokens;
   const rest = tokens.slice(1);
-  if (raw.trim() === '?' || ['hilfe', 'help', 'befehle', 'kommandos'].includes(w0))
-    return { kind: 'meta', meta: 'help' };
+  if (raw.trim() === '?' || ['hilfe', 'help', 'befehle', 'kommandos'].includes(w0)) {
+    const topic = rest.find((w) => HELP_TOPICS[w]);
+    return topic ? { kind: 'meta', meta: 'help', arg: HELP_TOPICS[topic] } : { kind: 'meta', meta: 'help' };
+  }
   if (['i', 'inv', 'inventar', 'inventory', 'taschen'].includes(w0) && tokens.length === 1)
     return { kind: 'meta', meta: 'inventory' };
   if (w0 === 'was' && tokens.includes('habe') && tokens.includes('ich'))

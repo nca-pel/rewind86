@@ -29,6 +29,11 @@ export const LOADER_LINES = [
   `910 DATA ${ACCESS_DATA_CODES.join(',')}`,
 ];
 
+/** Schwer: Fragment ohne Teilnummer – die Reihenfolge der drei Teile muss man selbst herausfinden. */
+export const LOADER_LINES_HARD = LOADER_LINES.map((l) =>
+  l.startsWith('70 REM') ? `70 REM ${BLUE}K-SCHLUESSEL: ${KEY[0]}${LIGHT_BLUE}` : l,
+);
+
 export const INITIAL_DISKS: Record<string, VirtualDisk> = {
   game: {
     id: 'game',
@@ -103,13 +108,16 @@ export const INITIAL_DISKS: Record<string, VirtualDisk> = {
 };
 
 /** Ralfs Fund aus Seidels Sperrmüllkarton: Datasette-Kassette mit einem kurzen BASIC-Programm (P08, Teil 3). */
-export const CASSETTE_PROGRAM = {
-  name: 'PRUEFBAND3',
-  basic: [
-    `10 REM ${B} PRUEFBAND`,
-    '20 PRINT CHR$(147);"PRUEFBAND - NUR INTERN"',
-    `30 PRINT:PRINT "K-SCHLUESSEL TEIL 3/3:";`,
-    `40 T=${Number(KEY[2]) / 2}*2:PRINT T`,
-    '50 PRINT:PRINT "BAND NACH GEBRAUCH LOESCHEN!"',
-  ],
-};
+export function cassetteProgram(hard = false): { name: string; basic: string[] } {
+  return {
+    name: 'PRUEFBAND3',
+    basic: [
+      `10 REM ${B} PRUEFBAND`,
+      '20 PRINT CHR$(147);"PRUEFBAND - NUR INTERN"',
+      hard ? `30 PRINT:PRINT "K-SCHLUESSEL:";` : `30 PRINT:PRINT "K-SCHLUESSEL TEIL 3/3:";`,
+      `40 T=${Number(KEY[2]) / 2}*2:PRINT T`,
+      '50 PRINT:PRINT "BAND NACH GEBRAUCH LOESCHEN!"',
+    ],
+  };
+}
+export const CASSETTE_PROGRAM = cassetteProgram();

@@ -60,7 +60,18 @@ export const OBJECTS: WorldObject[] = [
     dat: 'dem Commodore 64',
     short: 'C64',
     gender: 'm',
-    nouns: ['c64', 'computer', 'commodore', 'brotkasten', 'rechner', 'tastatur', 'heimcomputer'],
+    nouns: [
+      'c64',
+      'computer',
+      'commodore',
+      'brotkasten',
+      'rechner',
+      'tastatur',
+      'heimcomputer',
+      'modulschacht',
+      'modulport',
+      'expansionport',
+    ],
     hotspot: true,
     description: [
       {
@@ -254,6 +265,10 @@ export const OBJECTS: WorldObject[] = [
     partOf: 'magazine',
     description: [
       {
+        when: { flag: 'hardMode' },
+        text: 'ZEICHENTABELLE (Auszug, CHR$-Codes des C64):\n 32 = Leerzeichen\n 65 = A   66 = B   67 = C   68 = D   69 = E\n 70 = F … 90 = Z\n(Satzzeichen und Ziffern: im nächsten Heft!)\nTipp der Redaktion: PRINT CHR$(65) schreibt ein A – probiert ruhig andere Zahlen aus. Mit READ holt ein Programm Zahlen aus seinen DATA-Zeilen.',
+      },
+      {
         text: 'ZEICHENTABELLE (Auszug, CHR$-Codes des C64):\n 32 = Leerzeichen\n 48 = 0   49 = 1   50 = 2   51 = 3   52 = 4\n 53 = 5   54 = 6   55 = 7   56 = 8   57 = 9\n 65 = A   66 = B   67 = C … 90 = Z\nTipp der Redaktion: PRINT CHR$(65) schreibt ein A. Mit READ holt ein Programm Zahlen aus seinen DATA-Zeilen.',
       },
     ],
@@ -286,6 +301,10 @@ export const OBJECTS: WorldObject[] = [
     partOf: 'magazine',
     readEffects: [{ type: 'discoverFact', id: 'hidden_text' }],
     description: [
+      {
+        when: { flag: 'hardMode' },
+        text: '»TIPPS & TRICKS – Unsichtbare Zeilen«: Ein Leser fragt, warum in einem gekauften Programm eine REM-Zeile leer aussieht. Antwort der Redaktion: In REM-Zeilen lassen sich Farb-Steuerzeichen ablegen. Beim LIST wechselt der C64 dann die Schriftfarbe – ist sie gleich der Hintergrundfarbe, sieht man den Rest der Zeile nicht. Er ist aber noch da. Wie man die Farben umstellt? Schau dir an, was viele Lader in ihren ersten Zeilen tun.',
+      },
       {
         text: '»TIPPS & TRICKS – Unsichtbare Zeilen«: Ein Leser fragt, warum in einem gekauften Programm eine REM-Zeile leer aussieht. Antwort der Redaktion: In REM-Zeilen lassen sich Farb-Steuerzeichen ablegen. Beim LIST wechselt der C64 dann die Schriftfarbe – ist sie gleich der Hintergrundfarbe, sieht man den Rest der Zeile nicht. Er ist aber noch da. Wer neugierig ist, ändert einfach die Hintergrundfarbe (Speicherstelle 53281) und listet noch einmal.',
       },
@@ -502,7 +521,17 @@ export const OBJECTS: WorldObject[] = [
     dat: 'dem BTX-Set',
     short: 'BTX-Set',
     gender: 'n',
-    nouns: ['btx', 'btxset', 'decoder', 'btxdecoder', 'steckmodul', 'postmodem', 'bildschirmtext'],
+    nouns: [
+      'btx',
+      'btxset',
+      'set',
+      'leihset',
+      'decoder',
+      'btxdecoder',
+      'steckmodul',
+      'postmodem',
+      'bildschirmtext',
+    ],
     adjectives: ['btx', 'bildschirmtext', 'leih'],
     portable: true,
     initialLocation: 'nowhere',

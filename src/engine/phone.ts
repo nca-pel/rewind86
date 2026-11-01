@@ -9,7 +9,7 @@ import { btxDropCarrier } from '../sim/apps/btx';
 import { termDropCarrier } from '../sim/apps/term';
 import { GAME_CONFIG } from '../content/config';
 import { isOpen } from './bbs';
-import { diffMinutes } from './clock';
+import { diffMinutes, formatClock, isBefore } from './clock';
 import { nextRalfHome, ralfWhere } from './routine';
 import { houseLineBusy } from './conditions';
 import type { Ctx } from './context';
@@ -262,6 +262,13 @@ export function dial(ctx: Ctx, number: string): number {
   }
   if (t.handset === 'coupler') {
     ctx.say('Der Hörer steckt im Koppler. Nimm ihn erst heraus.');
+    return 0;
+  }
+  const lock = ctx.state.flags.phoneLockedUntil;
+  if (typeof lock === 'string' && isBefore(ctx.state.gameClock, lock)) {
+    ctx.say(
+      `Im ersten Loch der Wählscheibe steckt das kleine Messingschloss deines Vaters. Die Scheibe rührt sich nicht. Anrufe annehmen geht – selbst wählen erst wieder ab ${formatClock(lock)}.`,
+    );
     return 0;
   }
   if (t.handset === 'cradle') {

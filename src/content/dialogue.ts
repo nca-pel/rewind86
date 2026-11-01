@@ -36,6 +36,11 @@ export const TOPICS: TopicDef[] = [
     label: 'Mailboxen',
     aliases: ['mailbox', 'mailboxen', 'modem', 'koppler', 'dfue', 'netz'],
   },
+  {
+    id: 'band',
+    label: 'das Prüfband',
+    aliases: ['band', 'pruefband', 'kassette', 'kassetten', 'tape', 'datenband', 'baender', 'datasette'],
+  },
   { id: 'disk2', label: 'Diskette 2', aliases: ['disk2', 'zweite', 'schluesseldiskette', '2'] },
   { id: 'schule', label: 'die Schule', aliases: ['schule', 'hausaufgaben', 'klausur', 'lehrer'] },
   {
@@ -125,6 +130,51 @@ const RALF_LATER: DialogueEntry[] = [
     when: LATER,
     speaker: 'RALF',
     text: `»${GAME_CONFIG.unreleasedGame.workingTitle}? Eine Wirtschaftssimulation? Ich dachte, da wird wenigstens geballert. Na super – da hab ich ja was riskiert für nix.«`,
+  },
+  // Prüfband (Schlüsselteil 3). Im Schwierigkeitsgrad »Schwer« bringt Ralf es nur, wenn Jan danach fragt.
+  {
+    npc: 'ralf',
+    topic: 'band',
+    when: { all: [LATER, { flag: 'cassetteDelivered' }] },
+    speaker: 'RALF',
+    text: '»Und? Hast du das Band schon ausprobiert? Erzähl mir bloß nicht, da ist Musik drauf.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'band',
+    when: { all: [LATER, { flag: 'ralfAskedTape' }] },
+    speaker: 'RALF',
+    text: '»Ich halt die Augen offen, versprochen. Wenn da was mit WT-07 auftaucht, kriegst du’s.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'band',
+    when: { all: [LATER, { fact: 'key_leak' }, { timeAfter: GAME_CONFIG.keyStrand.cassetteAt }] },
+    speaker: 'RALF',
+    text: '»Ein Band mit WT-07 drauf?« Ralf überlegt. »Warte mal … Mein Alter hat sein Arbeitszimmer ausgemistet, der Karton für den Sperrmüll steht noch im Flur. Da lagen Kassetten drin. Ich guck nach und bring’s dir gleich vorbei.«',
+    effects: [
+      { type: 'setFlag', id: 'ralfAskedTape', value: true },
+      { type: 'changeRelationship', id: 'ralfTrust', delta: 3 },
+      { type: 'scheduleEvent', id: 'ev_ralf_cassette', inMinutes: 30 },
+    ],
+  },
+  {
+    npc: 'ralf',
+    topic: 'band',
+    when: { all: [LATER, { fact: 'key_leak' }] },
+    speaker: 'RALF',
+    text: '»Ein Band? Eine Kassette mit WT-07 drauf?« Ralf wird leiser. »Mein Alter fängt gerade an, sein Arbeitszimmer auszumisten. Wenn da so was auftaucht, bring ich’s dir. Spätestens am Feiertag, da hab ich frei.«',
+    effects: [
+      { type: 'setFlag', id: 'ralfAskedTape', value: true },
+      { type: 'changeRelationship', id: 'ralfTrust', delta: 3 },
+    ],
+  },
+  {
+    npc: 'ralf',
+    topic: 'band',
+    when: LATER,
+    speaker: 'RALF',
+    text: '»Was für ein Band? Mein Alter hat hundert Kassetten. Sag mir wenigstens, wonach ich suchen soll.«',
   },
   {
     npc: 'ralf',

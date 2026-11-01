@@ -103,7 +103,7 @@ export function lookAround(state: GameState): string {
   if (inDrive.length) parts.push(`In der 1541 steckt ${OBJECT_BY_ID[inDrive[0]].name}.`);
   if (state.objectStates.drawer.open)
     parts.push(
-      capitalize(dynamicDescription(state, 'drawer')).replace(/^Sie ist offen\./, 'Die Schublade ist offen.'),
+      capitalize(dynamicDescription(state, 'drawer')).replace(/^Sie ist offen/, 'Die Schublade ist offen'),
     );
   parts.push(monitorText(state));
   if (state.telecom.ringing) parts.push('Das Telefon klingelt!');

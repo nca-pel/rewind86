@@ -12,6 +12,8 @@ export interface PuzzleDef {
   strand: string;
   /** Reihenfolge für "aktuelles Rätsel" bei DENKE NACH */
   order: number;
+  /** Geht bei DENKE NACH allen anderen offenen Rätseln vor (z. B. im Finale). */
+  urgent?: boolean;
   stages: HintStage[];
   historicalStatus: 'plausible' | 'fictional';
 }
@@ -94,6 +96,14 @@ export const PUZZLES: PuzzleDef[] = [
           'Die Zahlen in der DATA-Zeile liegen alle zwischen 48 und 57. Was könnten sie bedeuten?',
           'Vielleicht sind es Zeichencodes. In deiner neuen Zeitschrift gibt es eine Tabelle dazu.',
           'Die Zeitschrift liegt auf dem Schreibtisch: LIES ZEICHENTABELLE. Oder lass den C64 rechnen: z. B. 1000 FOR I=1 TO 5:READ A:PRINT CHR$(A);:NEXT – dann RUN 1000.',
+        ],
+      },
+      {
+        when: { flag: 'hardMode' },
+        hints: [
+          'Die Zahlen liegen alle zwischen 48 und 57. In der Tabelle fängt das Alphabet bei 65 an – was liegt wohl davor?',
+          'Lass den C64 selbst übersetzen: PRINT CHR$(52) zeigt, welches Zeichen zum Code 52 gehört.',
+          'Am C64: 1000 FOR I=1 TO 5:READ A:PRINT CHR$(A);:NEXT und dann RUN 1000 – oder ziehe von jeder Zahl 48 ab. Dann am Telefon: WÄHLE <Nummer>.',
         ],
       },
       {
@@ -185,6 +195,22 @@ export const PUZZLES: PuzzleDef[] = [
         ],
       },
       {
+        when: { all: [{ flag: 'hardMode' }, { notFlag: 'ralfAskedTape' }, { notFact: 'cassette' }] },
+        hints: [
+          '»Prüfband, geht per Boten.« Ein Band aus Seidels Umfeld – wer kommt an seine Sachen heran?',
+          'Ralf wohnt bei Seidel. Aber von allein sucht er nicht – er muss wissen, wonach.',
+          'RUFE RALF AN und FRAGE RALF NACH DEM BAND (erst nach der Meldung SCHLUESSELWECHSEL sinnvoll).',
+        ],
+      },
+      {
+        when: { all: [{ flag: 'hardMode' }, { notFact: 'cassette' }] },
+        hints: [
+          'Ralf sucht. Mehr kannst du gerade nicht tun.',
+          'Seidel mistet sein Arbeitszimmer aus – spätestens am Buß- und Bettag (Mi., 19.11.) hat Ralf frei und Zeit.',
+          'Warte bis Mittwochnachmittag (oder frag Ralf danach noch einmal nach dem Band) – er bringt die Kassette vorbei.',
+        ],
+      },
+      {
         when: { notFact: 'cassette' },
         hints: [
           '»Teil 3: Prüfband, geht per Boten.« Ein Band – wer kommt an Seidels Sachen heran?',
@@ -217,10 +243,92 @@ export const PUZZLES: PuzzleDef[] = [
     historicalStatus: 'fictional',
     stages: [
       {
+        when: { flag: 'hardMode' },
+        hints: [
+          'Drei Fragmente, sechs mögliche Reihenfolgen. Das Modul prüft nichts – aber das Rundschreiben verrät, wie nah du dran bist.',
+          'Setz einen Ersatzschlüssel (Modul: 3) und lies das Rundschreiben. Sitzt ein Fragment an der richtigen Stelle, tauchen Wortfetzen auf; sitzen alle, steht da Klartext.',
+          'Die Reihenfolge folgt dem Weg, auf dem die Teile verteilt wurden: zuerst die Arbeitskopie, dann das Netz, zuletzt das Band. Modul: 3, die zwölf Ziffern, RETURN, einwählen, Rundschreiben lesen.',
+        ],
+      },
+      {
         hints: [
           'Du hast zwölf Ziffern. Das Modul kennt einen Ersatz, wenn Diskette 2 fehlt.',
           'Im Menü des Moduls gibt es »Ersatzschlüssel eingeben«. Danach das Rundschreiben noch einmal lesen.',
           'Modul: 3 drücken, die drei Teile in der Reihenfolge 1-2-3 eintippen, RETURN. Dann einwählen und das Rundschreiben von K-01 lesen. (Profis: Im Rundschreiben S = Rohdaten auf eine beschreibbare Diskette speichern und selbst in BASIC entschlüsseln.)',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'P10',
+    title: 'Was ist Freitag?',
+    strand: 'Akt 2',
+    order: 10,
+    historicalStatus: 'fictional',
+    stages: [
+      {
+        when: { notFlag: 'clubAttended' },
+        hints: [
+          '»Operation REWIND beginnt Freitag.« Allein kommst du da nicht weiter. Wer in deiner Umgebung kennt sich mit Netzen aus?',
+          'Im BIT-SCHUPPEN schreibt ein »GHOST«, und der Computerclub trifft sich diese Woche. Hör dich um.',
+          'Lies den Rundbrief: Clubabend am Donnerstag, 20.11. Zwischen 18:30 und 19:30 Uhr: GEHE ZUM CLUB.',
+        ],
+      },
+      {
+        when: { notFact: 'ghost_offer' },
+        hints: [
+          'Herr Brandt redet genau wie GHOST. Vielleicht hat GHOST dir inzwischen etwas zu sagen.',
+          'Schau nach dem Clubabend wieder ins Brett CLUB des BIT-SCHUPPEN.',
+          'TERMINAL laden, ab 18 Uhr 23586 wählen, als JAN anmelden, 1 (Bretter), 3 (CLUB) und den neuen Beitrag »WER GERNE FRAGT« lesen.',
+        ],
+      },
+      {
+        when: { notFact: 'seidel_alibi' },
+        hints: [
+          'Einer sitzt näher an Seidel als jeder andere.',
+          'Ralf wohnt bei Seidel. Erzähl ihm, was du über GHOST und den Freitag weißt.',
+          'RUFE RALF AN (siehe seine Zeiten im Notizblock) und FRAGE RALF NACH GHOST.',
+        ],
+      },
+      {
+        when: { notFact: 'net_meeting_point' },
+        hints: [
+          'Wann und wo genau soll Freitag etwas passieren? Das Netz selbst weiß es.',
+          'Mit gültigem Schlüssel kann das Modul Kurzmeldungen senden. Wer dazugehört, darf fragen – erst bestätigen, dann fragen.',
+          'Im Modul eingewählt: 2 (Senden), zuerst die QUITTUNG an K-01, dann die ANFRAGE TREFFPUNKT. Ein paar Minuten später wieder einwählen und die Antwort lesen.',
+        ],
+      },
+      {
+        hints: [
+          'Du weißt jetzt fast alles, was man wissen kann. Jetzt kommt es auf Freitagabend an.',
+          'Ab Freitag, 20 Uhr läuft die Operation. Bis dahin: Ruhe bewahren und das Netz nicht unnötig reizen.',
+          'Lass die Zeit bis Freitag, 20:00 Uhr vergehen (WARTE, SCHLAFE). Dann musst du dich entscheiden.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'P11',
+    title: 'Operation REWIND',
+    strand: 'Finale',
+    order: 11,
+    // Im Finale geht dieser Hinweis allen offenen Rätseln vor.
+    urgent: true,
+    historicalStatus: 'fictional',
+    stages: [
+      {
+        when: { notFact: 'k01_decrypted' },
+        hints: [
+          'Um 23:30 ist es vorbei. Wem würde man eine Geschichte über ein geheimes Netz glauben – ohne einen einzigen lesbaren Beweis?',
+          'Ohne entschlüsseltes Rundschreiben ist alles nur ein Gerücht. Die Polizei wird dich so kaum ernst nehmen. Es gibt aber andere Wege: GHOST, Ralf, das Netz selbst.',
+          'Entweder schnell noch entschlüsseln (Modul: 3, zwölf Ziffern, dann das Rundschreiben lesen) – oder: GHOST im BIT-SCHUPPEN schreiben, Ralf anrufen (bis 21:30) oder im Modul eine Warnung an K-01 senden.',
+        ],
+      },
+      {
+        hints: [
+          'Um 23:30 ist es vorbei. Du hast mehrere Wege – und jeder hat seinen Preis.',
+          'Polizei, GHOST, Ralf oder das Netz selbst. Je mehr Beweise du hast, desto eher glaubt man dir. Und verrate Seidel nicht zu viel, falls er anruft.',
+          'WÄHLE 110 (mit genug Beweisen), schreib GHOST im BIT-SCHUPPEN, RUFE RALF AN (bis 21:30) und FRAGE NACH GHOST – oder sende im Modul die WARNUNG an K-01.',
         ],
       },
     ],

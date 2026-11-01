@@ -1,7 +1,7 @@
 /** Papiernotizblock: automatisch erkannte Fakten, eigene Notizen, Vermutungen, Denkhilfe (GDD §11.2/11.4). */
 import { useState } from 'react';
 import type { GameUi } from '../app/useGame';
-import { FACT_BY_ID, FACT_CATEGORIES } from '../content/facts';
+import { FACT_BY_ID, FACT_CATEGORIES, factText } from '../content/facts';
 import { Modal } from './Modal';
 
 export function Notebook({ game }: { game: GameUi }) {
@@ -30,7 +30,7 @@ export function Notebook({ game }: { game: GameUi }) {
               <h4>{label}</h4>
               <ul>
                 {facts.map((f) => (
-                  <li key={f.id}>{f.text}</li>
+                  <li key={f.id}>{factText(state, f.id)}</li>
                 ))}
               </ul>
             </div>

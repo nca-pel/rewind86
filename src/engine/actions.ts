@@ -3,7 +3,8 @@
  * Keine Aktion behauptet etwas, das physisch (noch) nicht möglich ist (GDD §5.4).
  */
 import { GAME_CONFIG } from '../content/config';
-import { FACT_BY_ID, FACT_CATEGORIES } from '../content/facts';
+import { FACT_BY_ID, FACT_CATEGORIES, factText } from '../content/facts';
+import { isHard } from './difficulty';
 import { OBJECT_BY_ID } from '../content/objects';
 import { PUZZLES } from '../content/puzzles';
 import { STATIONS } from '../content/radio';
@@ -30,9 +31,32 @@ const HELP_TEXT = `So spielst du (Beispiele – Groß-/Kleinschreibung und Umlau
 • Geräte: SCHALTE COMPUTER EIN · SCHALTE RADIO EIN · STELLE RADIO AUF BFBS
 • Telefon: NIMM HÖRER · WÄHLE 12345 · RUFE RALF AN · LEGE HÖRER IN DEN KOPPLER · LEGE AUF
 • Gespräche: FRAGE RALF NACH DEM SPIEL · REDE MIT RALF ÜBER DAS TRAINING · THEMEN
-• C64: Eigene Eingabezeile unter dem Monitor (z. B. LOAD"$",8 zeigt das Diskettenverzeichnis). Vom Adventure aus: TIPPE LOAD"$",8 · DRÜCKE LEERTASTE
+• C64: Eigene Eingabezeile unter dem Monitor (z. B. LOAD"$",8 zeigt das Diskettenverzeichnis). Vom Adventure aus: TIPPE LOAD"$",8 · DRÜCKE LEERTASTE · Alle C64-Befehle: HILFE C64
 • Notizen: NOTIZEN · NOTIERE <Text> · VERKNÜPFE <A> MIT <B> · DENKE NACH (Hilfe in 3 Stufen)
 • Zeit & Spiel: ZEIT · WARTE (15 Min.) · WARTE 30 · SCHLAFE (ab 21 Uhr) · INVENTAR · SPEICHERN 1 · LADEN 1 · SPIELSTÄNDE`;
+
+/** Ausführliche C64-Hilfe (HILFE C64). Im Schwierigkeitsgrad »Schwer« ohne Speicheradressen. */
+function c64HelpText(hard: boolean): string {
+  return `C64 – die wichtigsten Befehle (in die Eingabezeile unter dem Monitor tippen, jede Zeile mit RETURN):
+Disketten (Laufwerk = Gerät 8)
+• LOAD"$",8 und dann LIST – Inhaltsverzeichnis der Diskette (überschreibt ein geladenes Programm!)
+• LOAD"NAME",8 – Programm laden · LOAD"*",8 – das erste Programm der Diskette laden
+• RUN – geladenes Programm starten · LIST – BASIC-Programm anzeigen (LIST 10-50: nur diese Zeilen)
+• SAVE"NAME",8 – eigenes Programm speichern (nicht auf schreibgeschützten Disketten)
+Kassette (Datasette = Gerät 1, erst anschließen und Kassette einlegen)
+• LOAD – lädt das nächste Programm vom Band · LOAD"NAME",1 – sucht ein bestimmtes
+Rechnen und Ausgeben
+• PRINT 2*3 · PRINT "HALLO" · PRINT CHR$(65) – Zeichen zum Code · PRINT ASC("A") – Code zum Zeichen (? = Kurzform für PRINT)
+• ${hard ? 'POKE Adresse,Wert – schreibt einen Wert in den Speicher, z. B. für Farben. Welche Adressen? Schau dir an, was andere Programme tun.' : 'POKE Adresse,Wert – schreibt in den Speicher. POKE 53280,x = Rahmenfarbe, POKE 53281,x = Hintergrund (0 schwarz, 1 weiß, 6 blau, 14 hellblau)'}
+Eigene Programme
+• Zeilen mit Nummer werden gespeichert, ohne Nummer sofort ausgeführt: 10 PRINT "HALLO" · 20 GOTO 10 · RUN
+• FOR I=1 TO 5 … NEXT · IF … THEN · READ A mit DATA 1,2,3 · INPUT A$ · NEW (Programm löschen)
+• Dateien: OPEN 2,8,2,"NAME,S,R" · INPUT#2,A$ · GET#2,A$ · CLOSE 2 (ST = Status, 64 = Dateiende)
+Tasten (Leiste unter dem Monitor)
+• RUN/STOP (Esc) bricht ab · RETURN · LEERTASTE · ← (auf PC-Tastaturen ^ oder \`) · CLR/HOME · F1–F7
+• Läuft ein Programm im Tastenmodus, geht jede Taste direkt an das Programm.
+Abkürzungen im Adventure: ZEIGE DATEIEN · LADE SPIEL · TIPPE <Zeile> · DRÜCKE <Taste>`;
+}
 
 interface Verb {
   kind: 'verb';
@@ -85,7 +109,7 @@ function obj(ctx: Ctx, intent: Verb, index: number, opts: ResolveOptions = {}): 
       if (r.id === 'disk_key') ctx.say('Eine Diskette 2 hast du nicht – genau das ist ja das Problem.');
       else if (o.npc) ctx.say(`${capitalize(o.name)} ist nicht hier.`);
       else if (ctx.state.itemLocations[r.id] === 'nowhere')
-        ctx.say(`${capitalize(o.name)} hast du (noch) nicht.`);
+        ctx.say(`${capitalize(o.acc)} hast du (noch) nicht.`);
       else if (ctx.state.itemLocations[o.partOf ?? r.id] === 'drawer')
         ctx.say(`${capitalize(o.name)} liegt in der Schublade – und die ist zu. (ÖFFNE SCHUBLADE)`);
       else ctx.say(`Davon ist hier gerade nichts zu sehen.`);
@@ -571,7 +595,7 @@ export function notesSummary(ctx: Ctx): void {
   const lines: string[] = ['Dein Notizblock:'];
   for (const [cat, label] of Object.entries(FACT_CATEGORIES)) {
     const facts = s.knownFacts.map((f) => FACT_BY_ID[f]).filter((f) => f?.category === cat);
-    if (facts.length) lines.push(`${label}:`, ...facts.map((f) => `  – ${f.text}`));
+    if (facts.length) lines.push(`${label}:`, ...facts.map((f) => `  – ${factText(s, f.id)}`));
   }
   if (s.deskNotes.length) lines.push('Eigene Notizen:', ...s.deskNotes.map((n) => `  – ${n.text}`));
   if (s.hypotheses.length)
@@ -584,7 +608,7 @@ export function giveHint(ctx: Ctx, puzzleId?: string): void {
   const active = puzzleId
     ? PUZZLES.find((p) => p.id === puzzleId)
     : [...PUZZLES]
-        .sort((a, b) => a.order - b.order)
+        .sort((a, b) => Number(!!b.urgent) - Number(!!a.urgent) || a.order - b.order)
         .find((p) => s.puzzles[p.id] === 'discovered' || s.puzzles[p.id] === 'solving');
   if (!active) {
     ctx.say(
@@ -607,7 +631,7 @@ function meta(ctx: Ctx, intent: Extract<Intent, { kind: 'meta' }>): number {
   const s = ctx.state;
   switch (intent.meta) {
     case 'help':
-      ctx.say(HELP_TEXT, 'system');
+      ctx.say(intent.arg === 'c64' ? c64HelpText(isHard(s)) : HELP_TEXT, 'system');
       return 0;
     case 'inventory':
       ctx.say(inventoryText(s));

@@ -1,5 +1,5 @@
 import { EVENT_BY_ID } from '../content/events';
-import { FACT_BY_ID } from '../content/facts';
+import { FACT_BY_ID, factText } from '../content/facts';
 import { addMinutes } from './clock';
 import type { Ctx } from './context';
 import { changeRelationship, lockAccount } from './pressure';
@@ -23,7 +23,7 @@ export function discoverFact(ctx: Ctx, id: string): void {
   if (s.knownFacts.includes(id)) return;
   if (!FACT_BY_ID[id]) throw new Error(`Unbekannter Fakt: ${id}`);
   s.knownFacts.push(id);
-  ctx.say(`✎ Notiert: ${FACT_BY_ID[id].text}`, 'system');
+  ctx.say(`✎ Notiert: ${factText(ctx.state, id)}`, 'system');
   ctx.debug(`fact ${id}`);
 }
 

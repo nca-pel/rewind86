@@ -3,7 +3,8 @@
  * Disketten und programmartige "Apps" für Maschinenprogramme.
  */
 import { GAME_CONFIG } from '../content/config';
-import { CASSETTE_PROGRAM } from '../content/disks';
+import { cassetteProgram } from '../content/disks';
+import { isHard } from '../engine/difficulty';
 import type { Ctx } from '../engine/context';
 import { discoverFact } from '../engine/effects';
 import { bootProfile, bootScreen } from '../engine/state';
@@ -183,7 +184,7 @@ class Machine implements BasicHost {
     this.write(name ? `SEARCHING FOR ${name}` : 'SEARCHING');
     this.newline();
     this.ctx.cue('drive');
-    const prog = CASSETTE_PROGRAM;
+    const prog = cassetteProgram(isHard(this.ctx.state));
     if (name && !(name === prog.name || (name.endsWith('*') && prog.name.startsWith(name.slice(0, -1))))) {
       this.minutes += 6;
       this.note(
@@ -316,8 +317,13 @@ class Machine implements BasicHost {
     if (device !== 8) {
       this.write('PRESS RECORD & PLAY ON TAPE');
       this.newline();
+      const s = this.ctx.state;
       this.note(
-        'Ohne angeschlossene Datasette wird das nichts. Du brichst ab. (Speichern auf Diskette: SAVE"NAME",8)',
+        !s.flags.datasetteConnected
+          ? 'Ohne angeschlossene Datasette wird das nichts. Du brichst ab. (Speichern auf Diskette: SAVE"NAME",8)'
+          : s.itemLocations.cassette === 'datasette'
+            ? 'Der Finger liegt schon auf RECORD – dann hältst du inne. In der Datasette steckt Seidels Prüfband. Das überspielst du ganz sicher nicht. (Speichern auf Diskette: SAVE"NAME",8)'
+            : 'In der Datasette steckt keine Kassette. Du brichst ab. (Speichern auf Diskette: SAVE"NAME",8)',
       );
       return;
     }
@@ -414,7 +420,8 @@ function runBasic(ctx: Ctx, fn: (i: Interpreter) => RunStatus): number {
   return minutes;
 }
 
-const KEY_PART = /TEIL ([123])\/3:\s*(\d{4})/g;
+/** »K-SCHLUESSEL TEIL n/3: 1234« (Normal) oder »K-SCHLUESSEL: 1234« (Schwer) – erkannt wird der Wert. */
+const KEY_PART = /K-SCHLUESSEL(?: TEIL [123]\/3)?:\s*(\d{4})/g;
 
 /**
  * Schlüsselfragmente zählen erst, wenn sie wirklich auf dem Bildschirm zu sehen sind – Text in Hintergrundfarbe
@@ -424,12 +431,15 @@ function keyPartsOnScreen(ctx: Ctx): void {
   const s = ctx.state;
   const visible = videoLines(s.computer.screen).join('\n');
   for (const m of visible.matchAll(KEY_PART)) {
-    const n = Number(m[1]);
-    if (m[2] !== GAME_CONFIG.keyStrand.parts[n - 1] || s.knownFacts.includes(`key_part_${n}`)) continue;
+    const n = (GAME_CONFIG.keyStrand.parts as readonly string[]).indexOf(m[1]) + 1;
+    if (n === 0 || s.knownFacts.includes(`key_part_${n}`)) continue;
+    const hard = isHard(s);
     ctx.say(
       n === 1
-        ? 'Da steht ja doch etwas in Zeile 70! Blau auf Blau geschrieben – auf Seidels schwarzem Hintergrund wäre es ihm nie aufgefallen. Ein Schlüsselteil.'
-        : `»TEIL ${n}/3: ${m[2]}« – noch ein Stück des Schlüssels.`,
+        ? `Da steht ja doch etwas in Zeile 70! Blau auf Blau geschrieben – auf Seidels schwarzem Hintergrund wäre es ihm nie aufgefallen. ${hard ? 'Vier Ziffern hinter »K-SCHLUESSEL« – nur ein Stück davon, aber welches?' : 'Ein Schlüsselteil.'}`
+        : hard
+          ? `»K-SCHLUESSEL: ${m[1]}« – noch ein Stück des Schlüssels. Eine Teilnummer steht nicht dabei.`
+          : `»TEIL ${n}/3: ${m[1]}« – noch ein Stück des Schlüssels.`,
       'thought',
     );
     discoverFact(ctx, `key_part_${n}`);
@@ -439,7 +449,9 @@ function keyPartsOnScreen(ctx: Ctx): void {
     !s.knownFacts.includes('key_part_1') &&
     !s.knownFacts.includes('empty_rem') &&
     /^70 REM\s*$/m.test(visible) &&
-    videoLines(s.computer.screen, null, true).some((l) => l.includes('TEIL 1/3'))
+    videoLines(s.computer.screen, null, true).some(
+      (l) => l.includes(`K-SCHLUESSEL`) && l.includes(GAME_CONFIG.keyStrand.parts[0]),
+    )
   ) {
     ctx.say(
       'Zeile 70: ein REM, hinter dem nichts steht. Wer schreibt denn eine leere Bemerkung in einen Lader?',
@@ -586,7 +598,7 @@ export function c64Line(ctx: Ctx, rawText: string): number {
     printLine(comp.screen, '?SYNTAX  ERROR');
     printLine(comp.screen, 'READY.');
     ctx.say(
-      'Der C64 versteht nur BASIC. Nützlich: LOAD"$",8 (Verzeichnis), LOAD"NAME",8 und RUN (Programm starten), LIST, NEW. Vereinfacht geht auch: ZEIGE DATEIEN, LADE SPIEL.',
+      'Der C64 versteht nur BASIC. Nützlich: LOAD"$",8 (Verzeichnis), LOAD"NAME",8 und RUN (Programm starten), LIST, NEW. Vereinfacht geht auch: ZEIGE DATEIEN, LADE SPIEL. Alle Befehle mit Beispielen: HILFE C64 im Adventure-Feld.',
       'system',
     );
     return 0;

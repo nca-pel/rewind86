@@ -1,3 +1,4 @@
+import type { GameState } from '../engine/types';
 import { GAME_CONFIG } from './config';
 
 export type FactCategory = 'personen' | 'kanaele' | 'codes' | 'verdacht' | 'dinge';
@@ -6,6 +7,8 @@ export interface FactDef {
   id: string;
   category: FactCategory;
   text: string;
+  /** Abweichender Text im Schwierigkeitsgrad »Schwer« (verrät weniger) */
+  hardText?: string;
 }
 
 const C = GAME_CONFIG;
@@ -89,6 +92,8 @@ export const FACTS: FactDef[] = [
     id: 'chr_table',
     category: 'codes',
     text: 'Zeichentabelle im Heimcomputer-Journal: Die Codes 48 bis 57 stehen für die Ziffern 0 bis 9.',
+    hardText:
+      'Zeichentabelle im Heimcomputer-Journal: Buchstaben haben die Codes 65 (A) bis 90 (Z). Ziffern stehen nicht drin – aber PRINT CHR$(…) zeigt zu jedem Code das Zeichen.',
   },
   {
     id: 'coupler_howto',
@@ -264,6 +269,8 @@ export const FACTS: FactDef[] = [
     id: 'hidden_text',
     category: 'codes',
     text: 'Lesertipp: Farbcodes in REM-Zeilen können Text beim LIST unsichtbar machen (Schrift = Hintergrundfarbe). Hintergrund ändern: POKE 53281,<Farbe>.',
+    hardText:
+      'Lesertipp: Farbcodes in REM-Zeilen können Text beim LIST unsichtbar machen (Schrift = Hintergrundfarbe). Wie man die Farben umstellt, verraten viele Lader schon in ihren ersten Zeilen.',
   },
   {
     id: 'empty_rem',
@@ -274,21 +281,25 @@ export const FACTS: FactDef[] = [
     id: 'key_leak',
     category: 'verdacht',
     text: `Systemmeldung »SCHLUESSELWECHSEL«: eigentlich nur für ${C.secretNetwork.senderHandle}, aber an ALLE verteilt. Der Schlüssel besteht aus drei Teilen – einer steckt auf der Arbeitskopie, einer kommt »per Band«.`,
+    hardText: `Systemmeldung »SCHLUESSELWECHSEL«: eigentlich nur für ${C.secretNetwork.senderHandle}, aber an ALLE verteilt. Weitere Schlüsselfragmente: auf der Arbeitskopie (»Sichtschutz«) und auf einem Prüfband, das »per Boten« geht. Die Reihenfolge ist »wie vereinbart« – also nirgends genannt.`,
   },
   {
     id: 'key_part_1',
     category: 'codes',
     text: `Schlüsselteil 1/3: ${C.keyStrand.parts[0]} (unsichtbar im LADER, Zeile 70).`,
+    hardText: `Schlüsselfragment: ${C.keyStrand.parts[0]} (unsichtbar im LADER, Zeile 70). An welche Stelle es gehört, steht nicht dabei.`,
   },
   {
     id: 'key_part_2',
     category: 'codes',
     text: `Schlüsselteil 2/3: ${C.keyStrand.parts[1]} (aus der fehlgeleiteten Systemmeldung).`,
+    hardText: `Schlüsselfragment: ${C.keyStrand.parts[1]} (aus der fehlgeleiteten Systemmeldung). An welche Stelle es gehört, steht nicht dabei.`,
   },
   {
     id: 'key_part_3',
     category: 'codes',
     text: `Schlüsselteil 3/3: ${C.keyStrand.parts[2]} (vom Prüfband).`,
+    hardText: `Schlüsselfragment: ${C.keyStrand.parts[2]} (vom Prüfband). An welche Stelle es gehört, steht nicht dabei.`,
   },
   {
     id: 'cassette',
@@ -299,6 +310,8 @@ export const FACTS: FactDef[] = [
     id: 'key_complete',
     category: 'codes',
     text: 'Alle drei Schlüsselteile zusammen ergeben zwölf Ziffern. Das Modul fragt nach genau so einem Schlüssel (Menüpunkt 3).',
+    hardText:
+      'Drei Fragmente, zusammen zwölf Ziffern. Das Modul fragt nach genau so einem Schlüssel (Menüpunkt 3) – nur die Reihenfolge musst du selbst finden. Das Modul prüft nichts, aber das Rundschreiben zeigt, ob es passt.',
   },
   {
     id: 'cipher_method',
@@ -348,3 +361,10 @@ export const FACTS: FactDef[] = [
 ];
 
 export const FACT_BY_ID: Record<string, FactDef> = Object.fromEntries(FACTS.map((f) => [f.id, f]));
+
+/** Fakt-Text passend zum Schwierigkeitsgrad des Spielstands */
+export function factText(state: GameState, id: string): string {
+  const f = FACT_BY_ID[id];
+  if (!f) return id;
+  return state.flags.hardMode === true && f.hardText ? f.hardText : f.text;
+}

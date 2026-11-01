@@ -5,6 +5,7 @@
  * ({ rel, atLeast } / { rel, below }); die erzählerischen Symptome sind gewöhnliche Trigger-Ereignisse
  * in src/content/events.ts. Endgültige Folgen sind gedeckelt, bis eine Warnung gegeben wurde.
  */
+import { riskConfig } from './difficulty';
 import { GAME_CONFIG } from '../content/config';
 import { addMinutes, formatTime, isBefore } from './clock';
 import type { Ctx } from './context';
@@ -61,7 +62,7 @@ export function changeRelationship(ctx: Ctx, rel: RelationshipId, delta: number,
 export function accrueOnlineRisk(ctx: Ctx, minutes: number): void {
   const t = ctx.state.telecom;
   if (t.connectedSystemId !== 'secret' || minutes <= 0) return;
-  const per = GAME_CONFIG.risk.secretOnlineMinutesPerPoint;
+  const per = riskConfig(ctx.state).secretOnlineMinutesPerPoint;
   t.riskMinutes += minutes;
   const points = Math.floor(t.riskMinutes / per);
   if (points > 0) {

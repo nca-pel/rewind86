@@ -344,8 +344,10 @@ export type C64Key =
   | 'DEL'
   | string; // einzelnes Zeichen
 
+export type Difficulty = 'normal' | 'hard';
+
 export type Command =
-  | { type: 'start' }
+  | { type: 'start'; difficulty?: Difficulty }
   | { type: 'adventure'; text: string }
   | { type: 'c64line'; text: string }
   | { type: 'c64key'; key: C64Key }

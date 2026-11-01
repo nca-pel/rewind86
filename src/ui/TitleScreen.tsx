@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { readSlot } from '../app/storage';
-import type { GameState } from '../engine/types';
+import type { Difficulty, GameState } from '../engine/types';
 import { formatShort } from '../engine/clock';
 import { Credits } from './Credits';
 import { SaveList, SettingsForm } from './Menu';
@@ -12,12 +12,27 @@ export function TitleScreen({
   toast,
   showToast,
 }: {
-  onNew: () => void;
+  onNew: (difficulty: Difficulty) => void;
   onLoad: (s: GameState, msg: string) => void;
   toast: string | null;
   showToast: (t: string) => void;
 }) {
   const [dialog, setDialog] = useState<null | 'load' | 'settings' | 'credits'>(null);
+  const [difficulty, setDifficulty] = useState<Difficulty>(() => {
+    try {
+      return localStorage.getItem('rewind86.difficulty') === 'hard' ? 'hard' : 'normal';
+    } catch {
+      return 'normal';
+    }
+  });
+  const choose = (d: Difficulty) => {
+    setDifficulty(d);
+    try {
+      localStorage.setItem('rewind86.difficulty', d);
+    } catch {
+      /* ohne Speicher: nur für diese Sitzung */
+    }
+  };
   const auto = readSlot('auto');
   const autoFile = auto && auto.ok ? auto.file : null;
   return (
@@ -31,9 +46,39 @@ export function TitleScreen({
           dürfte.
         </p>
         <div className="title-buttons">
-          <button type="button" onClick={onNew} data-testid="new-game">
+          <button type="button" onClick={() => onNew(difficulty)} data-testid="new-game">
             Neues Spiel
           </button>
+          <fieldset className="difficulty" aria-describedby="difficulty-desc">
+            <legend>Schwierigkeit für ein neues Spiel</legend>
+            <label>
+              <input
+                type="radio"
+                name="difficulty"
+                value="normal"
+                checked={difficulty === 'normal'}
+                onChange={() => choose('normal')}
+                data-testid="difficulty-normal"
+              />{' '}
+              Normal
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="difficulty"
+                value="hard"
+                checked={difficulty === 'hard'}
+                onChange={() => choose('hard')}
+                data-testid="difficulty-hard"
+              />{' '}
+              Schwer
+            </label>
+            <p id="difficulty-desc" className="difficulty-desc">
+              {difficulty === 'hard'
+                ? 'Weniger Hinweise in der Zeitschrift, Schlüsselteile ohne Reihenfolge, ein misstrauisches Netz – und die Telefonrechnung zahlst du selbst.'
+                : 'Fair für Einsteiger: Die Zeitschrift erklärt viel, das Netz verzeiht mehr.'}
+            </p>
+          </fieldset>
           {autoFile && (
             <button
               type="button"

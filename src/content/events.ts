@@ -575,6 +575,8 @@ export const EVENTS: EventDef[] = [
     interrupts: true,
     variants: [
       { when: { flag: 'cassetteDelivered' }, effects: [] },
+      // Schwer: Ralf sucht nur, wenn Jan ihn gezielt nach dem Band gefragt hat (FRAGE RALF NACH DEM BAND).
+      { when: { all: [{ flag: 'hardMode' }, { notFlag: 'ralfAskedTape' }] }, effects: [] },
       {
         when: { any: [{ flag: 'away' }, { ringing: true }] },
         effects: [{ type: 'scheduleEvent', id: 'ev_ralf_cassette', inMinutes: 30 }],
@@ -635,6 +637,19 @@ export const EVENTS: EventDef[] = [
     trigger: { all: [{ fact: 'key_part_1' }, { fact: 'key_part_2' }, { fact: 'key_part_3' }] },
     variants: [
       {
+        when: { flag: 'hardMode' },
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Drei Fragmente, je vier Ziffern. Ohne Diskette 2 fragt das Modul nach einem zwölfstelligen »Ersatzschlüssel« – genau dafür. Nur: in welcher Reihenfolge? Das Modul prüft nichts. Das Rundschreiben wird es dir zeigen.',
+          },
+          { type: 'discoverFact', id: 'key_complete' },
+          { type: 'puzzle', id: 'P08', status: 'solved' },
+          { type: 'puzzle', id: 'P09', status: 'discovered' },
+        ],
+      },
+      {
         effects: [
           {
             type: 'say',
@@ -647,6 +662,13 @@ export const EVENTS: EventDef[] = [
         ],
       },
     ],
+  },
+
+  // Akt 2 beginnt für DENKE NACH, sobald das Rundschreiben lesbar ist oder Jan im Club war.
+  {
+    id: 'ev_act2_hint',
+    trigger: { any: [{ fact: 'k01_decrypted' }, { flag: 'clubAttended' }, { fact: 'ghost_offer' }] },
+    variants: [{ effects: [{ type: 'puzzle', id: 'P10', status: 'discovered' }] }],
   },
 
   // ── Ende von Akt 2: Jans Entscheidung (Vertrauen in GHOST, Ralf einweihen, beides oder allein) ──
@@ -743,6 +765,7 @@ export const EVENTS: EventDef[] = [
       {
         effects: [
           { type: 'setFlag', id: 'finaleOpen', value: true },
+          { type: 'puzzle', id: 'P11', status: 'discovered' },
           {
             type: 'say',
             kind: 'thought',
@@ -757,7 +780,12 @@ export const EVENTS: EventDef[] = [
     id: 'ev_finale_police',
     variants: [
       {
-        when: { factsAtLeast: { of: GAME_CONFIG.finale.evidence, n: GAME_CONFIG.finale.strongEvidence } },
+        when: {
+          all: [
+            ...GAME_CONFIG.finale.requiredEvidence.map((fact) => ({ fact })),
+            { factsAtLeast: { of: GAME_CONFIG.finale.evidence, n: GAME_CONFIG.finale.strongEvidence } },
+          ],
+        },
         effects: [{ type: 'gameOver', ending: 'end_exposed' }],
       },
       { effects: [{ type: 'gameOver', ending: 'end_dismissed' }] },

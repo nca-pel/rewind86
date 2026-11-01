@@ -113,6 +113,25 @@ export const GAME_CONFIG = {
     lockMinutes: 180,
   },
 
+  /**
+   * Schwierigkeitsgrad »Schwer« (beim Spielstart wählbar, im Spielstand als Flag `hardMode`). Normal bleibt das
+   * faire Einsteigerspiel; Schwer verlangt mehr eigenes Denken und Planen:
+   * 1. Schlüsselfragmente ohne Teilnummer – die Reihenfolge muss man selbst finden.
+   * 2. Die Zeitschrift verrät weniger (keine Ziffern in der Zeichentabelle, keine POKE-Adresse im Lesertipp).
+   * 3. Ralf bringt das Prüfband nur, wenn Jan ihn gezielt danach fragt.
+   * 4. Das geheime Netz reagiert empfindlicher (Werte ersetzen `risk`).
+   * 5. Telefongebühren zahlt Jan selbst; bei zu hoher Rechnung kommt ein Telefonschloss an den Apparat.
+   */
+  hard: {
+    risk: { secretLogin: 5, secretOnlineMinutesPerPoint: 3, secretSendAttempt: 3, secretSend: 6 },
+    /** Die Eltern übernehmen nichts. */
+    freePhoneDm: 0,
+    /** Ab diesen Kosten seit der letzten Ablesung hängt der Vater ein Schloss an die Wählscheibe … */
+    phoneLockFromDm: 3,
+    /** … für so viele Stunden (eingehende Anrufe gehen weiter). */
+    phoneLockHours: 24,
+  },
+
   unreleasedGame: {
     /** Entschieden: Wirtschaftssimulation »FERNHANDEL« (Handel per Telex/Telefon zwischen Städten). */
     workingTitle: 'FERNHANDEL',
@@ -270,7 +289,6 @@ export const GAME_CONFIG = {
       'key_leak',
       'key_complete',
       'k01_decrypted',
-      'cassette',
       'seidel_job',
       'seidel_phones',
       'secret_mailbox',
@@ -279,6 +297,11 @@ export const GAME_CONFIG = {
     ] as string[],
     /** ab so vielen Beweisfakten nimmt die Polizei Jan ernst */
     strongEvidence: 5,
+    /**
+     * Ohne diese Fakten bleibt alles eine Geschichte: Erst der entschlüsselte Klartext macht aus Indizien einen
+     * Beweis (die Kassette allein zählt nicht – sie beweist nur, dass es ein Band gibt).
+     */
+    requiredEvidence: ['k01_decrypted'] as string[],
     /** Seidel ruft an, bevor er losfährt (Szene im Finale) */
     seidelCallAt: '1986-11-21T21:00',
     /** spätester Anrufversuch; danach fährt er los */
