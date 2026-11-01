@@ -699,6 +699,42 @@ export const EVENTS: EventDef[] = [
       },
     ],
   },
+  // ── Senden im geheimen Netz (Modul mit Schlüssel) ──────────────────────────────────────────────
+  {
+    id: 'ev_net_reply',
+    variants: [
+      {
+        when: { rel: 'networkCredibility', atLeast: 'established' },
+        effects: [{ type: 'setFlag', id: 'netMeeting', value: true }],
+      },
+      {
+        effects: [
+          { type: 'setFlag', id: 'netWho', value: true },
+          { type: 'changeRelationship', id: 'seidelSuspicion', delta: 10 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_finale_k01',
+    variants: [
+      { when: { flag: 'gameOver' }, effects: [] },
+      {
+        when: { rel: 'networkCredibility', atLeast: 'established' },
+        effects: [{ type: 'gameOver', ending: 'end_abort' }],
+      },
+      {
+        effects: [
+          { type: 'changeRelationship', id: 'seidelSuspicion', delta: 15 },
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Keine Antwort. Natürlich nicht. Wer nimmt schon eine Warnung von einer Testkennung ernst, die nie etwas gesagt hat? Du hast dich nur verraten.',
+          },
+        ],
+      },
+    ],
+  },
   // ── Finale: Operation REWIND (Fr. 21.11., Vorschlag) ───────────────────────────────────────────────
   {
     id: 'ev_finale_open',

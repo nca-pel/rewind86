@@ -13,7 +13,7 @@ import { GAME_CONFIG } from '../content/config';
 import { DIALOGUE } from '../content/dialogue';
 import { EVENTS, EVENT_BY_ID } from '../content/events';
 import { FACTS, FACT_BY_ID } from '../content/facts';
-import { MAILBOXES } from '../content/networks';
+import { MAILBOXES, SECRET_SENDS } from '../content/networks';
 import { OBJECTS } from '../content/objects';
 import { PUZZLES } from '../content/puzzles';
 import { formatShort, formatTime, toMinutes } from './clock';
@@ -377,6 +377,7 @@ export function contentGraph(): GraphEdge[] {
       ),
     ),
     ...DIALOGUE.flatMap((d) => edgesFrom(`dialog:${d.npc}/${d.topic}`, d.effects ?? [])),
+    ...SECRET_SENDS.flatMap((x) => edgesFrom(`senden:${x.id}`, x.effects)),
     ...Object.entries(MAILBOXES).flatMap(([id, m]) => [
       ...m.boards.flatMap((b) => b.messages.flatMap((x) => edgesFrom(`mailbox:${id}/${x.id}`, x.effects))),
       ...edgesFrom(`mailbox:${id}/freischaltung`, m.memberMail?.effects ?? []),

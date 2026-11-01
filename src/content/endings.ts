@@ -50,6 +50,11 @@ export const ENDINGS: EndingDef[] = [
     title: 'Der Freitag vergeht',
     text: 'Die Hand liegt auf dem Hörer. 22:00. 23:00. Du wählst nicht. 23:30. Das Netz verstummt, die Testkennung wird gelöscht, auf dem Monitor blinkt der Cursor. Am Samstag ist alles wie immer: Schule bis zwölf, Taschengeld, Fußball. Ralf lacht am Telefon über etwas Dummes. Du wirst nie erfahren, ob es etwas gegeben hätte, das du hättest tun können.',
   },
+  {
+    id: 'end_abort',
+    title: 'Abbruch',
+    text: 'Du tippst die Warnung, Buchstabe für Buchstabe, mit der Kennung eines Fremden: TREFFPUNKT VERRATEN. ABBRUCH. RETURN. 300 Baud. Eine Ewigkeit. Dann: GESENDET. 23:30. An der Raststätte steht ein Wagen mit laufendem Motor. Niemand steigt ein. 23:45. Der Wagen fährt ohne Beifahrer zurück nach Osten. Die Software bleibt, wo sie ist, K-01 bleibt, wo er ist, und niemand erfährt je, wer die Warnung geschickt hat. Am Samstag ist das Netz tot. Seidel fährt Ralf zum Fußball, als wäre nichts gewesen. Nur sein Blick bleibt einmal zu lang an deinem Fenster hängen.',
+  },
 ];
 
 export const ENDING_BY_ID: Record<string, EndingDef> = Object.fromEntries(ENDINGS.map((e) => [e.id, e]));

@@ -3,7 +3,7 @@
  * Ohne Diskette 2 nur eingeschränkter Betrieb – aber der erste Netzkontakt ist möglich (GDD §7.5).
  */
 import { GAME_CONFIG } from '../../content/config';
-import { MAILBOXES, type MailboxMessage } from '../../content/networks';
+import { MAILBOXES, SECRET_SENDS, type MailboxMessage, type SecretSend } from '../../content/networks';
 import { FULL_KEY, K01_CIPHERTEXT, decrypt, groups, readable } from '../../engine/cipher';
 import { evalCondition } from '../../engine/conditions';
 import type { Ctx } from '../../engine/context';
@@ -14,7 +14,18 @@ import { diskInDrive } from '../drive';
 import { centered } from '../screen';
 import { pad, type AppDef } from './types';
 
-type Screen = 'insert' | 'nokey' | 'menu' | 'status' | 'dial' | 'key' | 'online' | 'list' | 'read' | 'sys';
+type Screen =
+  | 'insert'
+  | 'nokey'
+  | 'menu'
+  | 'status'
+  | 'dial'
+  | 'key'
+  | 'online'
+  | 'list'
+  | 'read'
+  | 'sys'
+  | 'send';
 
 export interface ModkState extends AppState {
   id: 'modk';
@@ -33,7 +44,12 @@ const KEY_LENGTH = GAME_CONFIG.keyStrand.parts.join('').length;
 const K01 = 'msg_k01_all';
 
 const N = GAME_CONFIG.secretNetwork;
-const ONLINE_SCREENS: Screen[] = ['online', 'list', 'read', 'sys'];
+const ONLINE_SCREENS: Screen[] = ['online', 'list', 'read', 'sys', 'send'];
+
+/** Kurzmeldungen, die jetzt gesendet werden können (jede nur einmal) */
+export function availableSends(state: GameState): SecretSend[] {
+  return SECRET_SENDS.filter((x) => !state.flags[`sent_${x.id}`] && evalCondition(state, x.when));
+}
 
 /** Nachrichten, die beim aktuellen Stand sichtbar sind (Tonfall je nach Verdachtsstufe) */
 export function visibleMessages(state: GameState): MailboxMessage[] {
@@ -252,7 +268,10 @@ export const modkApp: AppDef<ModkState> = {
         return {};
       case 'online':
         if (k === '1') app.screen = 'list';
-        else if (k === '2') {
+        else if (k === '2' && app.key === FULL_KEY) {
+          app.screen = 'send';
+          app.note = null;
+        } else if (k === '2') {
           app.note = 'GESPERRT: SCHLUESSEL FEHLT';
           if (!app.sendTried) {
             app.sendTried = true;
@@ -292,6 +311,22 @@ export const modkApp: AppDef<ModkState> = {
       case 'sys':
         app.screen = 'online';
         return {};
+      case 'send': {
+        const sends = availableSends(ctx.state);
+        const n = parseInt(k, 10);
+        if (n >= 1 && n <= sends.length) {
+          const x = sends[n - 1];
+          ctx.state.flags[`sent_${x.id}`] = true;
+          changeRelationship(ctx, 'seidelSuspicion', GAME_CONFIG.risk.secretSend, 'Senden');
+          applyEffects(ctx, x.effects);
+          app.screen = 'online';
+          app.note = `GESENDET AN ${x.to}`;
+          ctx.say(`Du schickst als ${N.testHandle}: »${x.body}« Jetzt gibt es kein Zurück.`, 'thought');
+          return { minutes: 2 };
+        }
+        if (k === 'RETURN' || k === 'RUNSTOP') app.screen = 'online';
+        return {};
+      }
     }
     return {};
   },
@@ -400,6 +435,19 @@ export const modkApp: AppDef<ModkState> = {
           L.push('', 'S = ROHDATEN SPEICHERN  TASTE = ZURUECK');
         } else if (m.id === K01) L.push(...head3, ...m.body, '', 'S = ROHDATEN SPEICHERN  TASTE = ZURUECK');
         else L.push(...head3, ...m.body, '', 'TASTE = ZURUECK');
+        break;
+      }
+      case 'send': {
+        const sends = availableSends(state);
+        L.push(
+          'NACHRICHT SENDEN',
+          '----------------------------------------',
+          `ABSENDER: ${N.testHandle}`,
+          '',
+        );
+        if (!sends.length) L.push('KEINE KURZMELDUNG VERFUEGBAR.');
+        sends.forEach((x, i) => L.push(` ${i + 1}  ${x.label}`.slice(0, 40)));
+        L.push('', 'NUMMER = SENDEN   RETURN = ZURUECK');
         break;
       }
       case 'sys':

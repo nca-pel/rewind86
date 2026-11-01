@@ -186,6 +186,21 @@ export const FACTS: FactDef[] = [
     text: 'Seidel hat am Freitagabend bei euch angerufen und nach dir gefragt.',
   },
   {
+    id: 'net_quittung',
+    category: 'kanaele',
+    text: 'Jan hat als K-17 den Empfang des Rundschreibens quittiert. Im Netz gilt die Testkennung jetzt als Teilnehmer.',
+  },
+  {
+    id: 'net_meeting_point',
+    category: 'verdacht',
+    text: 'Antwort aus dem Netz: Übergabe Freitag 23:30, Raststätte bei Gütersloh, Stichwort »REWIND«.',
+  },
+  {
+    id: 'net_who',
+    category: 'verdacht',
+    text: 'Das Netz hat auf Jans Anfrage misstrauisch reagiert: »Kennung K-17 wird geprüft.«',
+  },
+  {
     id: 'ralf_schedule',
     category: 'personen',
     text: 'Ralf hat dienstags, donnerstags und freitags ab halb fünf Training, samstags nach der Schule ein Spiel. Sonst ist er meist zu Hause.',

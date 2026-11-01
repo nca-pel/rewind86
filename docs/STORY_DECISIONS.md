@@ -126,7 +126,7 @@ sich Seidel (Raststätte, halb zwölf → Beweisfakt `seidel_rastplatz`) und zei
 Familie. Nach der Diskette gefragt, weiß er Bescheid (Verdacht +5). Wer Brandt/GHOST erwähnt, warnt ihn: Er legt auf,
 Verdacht +15, die Übergabe rückt 60 Minuten vor (`ev_finale_close_early`). Nimmt Jan nicht ab, geht die Mutter ran.
 
-Noch offen: mehr Beweisquellen (Sendefunktion im geheimen Netz),
+Noch offen:
 GHOSTs wahre Absicht (die Enden zeigen nur seine Seite).
 
 ## Enden überarbeitet (01.11.2026)
@@ -136,3 +136,14 @@ GHOSTs wahre Absicht (die Enden zeigen nur seine Seite).
 - **GHOST bleibt zweideutig:** Im Ende „Der Mentor räumt auf“ weiß Brandt am Ende, wer hinter der Testkennung saß;
   was er mit den Beweisen tut und wem er dient, bleibt offen.
 - **Seidel/Ralf:** Bei „Ralf hält seinen Vater auf“ verschwindet Seidel am Samstag, Ralf bleibt bei seiner Mutter zurück.
+
+## Senden im geheimen Netz (Vorschlag, 01.11.2026)
+
+Mit dem vollständigen Ersatzschlüssel öffnet „2 NACHRICHT SENDEN“ im Modul drei Kurzmeldungen (kein Freitext; jede
+einmal, je +4 Verdacht, `SECRET_SENDS` in `content/networks.ts`):
+
+| Kurzmeldung                  | verfügbar     | Wirkung                                                                                                |
+| ---------------------------- | ------------- | ------------------------------------------------------------------------------------------------------ |
+| Quittung an K-01             | nach Klartext | Netzglaubwürdigkeit +25 (ab 60 gilt K-17 als Teilnehmer)                                               |
+| Anfrage Treffpunkt an SYSTEM | nach Klartext | glaubwürdig: Antwort mit Treffpunkt (Beweisfakt `net_meeting_point`); sonst „Wer fragt?“, Verdacht +10 |
+| Warnung an K-01: Abbruch     | im Finale     | glaubwürdig: Ende `end_abort` (Übergabe platzt); sonst ignoriert, Verdacht +15                         |

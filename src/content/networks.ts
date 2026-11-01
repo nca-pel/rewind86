@@ -81,6 +81,47 @@ export interface MailboxSystem {
   sysinfoEffects: GameEffect[];
 }
 
+/** Kurzmeldungen, die das Modul mit gültigem Schlüssel senden kann (Freitext gibt es im Modul nicht). */
+export interface SecretSend {
+  id: string;
+  /** Menütext (max. 30 Zeichen) */
+  label: string;
+  to: string;
+  body: string;
+  when?: Condition;
+  effects: GameEffect[];
+}
+
+export const SECRET_SENDS: SecretSend[] = [
+  {
+    id: 'quittung',
+    label: `QUITTUNG AN ${N.senderHandle}`,
+    to: N.senderHandle,
+    body: `${N.testHandle}: RUNDSCHREIBEN ERHALTEN. BEREIT.`,
+    when: { fact: 'k01_decrypted' },
+    effects: [
+      { type: 'changeRelationship', id: 'networkCredibility', delta: 25 },
+      { type: 'discoverFact', id: 'net_quittung' },
+    ],
+  },
+  {
+    id: 'anfrage',
+    label: 'ANFRAGE TREFFPUNKT AN SYSTEM',
+    to: 'SYSTEM',
+    body: `${N.testHandle}: TREFFPUNKT UND ZEIT FREITAG?`,
+    when: { fact: 'k01_decrypted' },
+    effects: [{ type: 'scheduleEvent', id: 'ev_net_reply', inMinutes: 5 }],
+  },
+  {
+    id: 'warnung',
+    label: `WARNUNG AN ${N.senderHandle}: ABBRUCH`,
+    to: N.senderHandle,
+    body: 'TREFFPUNKT VERRATEN. ABBRUCH.',
+    when: { all: [{ flag: 'finaleOpen' }, { notFlag: 'gameOver' }] },
+    effects: [{ type: 'scheduleEvent', id: 'ev_finale_k01', inMinutes: 10 }],
+  },
+];
+
 export const SECRET_MAILBOX: MailboxSystem = {
   id: 'secret',
   name: N.nodeName,
@@ -173,6 +214,32 @@ export const SECRET_MAILBOX: MailboxSystem = {
               text: `»Empfänger: ${N.senderHandle} – Verteiler: ALLE.« Da hat jemand den falschen Knopf erwischt. Ein Drittel des Schlüssels steht hier im Klartext – und der Rest ist auf der Arbeitskopie und auf irgendeinem Band?`,
             },
           ],
+        },
+        {
+          id: 'msg_sys_meeting',
+          from: 'SYSTEM',
+          to: N.testHandle,
+          subject: 'RE: TREFFPUNKT',
+          encrypted: false,
+          when: { flag: 'netMeeting' },
+          body: [
+            'FREITAG 2330',
+            'RASTSTAETTE GT, PARKPLATZ NORD.',
+            'STICHWORT: REWIND.',
+            '',
+            'NICHT ANTWORTEN.',
+          ],
+          effects: [{ type: 'discoverFact', id: 'net_meeting_point' }],
+        },
+        {
+          id: 'msg_sys_who',
+          from: 'SYSTEM',
+          to: N.testHandle,
+          subject: 'RUECKFRAGE',
+          encrypted: false,
+          when: { flag: 'netWho' },
+          body: ['WER FRAGT?', '', `KENNUNG ${N.testHandle} WIRD GEPRUEFT.`],
+          effects: [{ type: 'discoverFact', id: 'net_who' }],
         },
         // Symptome von Seidels Verdacht (GDD §9.3: sichtbar nur als Tonfall von Nachrichten).
         // TODO-STORY: Wortlaut und ob Seidel selbst schreibt, ist offen.

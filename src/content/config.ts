@@ -81,9 +81,9 @@ export const GAME_CONFIG = {
    */
   thresholds: {
     seidelSuspicion: { noticeable: 30, dangerous: 70, critical: 90, discovered: 100 },
-    /** TODO-STORY: Symptome für Ralfs Vertrauen kommen mit den Ralf-Rückrufen (Tagesablauf). */
+    /** Wirkt im Finale: Ralf hält zu Jan (ab trusting) oder plaudert. */
     ralfTrust: { trusting: 40, close: 75 },
-    /** TODO-STORY: braucht Senden im geheimen Netz (noch nicht implementiert). */
+    /** Ab hier gilt K-17 im Netz als echter Teilnehmer (Quittung gesendet): Anfragen und Warnungen wirken. */
     networkCredibility: { established: 60 },
   },
 
@@ -104,6 +104,8 @@ export const GAME_CONFIG = {
     secretOnlineMinutesPerPoint: 5,
     /** Versuch, mit der Testkennung zu senden (einmal pro Verbindung) */
     secretSendAttempt: 2,
+    /** jede tatsächlich gesendete Nachricht (mit Schlüssel) */
+    secretSend: 4,
     /** Sperre der Testkennung ab Schwelle »dangerous« */
     lockMinutes: 180,
   },
@@ -260,6 +262,7 @@ export const GAME_CONFIG = {
       'seidel_phones',
       'secret_mailbox',
       'seidel_rastplatz',
+      'net_meeting_point',
     ] as string[],
     /** ab so vielen Beweisfakten nimmt die Polizei Jan ernst */
     strongEvidence: 5,
