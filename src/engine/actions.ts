@@ -8,6 +8,7 @@ import { OBJECT_BY_ID } from '../content/objects';
 import { PUZZLES } from '../content/puzzles';
 import { STATIONS } from '../content/radio';
 import { TOPIC_BY_ID } from '../content/dialogue';
+import type { GameEffect } from './types';
 import type { Intent, Segment } from '../parser/adventure';
 import { normalize } from '../parser/normalize';
 import { c64Key, c64Line, powerOff, powerOn } from '../sim/c64';
@@ -705,17 +706,32 @@ function goToClub(ctx: Ctx): number {
     );
     return 0;
   }
-  // TODO-STORY: Inhalte des Clubabends (Begegnungen, GHOST-Indizien) folgen mit Akt 2.
   s.flags.clubAttended = true;
   // Ausleihe des BTX-Sets (Annahme: Mitglieder dürfen es probieren, siehe config.btx)
   if (s.itemLocations.btx_kit === 'nowhere') s.itemLocations.btx_kit = 'inventory';
+  const G = GAME_CONFIG.ghost;
+  const hadGhostWord = s.knownFacts.includes('ghost_word');
+  const scene = [
+    'Du schnappst dir deine Diskettenbox und radelst durch den Nieselregen zum Jugendzentrum. Drinnen riecht es nach Kaffee und warmen Netzteilen. Ein paar Leute tauschen Disketten, an einem Tisch wird eine Datasette justiert, und jemand schwärmt vom neuen Amiga, den sich keiner leisten kann.',
+    `${G.civilName}, der Betreuer des Clubs, Strickjacke, Brille, eine Thermoskanne in der Hand, winkt dich heran. »Jan! Fürwahr, du hast es doch noch geschafft. Setz dich. Schwarzer Kaffee? Nein? Dann eben nicht.« Er stellt dir das BTX-Leihset des Clubs hin: Postmodem, Decoder-Modul, Vereinskennung. »Nimm’s ruhig ein paar Tage mit und schau dir an, was die Post da aufgebaut hat. Weiter so.«`,
+  ];
+  const notes: GameEffect[] = [{ type: 'discoverFact', id: 'brandt_word' }];
+  if (hadGhostWord) {
+    scene.push(
+      'Du hörst genau hin. »Fürwahr.« »Weiter so.« Dieselben Worte, mit denen GHOST seine Beiträge im BIT-SCHUPPEN beendet. Du sagst nichts und trinkst Tee aus einem Pappbecher.',
+    );
+    notes.push({ type: 'discoverFact', id: 'brandt_is_ghost' });
+  }
   requestAbsence(
     ctx,
     'club',
     `${c.eveningDate}T${c.backAt}`,
-    'Du schnappst dir deine Diskettenbox und radelst durch den Nieselregen zum Jugendzentrum. Drinnen riecht es nach Kaffee und warmen Netzteilen. Ein paar Leute tauschen Disketten, an einem Tisch wird eine Datasette justiert, und jemand schwärmt vom neuen Amiga, den sich keiner leisten kann.',
-    'Kurz vor zehn bist du wieder zu Hause, die Jacke klamm vom Regen, den Kopf voller neuer Ideen – und mit dem BTX-Leihset des Clubs unter dem Arm, das du dir für ein paar Tage ausleihen durftest.',
+    scene.join('\n\n'),
+    hadGhostWord
+      ? 'Kurz vor zehn bist du wieder zu Hause, die Jacke klamm vom Regen, den Kopf voller Fragen – mit dem BTX-Leihset unter dem Arm. Der Betreuer des Clubs und GHOST: Du bist fast sicher, dass es derselbe Mann ist. Ob du ihm trauen kannst, weißt du nicht.'
+      : 'Kurz vor zehn bist du wieder zu Hause, die Jacke klamm vom Regen, den Kopf voller neuer Ideen – und mit dem BTX-Leihset des Clubs unter dem Arm, das du dir für ein paar Tage ausleihen durftest. Beim Abschied hat Herr Brandt noch gesagt: »Schau mal in die Club-Mailbox, da steht öfter was Nützliches.«',
   );
+  applyEffects(ctx, notes);
   advanceTime(ctx, 0);
   return 0;
 }

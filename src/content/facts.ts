@@ -126,6 +126,51 @@ export const FACTS: FactDef[] = [
     text: `Rundbrief vom Computerclub: Clubabend am Donnerstag, ${C.club.eveningDate.slice(8, 10)}.${C.club.eveningDate.slice(5, 7)}., 19 Uhr im Jugendzentrum. Die Club-Mailbox ist der ${C.mailboxes.bitschuppen.name} (Tel. ${C.mailboxes.bitschuppen.phoneNumber}).`,
   },
   {
+    id: 'ghost_poster',
+    category: 'personen',
+    text: 'Im Brett CLUB des BIT-SCHUPPEN schreibt ein »GHOST«: freundlich, väterlich, und er scheint die Szene gut zu kennen.',
+  },
+  {
+    id: 'ghost_word',
+    category: 'verdacht',
+    text: 'GHOST beendet seine Beiträge mit »FUERWAHR« und »WEITER SO.« – ein altmodischer Tonfall für eine Mailbox.',
+  },
+  {
+    id: 'ghost_night',
+    category: 'verdacht',
+    text: 'GHOST schreibt nachts bei schwarzem Kaffee und weiß, dass Testzugänge in kommerziellen Netzen Spuren hinterlassen.',
+  },
+  {
+    id: 'brandt_word',
+    category: 'personen',
+    text: 'Herr Brandt, der Clubbetreuer, sagt »Fürwahr« und »Weiter so.« und trinkt schwarzen Kaffee aus einer Thermoskanne.',
+  },
+  {
+    id: 'brandt_is_ghost',
+    category: 'verdacht',
+    text: 'Verdacht: Herr Brandt, der Betreuer des Computerclubs, ist GHOST – gleiche Wendungen, gleicher schwarzer Kaffee.',
+  },
+  {
+    id: 'ghost_offer',
+    category: 'kanaele',
+    text: 'GHOST bietet an, mehr über »Freitag« zu erzählen, wenn Jan ihm in der Club-Mailbox schreibt. Ralf könnte Jan ebenfalls helfen.',
+  },
+  {
+    id: 'ghost_trusted',
+    category: 'verdacht',
+    text: 'Jan hat GHOST geschrieben und ihm anvertraut, was er über das Netz weiß.',
+  },
+  {
+    id: 'ralf_told_ghost',
+    category: 'personen',
+    text: 'Jan hat Ralf von GHOST und dem Freitag erzählt.',
+  },
+  {
+    id: 'dk_ghost_rumor',
+    category: 'kanaele',
+    text: 'Im DATENKELLER heißt es: Im BIT-SCHUPPEN schreibt einer, der angeblich nur zuhört – und wirklich alles mitbekommt.',
+  },
+  {
     id: 'ralf_schedule',
     category: 'personen',
     text: 'Ralf hat dienstags, donnerstags und freitags ab halb fünf Training, samstags nach der Schule ein Spiel. Sonst ist er meist zu Hause.',

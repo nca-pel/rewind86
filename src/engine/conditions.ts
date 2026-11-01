@@ -37,6 +37,8 @@ export function evalCondition(state: GameState, c: Condition | undefined): boole
   if ('schoolTomorrow' in c) return isSchoolTomorrow(state.gameClock);
   if ('weekday' in c) return weekday(state.gameClock) === c.weekday;
   if ('date' in c) return dateOf(state.gameClock) === c.date;
+  if ('factsAtLeast' in c)
+    return c.factsAtLeast.of.filter((f) => state.knownFacts.includes(f)).length >= c.factsAtLeast.n;
   if ('atLeast' in c) {
     const t = threshold(c.rel, c.atLeast);
     return t !== undefined && state.relationships[c.rel] >= t;

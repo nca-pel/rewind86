@@ -129,7 +129,6 @@ const MESSAGE_BOARD_AFTER = [
   'DAS WICHTIGSTE STEHT NIE IN DEN MENUES.',
   'WIR SIND GESPANNT, WOHIN DIE SUCHE',
   'FUEHRT.',
-  // TODO-STORY: kryptische Brücke zu GHOST/Club (Akt 3); bewusst ohne Namen und ohne Handlung.
 ];
 
 export const BTX_PAGES: BtxPage[] = [

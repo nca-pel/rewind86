@@ -242,6 +242,15 @@ export function dial(ctx: Ctx, number: string): number {
   }
 
   ctx.say(`Du wählst ${number.split('').join(' ')}.`);
+  if ((number === '110' || number === '112') && ctx.state.flags.finaleOpen && !ctx.state.flags.gameOver) {
+    ctx.say(
+      '»Notruf Polizei Gütersloh, was ist passiert?« Dir bleibt der Atem weg. Dann erzählst du es, so ruhig du kannst, von Anfang an.',
+      'dialog',
+      'POLIZEI',
+    );
+    scheduleEvent(ctx, 'ev_finale_police', 6);
+    return 1;
+  }
   if (number === '110' || number === '112') {
     ctx.say(
       'Mitten im Wählen hältst du inne und drückst schnell auf die Gabel. Dafür gibt es keinen Grund – noch nicht.',

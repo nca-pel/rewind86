@@ -4,18 +4,18 @@ Die 14 offenen Punkte aus GDD §22 wurden im Storydesign-Workshop am 31.10.2026 
 [`STORY_DECISIONS.md`](STORY_DECISIONS.md). Hier steht nur noch, was **innerhalb** dieser Entscheidungen offen ist
 und erst beim Schreiben der jeweiligen Akte konkretisiert wird.
 
-| Thema               | Entschieden                                   | Noch offen (wird mit dem Akt ausgearbeitet)                                                                       |
-| ------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| GHOST               | Computerclub-Betreuer, erkennt Jan spät       | Name, Auftreten im Club, persönliches Motiv im Detail, welcher Fehler Jans die Kennung verrät, Indizienkette      |
-| Operation REWIND    | Fr. 21.11.1986, Fernmeldesoftware, K-01, Netz | Zeitplan der Woche, wer K-01 ist, Ablauf des Finales, Bedingungen der 3–5 Enden                                   |
-| Diskette 2          | 3 Fragmente, Ersatzschlüssel im Modul         | Ob/wann Jan die echte Diskette 2 sieht; was das Modul mit echtem Schlüssel zusätzlich kann (Senden?)              |
-| FERNHANDEL          | Wirtschaftssimulation, Taste `←` bleibt       | Intro-Grafik (Spielteil ist jetzt als kleine Handelssimulation spielbar)                                          |
-| Computerclub        | BIT-SCHUPPEN ist die Club-Mailbox             | Wo/wann der Club stattfindet und wie Jan dort ohne freie Erkundung Kontakt hat (GDD: Jan bleibt im Zimmer)        |
-| Systemnachrichten   | –                                             | Ob Seidel selbst hinter „PROTOKOLLIERUNG“/„LETZTE WARNUNG“ steht (naheliegend, da er die Infrastruktur betreut)   |
-| Filme               | 3–4 Anspielungen mit Rätselbezug              | Welche Filme, welche Rätsel; Rechteprüfung                                                                        |
-| BTX                 | Leih-Set vom Club, Clubtafel (P17)            | Historische Prüfung (Postmodem, Tarife, Seitenformate); mehr Angebote/Hinweise; ob BTX früher verfügbar sein soll |
-| Datasette           | Prüfband 3 mit Schlüsselteil 3                | Weitere Kassetten, Speichern auf Band                                                                             |
-| Historische Prüfung | –                                             | Ob ein Anschluss 1986 über die Bundespost ermittelbar war (`needs_research`); Tarife; fiktive Nummern (GDD §20.4) |
+| Thema               | Entschieden                                       | Noch offen (wird mit dem Akt ausgearbeitet)                                                                       |
+| ------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| GHOST               | Herr Brandt (Akt 2 entschieden), erkennt Jan spät | Persönliches Motiv im Detail, welcher Fehler Jans die Kennung verrät (Akt 3)                                      |
+| Operation REWIND    | Fr. 21.11.1986, Fernmeldesoftware, K-01, Netz     | Zeitplan der Woche, wer K-01 ist, Ablauf des Finales, Bedingungen der 3–5 Enden                                   |
+| Diskette 2          | 3 Fragmente, Ersatzschlüssel im Modul             | Ob/wann Jan die echte Diskette 2 sieht; was das Modul mit echtem Schlüssel zusätzlich kann (Senden?)              |
+| FERNHANDEL          | Wirtschaftssimulation, Taste `←` bleibt           | Intro-Grafik (Spielteil ist jetzt als kleine Handelssimulation spielbar)                                          |
+| Computerclub        | BIT-SCHUPPEN ist die Club-Mailbox                 | Wo/wann der Club stattfindet und wie Jan dort ohne freie Erkundung Kontakt hat (GDD: Jan bleibt im Zimmer)        |
+| Systemnachrichten   | –                                                 | Ob Seidel selbst hinter „PROTOKOLLIERUNG“/„LETZTE WARNUNG“ steht (naheliegend, da er die Infrastruktur betreut)   |
+| Filme               | 3–4 Anspielungen mit Rätselbezug                  | Welche Filme, welche Rätsel; Rechteprüfung                                                                        |
+| BTX                 | Leih-Set vom Club, Clubtafel (P17)                | Historische Prüfung (Postmodem, Tarife, Seitenformate); mehr Angebote/Hinweise; ob BTX früher verfügbar sein soll |
+| Datasette           | Prüfband 3 mit Schlüsselteil 3                    | Weitere Kassetten, Speichern auf Band                                                                             |
+| Historische Prüfung | –                                                 | Ob ein Anschluss 1986 über die Bundespost ermittelbar war (`needs_research`); Tarife; fiktive Nummern (GDD §20.4) |
 
 ## Weitere im Ausschnitt getroffene Annahmen (bitte prüfen)
 

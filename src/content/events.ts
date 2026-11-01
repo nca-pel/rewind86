@@ -515,7 +515,6 @@ export const EVENTS: EventDef[] = [
           { type: 'say', text: '(Währenddessen legt deine Mutter einen Brief auf deinen Schreibtisch.)' },
         ],
       },
-      // TODO-STORY: Briefe und Pakete für Akt 2 (Ereignisse je Datum ergänzen)
       { effects: [] },
     ],
   },
@@ -647,6 +646,107 @@ export const EVENTS: EventDef[] = [
           { type: 'puzzle', id: 'P09', status: 'discovered' },
         ],
       },
+    ],
+  },
+
+  // ── Ende von Akt 2: Jans Entscheidung (Vertrauen in GHOST, Ralf einweihen, beides oder allein) ──
+  {
+    id: 'ev_act2_end',
+    at: GAME_CONFIG.ghost.actTwoEndsAt,
+    variants: [
+      {
+        when: { all: [{ flag: 'toldGhost' }, { flag: 'toldRalf' }] },
+        effects: [
+          { type: 'setFlag', id: 'act2Choice', value: 'both' },
+          {
+            type: 'say',
+            kind: 'story',
+            text: '20:00. Zwei Menschen wissen es jetzt: ein Mann, der unter Decknamen schreibt, und ein Junge, der kein Geheimnis halten kann. Keiner kennt den anderen. Wenn einer redet, redet bald der Dritte. Die Uhr auf dem Fernseher unten springt um. Kein Zurück mehr.',
+          },
+        ],
+      },
+      {
+        when: { flag: 'toldGhost' },
+        effects: [
+          { type: 'setFlag', id: 'act2Choice', value: 'ghost' },
+          {
+            type: 'say',
+            kind: 'story',
+            text: '20:00. GHOSTs Antwort steht noch auf dem Bildschirm: Spuren löschen. Still sein. Auf mein Zeichen warten. Jemand hat den Überblick. Gut. Nur: Woher weiß er so genau, worum es geht?',
+          },
+        ],
+      },
+      {
+        when: { flag: 'toldRalf' },
+        effects: [
+          { type: 'setFlag', id: 'act2Choice', value: 'ralf' },
+          {
+            type: 'say',
+            kind: 'story',
+            text: '20:00. Ralf hört im Haus mit, du beobachtest das Netz. Zwei Jungen gegen etwas, das keiner von euch kennt. Und im Computerclub sitzt ein Mann mit Thermoskanne, dem du nicht traust – und den du nicht ignorieren kannst.',
+          },
+        ],
+      },
+      {
+        effects: [
+          { type: 'setFlag', id: 'act2Choice', value: 'alone' },
+          {
+            type: 'say',
+            kind: 'story',
+            text: '20:00. Niemand weiß etwas. Nicht GHOST, nicht Ralf. Du bist allein mit einem Bildschirm, der mehr weiß als du. Allein bist du unsichtbar. Allein bist du aber auch ohne Hilfe, wenn es ernst wird.',
+          },
+        ],
+      },
+    ],
+  },
+  // ── Finale: Operation REWIND (Fr. 21.11., Vorschlag) ───────────────────────────────────────────────
+  {
+    id: 'ev_finale_open',
+    at: GAME_CONFIG.ghost.actTwoEndsAt,
+    variants: [
+      {
+        effects: [
+          { type: 'setFlag', id: 'finaleOpen', value: true },
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Heute Nacht. »Operation REWIND beginnt Freitag« – und Freitag ist jetzt. Um 23:30 ist es vorbei, so oder so. Drei Wege: die 110. GHOST, über die Club-Mailbox, offen bis Mitternacht. Ralf, solange man dort noch anrufen kann. Oder nichts tun.',
+          },
+          { type: 'ui', effect: { type: 'autosave', reason: 'Beginn des Finales' } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_finale_police',
+    variants: [
+      {
+        when: { factsAtLeast: { of: GAME_CONFIG.finale.evidence, n: GAME_CONFIG.finale.strongEvidence } },
+        effects: [{ type: 'gameOver', ending: 'end_exposed' }],
+      },
+      { effects: [{ type: 'gameOver', ending: 'end_dismissed' }] },
+    ],
+  },
+  {
+    id: 'ev_finale_ghost',
+    variants: [{ effects: [{ type: 'gameOver', ending: 'end_cover' }] }],
+  },
+  {
+    id: 'ev_finale_ralf',
+    variants: [
+      {
+        when: { rel: 'ralfTrust', atLeast: 'trusting' },
+        effects: [{ type: 'gameOver', ending: 'end_ralf_stops' }],
+      },
+      { effects: [{ type: 'gameOver', ending: 'end_ralf_betrayal' }] },
+    ],
+  },
+  {
+    id: 'ev_finale_close',
+    at: GAME_CONFIG.finale.closesAt,
+    variants: [
+      { when: { flag: 'gameOver' }, effects: [] },
+      { effects: [{ type: 'gameOver', ending: 'end_silent' }] },
     ],
   },
 

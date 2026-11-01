@@ -231,9 +231,37 @@ export const GAME_CONFIG = {
    * spät zu; arbeitet für einen nie benannten britischen Dienst aus persönlichem Motiv.
    */
   ghost: {
+    /** Entschieden (Akt 2): der freundliche Mentor – Herr Brandt, Betreuer des Computerclubs */
+    handle: 'GHOST',
+    civilName: 'Herr Brandt',
+    /** Sprachliche Eigenheit seiner Mailbox-Beiträge (Enttarnungsindiz) */
+    quirk: ['FUERWAHR', 'WEITER SO.'],
+    /** Ende von Akt 2: Fr. Abend, danach läuft die Operation */
+    actTwoEndsAt: '1986-11-21T20:00',
     civilIdentity: 'computerclub_betreuer',
     recognitionArc: 'kennt_jan_erkennt_spaet',
     britishService: 'unbenannt',
+  },
+
+  /**
+   * Finale (Vorschlag, Akt 3–6 verdichtet): Ab dem Ende von Akt 2 (Fr. 20:00) läuft die Operation; um `closesAt`
+   * wird K-01 ausgeschleust. Jan hat drei Wege: 110 wählen, GHOST in der Club-Mailbox schreiben oder Ralf anrufen.
+   * Die Beweislage (Fakten) entscheidet, ob die Polizei Seidel stoppen kann.
+   */
+  finale: {
+    closesAt: '1986-11-21T23:30',
+    evidence: [
+      'wt07_trace',
+      'key_leak',
+      'key_complete',
+      'k01_decrypted',
+      'cassette',
+      'seidel_job',
+      'seidel_phones',
+      'secret_mailbox',
+    ] as string[],
+    /** ab so vielen Beweisfakten nimmt die Polizei Jan ernst */
+    strongEvidence: 5,
   },
 
   /** Entschieden: Operation REWIND (Details zu Ablauf und Finale folgen mit Akt 6). */

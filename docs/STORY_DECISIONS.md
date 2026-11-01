@@ -93,3 +93,41 @@ Ergebnis des Storydesign-Workshops vom 31.10.2026 zu den offenen Punkten aus GDD
   `ev_ralf_cassette`/`ev_key_complete`, Nachricht `msg_key_leak`.
 - GHOST kommt noch nicht vor; die Operation wird erst mit dem entschlüsselten Rundschreiben namentlich genannt. Ein
   Test stellt sicher, dass im Prolog kein Spieltext GHOST oder seine Identität nennt.
+
+## Akt 2 (entschieden 01.11.2026)
+
+- **GHOST = Herr Brandt**, der freundliche Mentor und Betreuer des Computerclubs. Er schreibt im Brett CLUB des
+  BIT-SCHUPPEN (Handle `GHOST`) und endet Beiträge mit »FUERWAHR« / »WEITER SO.«; im Club sagt er dasselbe und trinkt
+  schwarzen Kaffee aus einer Thermoskanne. Das sind die Indizien (Fakten `ghost_word`, `brandt_word`, `ghost_night`,
+  `dk_ghost_rumor` → Verdacht `brandt_is_ghost`).
+- **Form:** Ermittlung per Mailbox (Mo 17.11. nachts: »NACHTSCHICHT«), Clubabend Do 20.11. als Wendepunkt (Brandt
+  verleiht das BTX-Set; wer GHOSTs Beiträge kennt, erkennt ihn), danach GHOSTs Angebot »Freitag« (Brett CLUB, kryptisch).
+- **Echte Wahl bis Fr 21.11., 20:00:** `toldGhost` (Mail an GHOST, Verdacht −10) und/oder `toldRalf` (Ralf-Thema
+  `ghost`, Vertrauen +12, Verdacht +6). Ergebnis `act2Choice` = `ghost` | `ralf` | `both` | `alone` (Event `ev_act2_end`).
+- **Offen für Akt 3:** Brandts Motiv im Detail, was er mit Jans Kennung anfängt (erkennt Jan »spät«), wie die Wahl die
+  Enden beeinflusst. Ältere Spielstände vor diesem Stand kennen `ev_act2_end` nicht (Vorab-Version).
+
+## Finale (Vorschlag, 01.11.2026 – bitte gegenlesen)
+
+Akt 3–6 sind zu einem Finalabend verdichtet (Fr 21.11., 20:00–23:30; `ev_finale_*`, `GAME_CONFIG.finale`). Um 23:30
+wird K-01 ausgeschleust. Jan hat vier Wege, Beweislage = bekannte Fakten aus `finale.evidence` (ab 5: stark):
+
+| Weg                        | Bedingung          | Ende                                                             |
+| -------------------------- | ------------------ | ---------------------------------------------------------------- |
+| 110 wählen                 | Beweislage stark   | `end_exposed` (Enttarnung)                                       |
+| 110 wählen                 | Beweislage schwach | `end_dismissed` (Teilerfolg: nur ein Vermerk, Jans Name bekannt) |
+| Post an GHOST              | Club-Mailbox offen | `end_cover` (Vertuschung: Hintermänner bleiben namenlos)         |
+| Ralf anrufen (Thema GHOST) | Vertrauen ≥ 40     | `end_ralf_stops` (Seidel bleibt zu Hause, entkommt aber)         |
+| Ralf anrufen (Thema GHOST) | Vertrauen < 40     | `end_ralf_betrayal` (Ralf plaudert, Seidel besucht Jan)          |
+| nichts tun                 | –                  | `end_silent` (Freitag vergeht); dazu `end_discovered` wie bisher |
+
+Noch offen: Seidels Handlung im Finale als eigene Szene, mehr Beweisquellen (Sendefunktion im geheimen Netz),
+GHOSTs wahre Absicht (die Enden zeigen nur seine Seite).
+
+## Enden überarbeitet (01.11.2026)
+
+- **Jans Alter: 16 Jahre** (entschieden; Endtext „Zu wenig in der Hand“ nennt „Sechzehnjähriger“).
+- **Ton der Enden:** filmisch, kurze Sätze, Uhrzeiten als Zeitdruck (22:40, 23:05, 23:30).
+- **GHOST bleibt zweideutig:** Im Ende „Der Mentor räumt auf“ weiß Brandt am Ende, wer hinter der Testkennung saß;
+  was er mit den Beweisen tut und wem er dient, bleibt offen.
+- **Seidel/Ralf:** Bei „Ralf hält seinen Vater auf“ verschwindet Seidel am Samstag, Ralf bleibt bei seiner Mutter zurück.

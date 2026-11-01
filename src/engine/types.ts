@@ -265,6 +265,8 @@ export type Condition =
   | { schoolTomorrow: true }
   | { weekday: string }
   | { date: string }
+  /** Mindestens n der genannten Fakten sind bekannt (Beweislage im Finale) */
+  | { factsAtLeast: { of: FactId[]; n: number } }
   | { all: Condition[] }
   | { any: Condition[] }
   | { not: Condition };

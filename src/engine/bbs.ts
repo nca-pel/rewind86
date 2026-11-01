@@ -187,10 +187,12 @@ export function sendMail(ctx: Ctx, sysId: string, to: string, subject: string, b
   acc.posts.push(msg);
   s.telecom.messagePostedIds.push(msg.id);
   s.telecom.messageReadIds.push(msg.id);
-  const reply = sys.replies.find((r) => r.to === target);
-  if (reply && !acc.inbox.some((m) => m.id === `${sysId}-reply-${target}`)) {
+  const reply = sys.replies.find((r) => r.to === target && evalCondition(s, r.when));
+  const replyId = `${sysId}-reply-${reply?.id ?? target}`;
+  if (reply && !acc.inbox.some((m) => m.id === replyId)) {
+    applyEffects(ctx, reply.onSend);
     acc.inbox.push({
-      id: `${sysId}-reply-${target}`,
+      id: replyId,
       from: reply.from,
       to: acc.handle,
       subject: reply.subject,

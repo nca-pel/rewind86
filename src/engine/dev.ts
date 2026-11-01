@@ -336,6 +336,7 @@ export function describeCondition(c: Condition | undefined): string {
   if ('objState' in c) return `${c.objState}.${c.key}=${JSON.stringify(c.eq)}`;
   if ('timeAfter' in c) return `ab ${formatTime(c.timeAfter)}`;
   if ('timeBefore' in c) return `vor ${formatTime(c.timeBefore)}`;
+  if ('factsAtLeast' in c) return `≥${c.factsAtLeast.n} Fakten aus ${c.factsAtLeast.of.length}`;
   if ('lineBusy' in c) return 'Leitung belegt';
   if ('online' in c) return 'online';
   if ('ringing' in c) return 'Telefon klingelt';
@@ -380,6 +381,9 @@ export function contentGraph(): GraphEdge[] {
       ...m.boards.flatMap((b) => b.messages.flatMap((x) => edgesFrom(`mailbox:${id}/${x.id}`, x.effects))),
       ...edgesFrom(`mailbox:${id}/freischaltung`, m.memberMail?.effects ?? []),
       ...edgesFrom(`mailbox:${id}/sysinfo`, m.sysinfoEffects),
+      ...m.replies.flatMap((r) =>
+        edgesFrom(`mailbox:${id}/antwort-${r.id ?? r.to}`, [...(r.onSend ?? []), ...(r.effects ?? [])]),
+      ),
     ]),
   ];
 }
@@ -389,7 +393,7 @@ export function contentGraph(): GraphEdge[] {
  * (scheduleEvent/setPuzzle in engine/ und sim/). Ein Test gleicht diese Liste mit dem Quelltext ab.
  */
 export const CODE_TRIGGERS = {
-  events: ['ev_doorbell', 'ev_mother_modem', 'ev_ralf_callback'],
+  events: ['ev_doorbell', 'ev_mother_modem', 'ev_ralf_callback', 'ev_finale_police'],
   puzzles: ['P01', 'P03', 'P04', 'P05', 'P06', 'P09', 'P17'],
 } as const;
 

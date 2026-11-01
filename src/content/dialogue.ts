@@ -53,6 +53,11 @@ export const TOPICS: TopicDef[] = [
       'trick',
     ],
   },
+  {
+    id: 'ghost',
+    label: 'GHOST und den Freitag',
+    aliases: ['ghost', 'brandt', 'betreuer', 'freitag', 'operation', 'rewind'],
+  },
   { id: 'club', label: 'den Computerclub', aliases: ['club', 'computerclub', 'clubabend', 'jugendzentrum'] },
 ];
 
@@ -71,9 +76,47 @@ const LATER: Condition = { flag: 'ralfDelivered' };
 
 /**
  * Spätere Telefonate mit Ralf (nach der Übergabe). Stehen vor den Prolog-Einträgen, damit sie dort gewinnen.
- * TODO-STORY: Ausbau des Ralf-Strangs (Überzeugen, Loyalitätskrise) mit Akt 2–4.
+ * Ralfs Strang wird in Akt 3–4 weiter ausgebaut (Loyalitätskrise).
  */
 const RALF_LATER: DialogueEntry[] = [
+  {
+    npc: 'ralf',
+    topic: 'ghost',
+    when: { all: [LATER, { flag: 'finaleOpen' }, { notFlag: 'gameOver' }] },
+    speaker: 'RALF',
+    text: '»Heute Nacht? Dein Ernst?« Ralf atmet hörbar aus. »Okay. Ich bleib unten. Ich sag ihm irgendwas.«',
+    effects: [
+      { type: 'setFlag', id: 'toldRalf', value: true },
+      { type: 'scheduleEvent', id: 'ev_finale_ralf', inMinutes: 8 },
+    ],
+  },
+  {
+    npc: 'ralf',
+    topic: 'ghost',
+    when: { all: [LATER, { fact: 'ghost_offer' }, { notFlag: 'toldRalf' }] },
+    speaker: 'RALF',
+    text: '»Der Brandt aus deinem Club? Der mit der Thermoskanne?« Ralf schweigt einen Moment. »Freitag … da packt mein Alter seit Tagen seine Sachen für irgendwas zusammen. Er hat gesagt, am Freitag wäre alles vorbei. Ich weiß nicht, was. Aber ich sag’s keinem, großes Ehrenwort. Und du – pass auf dich auf.«',
+    effects: [
+      { type: 'setFlag', id: 'toldRalf', value: true },
+      { type: 'discoverFact', id: 'ralf_told_ghost' },
+      { type: 'changeRelationship', id: 'ralfTrust', delta: 12 },
+      { type: 'changeRelationship', id: 'seidelSuspicion', delta: 6 },
+    ],
+  },
+  {
+    npc: 'ralf',
+    topic: 'ghost',
+    when: { all: [LATER, { flag: 'toldRalf' }] },
+    speaker: 'RALF',
+    text: '»Ich hab dir alles gesagt, was ich weiß. Ruf an, wenn du mehr hast.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'ghost',
+    when: LATER,
+    speaker: 'RALF',
+    text: '»GHOST? Was ist das denn für ein Name?« Ralf lacht unsicher. »Ich hab keine Ahnung, wovon du redest.«',
+  },
   {
     npc: 'ralf',
     topic: 'spiel',

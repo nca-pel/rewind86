@@ -39,12 +39,18 @@ export interface DownloadDef {
 
 /** Automatische Antwort auf private Post an einen Benutzer des Systems */
 export interface AutoReply {
+  /** Eindeutig je Handle, wenn es mehrere Antworten gibt (Standard: nur das Handle) */
+  id?: string;
+  /** Antwort gilt nur, solange die Bedingung erfüllt ist; die erste passende gewinnt */
+  when?: Condition;
   to: string;
   afterMinutes: number;
   from: string;
   subject: string;
   body: string[];
   effects?: GameEffect[];
+  /** Wirkt sofort beim Absenden der Post (Jan legt sich fest), nicht erst beim Lesen der Antwort */
+  onSend?: GameEffect[];
 }
 
 export interface MailboxSystem {
@@ -217,6 +223,7 @@ export const SECRET_MAILBOX: MailboxSystem = {
 
 const BS = GAME_CONFIG.mailboxes.bitschuppen;
 const DK = GAME_CONFIG.mailboxes.datenkeller;
+const GH = GAME_CONFIG.ghost.handle;
 
 /** Erste reguläre Mailbox (Kleinanzeige im Heimcomputer-Journal) – freiwillige Spur. */
 export const BITSCHUPPEN: MailboxSystem = {
@@ -329,6 +336,102 @@ export const BITSCHUPPEN: MailboxSystem = {
       ],
     },
     {
+      id: 'club',
+      name: 'CLUB',
+      minStatus: 'gast',
+      messages: [
+        {
+          id: 'gh_1',
+          from: GH,
+          to: 'ALLE',
+          subject: 'WILLKOMMEN, NEUE',
+          encrypted: false,
+          body: [
+            'WER DAS HIER LIEST, GEHOERT',
+            'ENTWEDER ZUM CLUB ODER WIRD ES',
+            'BALD. FUERWAHR, DER DONNERSTAG',
+            'LOHNT SICH: 19 UHR IM JUGEND-',
+            'ZENTRUM. BRINGT DISKETTEN MIT.',
+            '',
+            'WEITER SO.  ' + GH,
+          ],
+          effects: [
+            { type: 'discoverFact', id: 'ghost_poster' },
+            { type: 'discoverFact', id: 'ghost_word' },
+          ],
+        },
+        {
+          id: 'gh_2',
+          from: GH,
+          to: 'ALLE',
+          subject: 'NACHTSCHICHT',
+          encrypted: false,
+          when: { timeAfter: '1986-11-16T20:00' },
+          body: [
+            'DREI UHR, DER KAFFEE SCHWARZ',
+            'WIE DIE LEITUNG. WER AUF FREMDEN',
+            'TESTZUGAENGEN HERUMTURNT, SOLLTE',
+            'WISSEN: JEDER ANRUF HINTERLAESST',
+            'EINE SPUR. NICHT IM NETZ - AM',
+            'ANSCHLUSS. FUERWAHR.',
+            '',
+            'WEITER SO.  ' + GH,
+          ],
+          effects: [{ type: 'discoverFact', id: 'ghost_night' }],
+        },
+        {
+          id: 'gh_3_brandt',
+          from: GH,
+          to: 'DEN GAST',
+          subject: 'WER GERNE FRAGT',
+          encrypted: false,
+          when: { all: [{ flag: 'clubAttended' }, { fact: 'brandt_word' }] },
+          body: [
+            'AN DEN GAST, DER GERNE FRAGT:',
+            'WER FRAGT, FINDET. WER ZU LAUT',
+            'FRAGT, WIRD GEFUNDEN. FREITAG IST',
+            'NICHT NUR EIN TAG. WILLST DU',
+            'WISSEN, WAS FREITAG IST, DANN',
+            'SCHREIB MIR HIER. NUR MIR.',
+            'UND ERZAEHL ES NICHT WEITER,',
+            'BIS WIR GESPROCHEN HABEN.',
+            '',
+            'FUERWAHR. WEITER SO.  ' + GH,
+          ],
+          effects: [
+            { type: 'discoverFact', id: 'ghost_offer' },
+            { type: 'discoverFact', id: 'brandt_is_ghost' },
+            {
+              type: 'say',
+              kind: 'thought',
+              text: '»Fürwahr.« »Weiter so.« Genau das sagt Herr Brandt, wenn er dir die Thermoskanne reicht. Der Betreuer des Clubs ist GHOST – und er weiß, dass du fragst.',
+            },
+          ],
+        },
+        {
+          id: 'gh_3_plain',
+          from: GH,
+          to: 'DEN GAST',
+          subject: 'WER GERNE FRAGT',
+          encrypted: false,
+          when: { all: [{ flag: 'clubAttended' }, { notFact: 'brandt_word' }] },
+          body: [
+            'AN DEN GAST, DER GERNE FRAGT:',
+            'WER FRAGT, FINDET. WER ZU LAUT',
+            'FRAGT, WIRD GEFUNDEN. FREITAG IST',
+            'NICHT NUR EIN TAG. WILLST DU',
+            'WISSEN, WAS FREITAG IST, DANN',
+            'SCHREIB MIR HIER. NUR MIR.',
+            'UND ERZAEHL ES NICHT WEITER,',
+            'BIS WIR GESPROCHEN HABEN.',
+            '',
+            'FUERWAHR. WEITER SO.  ' + GH,
+          ],
+          effects: [{ type: 'discoverFact', id: 'ghost_offer' }],
+        },
+      ],
+    },
+    {
       id: 'markt',
       name: 'MARKT',
       minStatus: 'mitglied',
@@ -374,6 +477,40 @@ export const BITSCHUPPEN: MailboxSystem = {
     },
   ],
   replies: [
+    {
+      id: 'finale',
+      when: { flag: 'finaleOpen' },
+      to: GH,
+      afterMinutes: 10,
+      from: GH,
+      subject: 'RE: BEWEISE',
+      body: ['VERSTANDEN. ICH UEBERNEHME.', '', 'FUERWAHR.  ' + GH],
+      onSend: [
+        { type: 'setFlag', id: 'toldGhost', value: true },
+        { type: 'scheduleEvent', id: 'ev_finale_ghost', inMinutes: 12 },
+      ],
+    },
+    {
+      to: GH,
+      afterMinutes: 12,
+      from: GH,
+      subject: 'RE: FREITAG',
+      body: [
+        'DANKE FUER DEIN VERTRAUEN.',
+        'FREITAG BEGINNT ETWAS, DAS NICHT',
+        'WIEDER ZURUECKGEDREHT WERDEN',
+        'KANN. NUTZ DIE TESTKENNUNG NICHT',
+        'MEHR UND LOESCH, WAS DU NOTIERT',
+        'HAST. ICH MELDE MICH. FUERWAHR.',
+        '',
+        'WEITER SO.  ' + GH,
+      ],
+      onSend: [
+        { type: 'setFlag', id: 'toldGhost', value: true },
+        { type: 'changeRelationship', id: 'seidelSuspicion', delta: -10 },
+        { type: 'discoverFact', id: 'ghost_trusted' },
+      ],
+    },
     {
       to: BS.sysop,
       afterMinutes: 15,
@@ -433,8 +570,22 @@ export const DATENKELLER: MailboxSystem = {
             'TAGSUEBER BRAUCHT MEINE MUTTER DAS',
             'TELEFON. WER STOERT, FLIEGT.',
           ],
-          // TODO-STORY: Rolle des Datenkellers im Vollspiel offen (mögliche Spur, Gerüchte-Brett).
           effects: [],
+        },
+        {
+          id: 'dk_ghost',
+          from: DK.sysop,
+          to: 'ALLE',
+          subject: 'GERUECHT',
+          encrypted: false,
+          body: [
+            'IM BIT-SCHUPPEN SCHREIBT EINER,',
+            'DER ANGEBLICH NUR ZUHOERT. DER',
+            'HOERT WIRKLICH ZU. MEHR ALS',
+            'DIR LIEB IST. WER DORT FRAGT,',
+            'SOLLTE WISSEN, WAS ER FRAGT.',
+          ],
+          effects: [{ type: 'discoverFact', id: 'dk_ghost_rumor' }],
         },
       ],
     },
