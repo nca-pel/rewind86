@@ -90,7 +90,8 @@ export function pickUp(ctx: Ctx): number {
   }
   if (t.ringing === 'seidel') return answerSeidel(ctx);
   if (t.ringing === 'anon') {
-    // Symptom von Seidels Verdacht (ev_susp_dangerous). TODO-STORY: Wer anruft, bleibt offen.
+    // Symptom von Seidels Verdacht (ev_susp_dangerous). Entschieden: Es ist Seidel selbst, der prüft, ob die
+    // Leitung belegt ist – Jan erkennt es erst bei Seidels Anruf im Finale (answerSeidel).
     t.ringing = null;
     t.call = newCall(ctx, { kind: 'dead', with: 'anon', outgoing: false });
     ctx.state.flags.anonCallDone = true;
@@ -135,6 +136,11 @@ function answerSeidel(ctx: Ctx): number {
     'dialog',
     'SEIDEL',
   );
+  if (s.flags.anonCallDone)
+    ctx.say(
+      'Dieses leise, gleichmäßige Atmen zwischen den Sätzen. Du kennst es. Von dem Anruf, bei dem niemand etwas gesagt hat.',
+      'thought',
+    );
   for (const id of ['ralf', 'diskette']) if (!s.knownTopics.includes(id)) s.knownTopics.push(id);
   ctx.say(
     '(Seidel hat nicht viel Zeit – vielleicht drei Antworten. Z. B. FRAGE SEIDEL NACH RALF oder NACH DER DISKETTE. LEGE AUF beendet das Gespräch.)',

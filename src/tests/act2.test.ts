@@ -273,6 +273,12 @@ describe('Akt 2: Clubabend und GHOST', () => {
       expect(s.state.flags.gameOver).toBe('end_silent');
     });
 
+    test('Wer den stummen Anruf erlebt hat, erkennt Seidels Atmen wieder', () => {
+      const s = seidelRings();
+      dev(s, 'flag anonCallDone true');
+      expect(s.a('nimm hörer')).toContain('Von dem Anruf, bei dem niemand etwas gesagt hat');
+    });
+
     test('Nicht abgenommen: Die Mutter geht ran, Seidel bleibt misstrauisch', () => {
       const s = seidelRings();
       dev(s, 'zeit +5');

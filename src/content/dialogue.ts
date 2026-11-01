@@ -222,7 +222,7 @@ const SEIDEL_CALL: DialogueEntry[] = [
     npc: 'seidel',
     topic: 'ralf',
     speaker: 'SEIDEL',
-    text: '»Ralf.« Eine lange Pause. »Er ist das Einzige, was ich hier richtig gemacht habe, weißt du das? Ich bin heute Nacht weg. Dienstreise. Halb zwölf an der Raststätte, dann ist alles erledigt, und am Montag …« Er bricht ab. »Warum erzähl ich dir das. Pass auf ihn auf, Jan. Falls ich mal nicht da bin.«',
+    text: '»Ralf.« Eine lange Pause. »Er ist das Einzige, was ich hier richtig gemacht habe, weißt du das? Ich bin heute Nacht weg. Dienstreise. Halb zwölf an der Raststätte, dann ist alles erledigt, und am Montag …« Er bricht ab. »Warum erzähl ich dir das überhaupt?« Er atmet schwer. »Pass auf ihn auf, Jan. Falls ich mal nicht da bin.«',
     effects: [
       { type: 'discoverFact', id: 'seidel_rastplatz' },
       { type: 'setFlag', id: 'seidelDoubts', value: true },
@@ -270,7 +270,7 @@ const SEIDEL_CALL: DialogueEntry[] = [
     npc: 'seidel',
     topic: 'arbeit',
     speaker: 'SEIDEL',
-    text: '»Software. Langweiliges Zeug. Man sitzt am Schreibtisch und wartet, dass etwas fertig wird.« Er sieht dabei bestimmt auf die Uhr.',
+    text: '»Software. Langweiliges Zeug. Man sitzt am Schreibtisch und wartet, dass etwas fertig wird.« Du bist sicher, dass er dabei auf die Uhr sieht.',
   },
 ];
 

@@ -23,7 +23,7 @@ export const ENDINGS: EndingDef[] = [
   {
     id: 'end_exposed',
     title: 'Enttarnt',
-    text: 'Die 110. Eine Stimme, gelangweilt. Dann hörst du dich reden: Rohdaten, Schlüssel in drei Teilen, der Klartext »OPERATION REWIND BEGINNT FREITAG«, die Testkennung auf Ralfs Kopie. Die Stimme wird still. »Bleiben Sie, wo Sie sind.« 23:05. Zwei Wagen ohne Blaulicht vor dem Haus, deine Mutter mit der Kaffeekanne, dein Vater mit offenem Mund. 23:30. Auf einer Autobahnraststätte bei Gütersloh wartet jemand vergeblich auf einen Mann, der nicht kommt. In Seidels Arbeitszimmer geht der Schrank auf. Am Montag steht ein Absatz in der Zeitung, ohne deinen Namen. Ralf grüßt dich auf dem Flur nicht mehr. Aber er ist bei seiner Mutter geblieben, und das ist vielleicht das Wichtigste.',
+    text: 'Die 110. Eine Stimme, gelangweilt. Dann hörst du dich reden: Rohdaten, Schlüssel in drei Teilen, der Klartext »OPERATION REWIND BEGINNT FREITAG«, die Testkennung auf Ralfs Kopie. Die Stimme wird still. »Bleiben Sie, wo Sie sind.« 23:05. Zwei Wagen ohne Blaulicht vor dem Haus, deine Mutter mit der Kaffeekanne, dein Vater mit offenem Mund. 23:30. Auf einer Autobahnraststätte bei Gütersloh wartet jemand vergeblich auf einen Mann, der nicht kommt. In Seidels Arbeitszimmer geht der Schrank auf. Ganz oben: eine Diskette, auf dem Etikett nur zwei Fragezeichen. Am Montag steht ein Absatz in der Zeitung, ohne deinen Namen. Ralf grüßt dich auf dem Flur nicht mehr. Aber er ist bei seiner Mutter geblieben, und das ist vielleicht das Wichtigste.',
   },
   {
     id: 'end_dismissed',
@@ -38,7 +38,7 @@ export const ENDINGS: EndingDef[] = [
   {
     id: 'end_ralf_stops',
     title: 'Ralf hält seinen Vater auf',
-    text: '»Ich geh runter«, sagt Ralf. »Ich sag ihm, mir ist schlecht und er soll nicht weg.« Die schlechteste Ausrede der Welt. 22:40. Seidel zieht die Jacke wieder aus. 23:10. Er sitzt neben Ralf auf dem Sofa und sieht ständig auf die Uhr. 23:30. Ein Wagen wartet an einer Raststätte, vergeblich. Am Samstag ist Seidel weg. Koffer, Schlüssel, ein Zettel für Ralfs Mutter. Ralf bleibt zurück, auf der Treppe, mit dem Hörer in der Hand. Er ruft dich nicht an. Er sitzt nur da und weiß, dass er richtig gehandelt hat.',
+    text: '»Ich geh runter«, sagt Ralf. »Ich sag ihm, mir ist schlecht und er soll nicht weg.« Die schlechteste Ausrede der Welt. 22:40. Seidel zieht die Jacke wieder aus. 23:10. Er sitzt neben Ralf auf dem Sofa und sieht ständig auf die Uhr. 23:30. Ein Wagen wartet an einer Raststätte, vergeblich. Am Samstag ist Seidel weg. Koffer, Schlüssel, ein Zettel für Ralfs Mutter. Ralf bleibt zurück, auf der Treppe, mit dem Hörer in der Hand. Er ruft dich nicht an. Er sitzt nur da und weiß, dass er richtig gehandelt hat. Am Montag liegt in deinem Briefkasten ein Umschlag ohne Absender. Darin eine Diskette, zwei Fragezeichen auf dem Etikett, und ein Zettel in Ralfs Krakelschrift: »Mach sie kaputt.«',
   },
   {
     id: 'end_ralf_betrayal',
@@ -53,7 +53,7 @@ export const ENDINGS: EndingDef[] = [
   {
     id: 'end_abort',
     title: 'Abbruch',
-    text: 'Du tippst die Warnung, Buchstabe für Buchstabe, mit der Kennung eines Fremden: TREFFPUNKT VERRATEN. ABBRUCH. RETURN. 300 Baud. Eine Ewigkeit. Dann: GESENDET. 23:30. An der Raststätte steht ein Wagen mit laufendem Motor. Niemand steigt ein. 23:45. Der Wagen fährt ohne Beifahrer zurück nach Osten. Die Software bleibt, wo sie ist, K-01 bleibt, wo er ist, und niemand erfährt je, wer die Warnung geschickt hat. Am Samstag ist das Netz tot. Seidel fährt Ralf zum Fußball, als wäre nichts gewesen. Nur sein Blick bleibt einmal zu lang an deinem Fenster hängen.',
+    text: 'Die Warnung ist raus, unter der Kennung eines Fremden: TREFFPUNKT VERRATEN. ABBRUCH. 300 Baud, eine Ewigkeit, dann das GESENDET. Zehn Minuten später ist die Leitung tot. 23:30. An der Raststätte steht ein Wagen mit laufendem Motor. Niemand steigt ein. 23:45. Der Wagen fährt ohne Beifahrer zurück nach Osten. Die Software bleibt, wo sie ist, K-01 bleibt, wo er ist, und niemand erfährt je, wer die Warnung geschickt hat. Am Samstag ist das Netz tot. Seidel fährt Ralf zum Fußball, als wäre nichts gewesen. Nur sein Blick bleibt einmal zu lang an deinem Fenster hängen.',
   },
 ];
 

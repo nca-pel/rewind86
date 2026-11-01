@@ -51,7 +51,7 @@
 
 ### Getestet (automatisiert, zuletzt alle grün)
 
-- `npm test`: 227 Vitest-Tests in 20 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
+- `npm test`: 229 Vitest-Tests in 20 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
   Prolog-Durchlauf, Demo, Archiv, Content-Integrität, Entwicklerkonsole/Meilensteine, Mailbox-System, Verdacht,
   Tagesablauf, Schlüssel-Strang, BTX).
 - `npm run test:e2e`: 13 Playwright-Szenarien × 2 Geräteprofile (Desktop Chrome, Pixel 7) = 26 Tests, darunter der
@@ -62,13 +62,12 @@
 
 ### Nicht implementiert
 
-- Akte 2–6, weitere Handlungsstränge, GHOST, Operation REWIND, reguläre Enden (ein Game-Over „Entdeckt“ existiert).
-- Usenet-Gateway; historisch geprüfte BTX-Details (Mosaikgrafik/CEPT-Darstellung, Tarife); Nachrichten senden im geheimen Netz.
-- Die echte Diskette 2; was das Modul mit vollem Schlüssel zusätzlich kann (Senden).
-- Story-Inhalte der Folgetage (Akt 2+); der Alltag selbst läuft.
+- Akt 2 und das Finale (Fr. 21.11.) sind spielbar, mit sieben Enden; Akte 3–6 sind im Finale zusammengefasst (siehe
+  `STORY_DECISIONS.md`).
+- Usenet-Gateway; historisch geprüfte BTX-Details (Mosaikgrafik/CEPT-Darstellung, Tarife).
 - Weitere Kassetten, Speichern auf Band, TV/VHS.
 - Sprachausgabe (braucht Aufnahmen und Rechte); echte, von Menschen gezeichnete Illustrationen (jetzt zwei eigene Grafikstile, siehe Schalter „Pixelgrafik“).
-- Symptome für Ralfs Vertrauen und Netzglaubwürdigkeit; Abklingen des Verdachts.
+- Abklingen des Verdachts (sinkt nur durch die Mail an GHOST).
 
 ### Bekannte Grenzen
 

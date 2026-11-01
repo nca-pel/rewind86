@@ -80,7 +80,7 @@ Ergebnis des Storydesign-Workshops vom 31.10.2026 zu den offenen Punkten aus GDD
 | Ausrüstung | Jan besitzt kein BTX. Die Post schloss Teilnehmer nur über ihr **Postmodem** an (1200/75 Baud, V.23); der 300-Baud-Akustikkoppler reicht nicht. Der Computerclub hat ein Leih-Set (Decoder-Modul + Postmodem) und gibt es am **Clubabend (20.11.)** an Mitglieder. `needs_research` |
 | Zugang     | Vereinskennung »COMPUTERCLUB WD-86«; Zugangsnummer und alle Seitennummern fiktiv. Kosten: normale Telefoneinheiten plus 2 Pf pro Seite (Spielökonomie).                                                                                                                             |
 | Angebot    | »Wiedenbrücker Kurier«: Nachrichten und Wetter tagesabhängig (14.–21.11.), Fernsehen, Kleinanzeigen, Computer-Ecke, Hilfe, verdeckte **Clubtafel**. Eine Meldung (17./18.11.) erwähnt einen Einbruch bei einer Gütersloher Softwarefirma ohne Namen (Fährte oder falsche Fährte).   |
-| Clubtafel  | Seitennummer nur im Rundbrief. Vor dem Clubabend leer, danach eine kryptische Nachricht „an den Gast, der gerne fragt“ (TODO-STORY, Brücke zu GHOST, ohne Namen).                                                                                                                   |
+| Clubtafel  | Seitennummer nur im Rundbrief. Vor dem Clubabend leer, danach eine kryptische Nachricht „an den Gast, der gerne fragt“ (Brücke zu GHOST, ohne Namen; umgesetzt in Akt 2).                                                                                                           |
 | Zeitrahmen | BTX ist damit ab Do. 20.11. abends nutzbar – als Werkzeug für den Endspurt, nicht für die ganze Woche.                                                                                                                                                                              |
 
 ## Umsetzung im Code
@@ -126,8 +126,7 @@ sich Seidel (Raststätte, halb zwölf → Beweisfakt `seidel_rastplatz`) und zei
 Familie. Nach der Diskette gefragt, weiß er Bescheid (Verdacht +5). Wer Brandt/GHOST erwähnt, warnt ihn: Er legt auf,
 Verdacht +15, die Übergabe rückt 60 Minuten vor (`ev_finale_close_early`). Nimmt Jan nicht ab, geht die Mutter ran.
 
-Noch offen:
-GHOSTs wahre Absicht (die Enden zeigen nur seine Seite).
+GHOSTs wahre Absicht bleibt **bewusst offen** (siehe „Offene Fäden geschlossen“ unten).
 
 ## Enden überarbeitet (01.11.2026)
 
@@ -147,3 +146,12 @@ einmal, je +4 Verdacht, `SECRET_SENDS` in `content/networks.ts`):
 | Quittung an K-01             | nach Klartext | Netzglaubwürdigkeit +25 (ab 60 gilt K-17 als Teilnehmer)                                               |
 | Anfrage Treffpunkt an SYSTEM | nach Klartext | glaubwürdig: Antwort mit Treffpunkt (Beweisfakt `net_meeting_point`); sonst „Wer fragt?“, Verdacht +10 |
 | Warnung an K-01: Abbruch     | im Finale     | glaubwürdig: Ende `end_abort` (Übergabe platzt); sonst ignoriert, Verdacht +15                         |
+
+## Offene Fäden geschlossen (01.11.2026)
+
+| Thema             | Entscheidung                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Diskette 2        | Jan hält sie im Spiel **nie** in der Hand; der Schlüssel entsteht nur aus den drei Fragmenten. Das Original taucht in den Enden auf: Bei „Enttarnt“ liegt es in Seidels Schrank, bei „Ralf hält seinen Vater auf“ schickt Ralf sie Jan am Montag („Mach sie kaputt.“). Liegt sie doch im Laufwerk (Entwicklerkonsole), läuft MODUL K voll: Schlüssel und Wahldaten geladen, Senden frei. |
+| Anonymer Anruf    | Es ist **Seidel**, der prüft, ob Jans Leitung belegt ist. Wer den Anruf erlebt hat, erkennt im Finale bei Seidels Anruf das Atmen wieder.                                                                                                                                                                                                                                                |
+| Systemnachrichten | Hinter **SYSTEM** („PROTOKOLLIERUNG“, „LETZTE WARNUNG“, Antworten auf Anfragen) steht Seidel als Betreuer der Infrastruktur. Das Spiel sagt es nie ausdrücklich.                                                                                                                                                                                                                         |
+| GHOSTs Absicht    | Bleibt **bewusst zweideutig**. Indizien in beide Richtungen: Er warnt Jan und senkt Seidels Verdacht (Helfer), weiß aber auffallend viel über das Netz und lässt im Ende „Der Mentor räumt auf“ die Hintermänner namenlos (Mitwisser oder Dienst). Keine Auflösung geplant.                                                                                                              |

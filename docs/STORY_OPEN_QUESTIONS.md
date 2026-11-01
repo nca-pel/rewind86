@@ -4,18 +4,18 @@ Die 14 offenen Punkte aus GDD §22 wurden im Storydesign-Workshop am 31.10.2026 
 [`STORY_DECISIONS.md`](STORY_DECISIONS.md). Hier steht nur noch, was **innerhalb** dieser Entscheidungen offen ist
 und erst beim Schreiben der jeweiligen Akte konkretisiert wird.
 
-| Thema               | Entschieden                                       | Noch offen (wird mit dem Akt ausgearbeitet)                                                                       |
-| ------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| GHOST               | Herr Brandt (Akt 2 entschieden), erkennt Jan spät | Persönliches Motiv im Detail, welcher Fehler Jans die Kennung verrät (Akt 3)                                      |
-| Operation REWIND    | Fr. 21.11.1986, Fernmeldesoftware, K-01, Netz     | Zeitplan der Woche, wer K-01 ist, Ablauf des Finales, Bedingungen der 3–5 Enden                                   |
-| Diskette 2          | 3 Fragmente, Ersatzschlüssel im Modul             | Ob/wann Jan die echte Diskette 2 sieht; was das Modul mit echtem Schlüssel zusätzlich kann (Senden?)              |
-| FERNHANDEL          | Wirtschaftssimulation, Taste `←` bleibt           | Intro-Grafik (Spielteil ist jetzt als kleine Handelssimulation spielbar)                                          |
-| Computerclub        | BIT-SCHUPPEN ist die Club-Mailbox                 | Wo/wann der Club stattfindet und wie Jan dort ohne freie Erkundung Kontakt hat (GDD: Jan bleibt im Zimmer)        |
-| Systemnachrichten   | –                                                 | Ob Seidel selbst hinter „PROTOKOLLIERUNG“/„LETZTE WARNUNG“ steht (naheliegend, da er die Infrastruktur betreut)   |
-| Filme               | 3–4 Anspielungen mit Rätselbezug                  | Welche Filme, welche Rätsel; Rechteprüfung                                                                        |
-| BTX                 | Leih-Set vom Club, Clubtafel (P17)                | Historische Prüfung (Postmodem, Tarife, Seitenformate); mehr Angebote/Hinweise; ob BTX früher verfügbar sein soll |
-| Datasette           | Prüfband 3 mit Schlüsselteil 3                    | Weitere Kassetten, Speichern auf Band                                                                             |
-| Historische Prüfung | –                                                 | Ob ein Anschluss 1986 über die Bundespost ermittelbar war (`needs_research`); Tarife; fiktive Nummern (GDD §20.4) |
+| Thema               | Entschieden                                     | Noch offen (wird mit dem Akt ausgearbeitet)                                                                       |
+| ------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| GHOST               | Herr Brandt, Absicht bewusst zweideutig         | – (keine Auflösung geplant)                                                                                       |
+| Operation REWIND    | Finale Fr. 21.11., Übergabe 23:30, sieben Enden | Wer K-01 ist (bleibt im Spiel namenlos)                                                                           |
+| Diskette 2          | Nur in den Enden; Vollbetrieb nur per Konsole   | –                                                                                                                 |
+| FERNHANDEL          | Wirtschaftssimulation, Taste `←` bleibt         | Intro-Grafik (Spielteil ist jetzt als kleine Handelssimulation spielbar)                                          |
+| Computerclub        | Clubabend Do 20.11. als erzählte Szene (Brandt) | –                                                                                                                 |
+| Systemnachrichten   | Seidel steht hinter SYSTEM (nie ausgesprochen)  | –                                                                                                                 |
+| Filme               | 3–4 Anspielungen mit Rätselbezug                | Welche Filme, welche Rätsel; Rechteprüfung                                                                        |
+| BTX                 | Leih-Set vom Club, Clubtafel (P17)              | Historische Prüfung (Postmodem, Tarife, Seitenformate); mehr Angebote/Hinweise; ob BTX früher verfügbar sein soll |
+| Datasette           | Prüfband 3 mit Schlüsselteil 3                  | Weitere Kassetten, Speichern auf Band                                                                             |
+| Historische Prüfung | –                                               | Ob ein Anschluss 1986 über die Bundespost ermittelbar war (`needs_research`); Tarife; fiktive Nummern (GDD §20.4) |
 
 ## Weitere im Ausschnitt getroffene Annahmen (bitte prüfen)
 
@@ -46,7 +46,7 @@ Diese Punkte waren für einen spielbaren Ausschnitt nötig. Sie sind bewusst kle
 - **Freischaltung** neuer Benutzer nach 30 bzw. 60 Spielminuten, ohne Passwortabfrage (Vereinfachung).
 - **Verdachtswerte:** Riskantes Verhalten im geheimen Netz erhöht `seidelSuspicion` (Anmeldung +3, je 5 Online-Minuten
   +1, Sendeversuch +2, Lesen +1/+2). Schwellen 30/70/90/100 mit Symptomen: Systemnachricht „Protokollierung“,
-  Sperre der Testkennung für 3 Stunden plus anonymer Anruf (bleibt eine offene Fährte), letzte Warnung, Spielende
+  Sperre der Testkennung für 3 Stunden plus anonymer Anruf (Seidel; Jan erkennt ihn im Finale wieder), letzte Warnung, Spielende
   „Entdeckt“ (Seidel an der Tür). Die Zahlenwerte sind Spielbalance und frei justierbar. Der Verdacht sinkt bisher nie
   von selbst.
 - **Tagesablauf:** Schule Mo–Fr 07:15–13:30, Sa bis 12:00 (Samstagsunterricht entschieden);
@@ -59,9 +59,10 @@ Diese Punkte waren für einen spielbaren Ausschnitt nötig. Sie sind bewusst kle
 - **Ralf vom versteckten Modus erzählen:** Vertrauen +5, aber Seidels Verdacht +8 (Ralf ist neugierig und kein
   guter Lügner). Ralf berichtet danach von einem abgeschlossenen Schrank in Seidels Arbeitszimmer.
 - **Computerclub:** Rundbrief kommt Samstag mit der Post; Clubabend Do 20.11., 19 Uhr im Jugendzentrum (erzählter
-  Zeitblock, Inhalte `TODO-STORY`, noch ohne GHOST-Indizien).
-- **Ralfs Vertrauen / Netzglaubwürdigkeit:** Schwellen sind benannt (`trusting` 40, `close` 75; `established` 60),
-  haben aber noch keine Symptome – Ralf kommt im Ausschnitt nur im Prolog vor, Senden im Netz fehlt.
+  Zeitblock; Brandt verleiht das BTX-Set, wer GHOSTs Beiträge kennt, erkennt ihn).
+- **Ralfs Vertrauen / Netzglaubwürdigkeit:** Schwellen `trusting` 40, `close` 75; `established` 60. Ralfs Vertrauen
+  entscheidet im Finale zwischen „Ralf hält seinen Vater auf“ und „Verrat“; die Netzglaubwürdigkeit (Quittung) darüber,
+  ob Treffpunkt-Anfrage und Warnung wirken.
 - **Schlüssel-Strang:** Schlüssel `7302 1958 4426`; Meldung „Schlüsselwechsel“ ab Mo. 17.11. 08:00; Ralf bringt die
   Kassette Mi. 19.11. 15:00 (bei wenig Vertrauen gibt er sie nur unten ab). Das Modul prüft den Ersatzschlüssel
   nicht (es kennt ihn ja nicht) – erst der Klartext zeigt, ob er stimmt. Seidels Handle bleibt ungenannt; die

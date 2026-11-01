@@ -1,6 +1,7 @@
 /**
  * Das versteckte Kommunikationsmodul auf Diskette 1 ("MODUL K", Name = Platzhalter).
  * Ohne Diskette 2 nur eingeschränkter Betrieb – aber der erste Netzkontakt ist möglich (GDD §7.5).
+ * Mit der echten Diskette 2 (Seidels Original) läuft es voll: Schlüssel geladen, Senden frei.
  */
 import { GAME_CONFIG } from '../../content/config';
 import { MAILBOXES, SECRET_SENDS, type MailboxMessage, type SecretSend } from '../../content/networks';
@@ -38,6 +39,8 @@ export interface ModkState extends AppState {
   key?: string;
   /** Eingabe im Schlüsseldialog */
   keyInput?: string;
+  /** Echte Schlüsseldiskette beim Start erkannt (Vollbetrieb) */
+  full?: boolean;
 }
 
 const KEY_LENGTH = GAME_CONFIG.keyStrand.parts.join('').length;
@@ -199,9 +202,13 @@ export const modkApp: AppDef<ModkState> = {
         if (k === 'RETURN') {
           const inDrive = Object.entries(ctx.state.itemLocations).find(([, l]) => l === 'drive')?.[0];
           if (inDrive === 'disk_key') {
-            // TODO-STORY: Verhalten mit echter Schlüsseldiskette offen (GDD §7.5)
-            app.note = 'SCHLUESSELDISKETTE ERKANNT - AUSBAU FOLGT';
-            return {};
+            // Seidels Original: Schlüssel und Wahldaten kommen von der Diskette.
+            ctx.cue('drive');
+            app.full = true;
+            app.key = FULL_KEY;
+            app.screen = 'menu';
+            app.note = 'SCHLUESSEL GELADEN - VOLLBETRIEB';
+            return { minutes: 1 };
           }
           app.screen = 'nokey';
           if (!ctx.state.knownFacts.includes('needs_disk2')) {
@@ -230,6 +237,8 @@ export const modkApp: AppDef<ModkState> = {
         } else if (k === '2') {
           app.screen = 'status';
           discoverFact(ctx, 'test_handle');
+        } else if (k === '3' && app.full) {
+          app.note = 'SCHLUESSEL VON DISK 2';
         } else if (k === '3') {
           app.screen = 'key';
           app.keyInput = '';
@@ -350,15 +359,15 @@ export const modkApp: AppDef<ModkState> = {
       case 'menu':
         L.push(
           head,
-          'EINGESCHRAENKTER BETRIEB',
+          app.full ? 'VOLLBETRIEB' : 'EINGESCHRAENKTER BETRIEB',
           `KENNUNG: ${N.testHandle}`,
           '',
           ' 1  VERBINDUNG HERSTELLEN',
           ' 2  KENNUNG / STATUS',
-          ' 3  ERSATZSCHLUESSEL EINGEBEN',
+          app.full ? ' 3  SCHLUESSEL: DISK 2' : ' 3  ERSATZSCHLUESSEL EINGEBEN',
           ' 4  ENDE',
         );
-        if (app.key) L.splice(3, 0, 'ERSATZSCHLUESSEL: GESETZT');
+        if (app.key && !app.full) L.splice(3, 0, 'ERSATZSCHLUESSEL: GESETZT');
         break;
       case 'key': {
         const input = app.keyInput ?? '';
@@ -381,8 +390,8 @@ export const modkApp: AppDef<ModkState> = {
           '',
           `KENNUNG  : ${N.testHandle}`,
           'TYP      : TESTZUGANG',
-          'SCHLUESS.: FEHLT (DISK 2)',
-          'RECHTE   : NUR LESEN',
+          app.full ? 'SCHLUESS.: DISK 2 (OK)' : 'SCHLUESS.: FEHLT (DISK 2)',
+          app.full ? 'RECHTE   : LESEN/SENDEN' : 'RECHTE   : NUR LESEN',
           '',
           'TASTE = ZURUECK',
         );
@@ -391,8 +400,8 @@ export const modkApp: AppDef<ModkState> = {
         L.push(
           head,
           '',
-          'WAHLDATEN: AUF DISK 2',
-          'ERSATZWAHL: SIEHE LADER',
+          app.full ? 'WAHLDATEN: DISK 2 (GELADEN)' : 'WAHLDATEN: AUF DISK 2',
+          app.full ? `NUMMER: ${N.phoneNumber}` : 'ERSATZWAHL: SIEHE LADER',
           '',
           'NUMMER AM TELEFON WAEHLEN,',
           'HOERER IN DEN KOPPLER,',
@@ -408,7 +417,7 @@ export const modkApp: AppDef<ModkState> = {
           centered(`${MAILBOXES.secret.name}`),
           '========================================',
           `ANMELDUNG ${N.testHandle} ... OK`,
-          'ZUGANG: EINGESCHRAENKT',
+          app.full ? 'ZUGANG: VOLL' : 'ZUGANG: EINGESCHRAENKT',
           '',
           ' 1  NACHRICHTEN',
           ' 2  NACHRICHT SENDEN',
@@ -430,7 +439,12 @@ export const modkApp: AppDef<ModkState> = {
         const head3 = [`VON: ${m.from}   AN: ${m.to}`, `BETR: ${m.subject}`, '-'.repeat(40)];
         if (m.id === K01 && app.key) {
           const plain = decrypt(K01_CIPHERTEXT, app.key);
-          L.push(...head3, 'MIT ERSATZSCHLUESSEL:', '', ...groups(plain));
+          L.push(
+            ...head3,
+            app.full ? 'MIT SCHLUESSEL VON DISK 2:' : 'MIT ERSATZSCHLUESSEL:',
+            '',
+            ...groups(plain),
+          );
           if (app.key === FULL_KEY) L.push('', 'KLARTEXT:', ...readable(plain));
           L.push('', 'S = ROHDATEN SPEICHERN  TASTE = ZURUECK');
         } else if (m.id === K01) L.push(...head3, ...m.body, '', 'S = ROHDATEN SPEICHERN  TASTE = ZURUECK');

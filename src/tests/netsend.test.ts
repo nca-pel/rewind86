@@ -117,4 +117,29 @@ describe('Senden im geheimen Netz', () => {
       expect(s.state.flags.gameOver).toBe(ending);
     }
   });
+
+  test('Mit der echten Diskette 2 läuft das Modul voll: Schlüssel geladen, Senden frei', () => {
+    const s = new Session(false);
+    s.state = milestoneState('end', step)!;
+    if (s.state.computer.app?.id === 'modk') s.key('4');
+    if (!s.state.computer.powerOn) s.a('schalte computer ein');
+    if (s.state.itemLocations.disk_game !== 'drive') {
+      s.a('nimm diskette aus dem laufwerk');
+      s.a('lege ralfs diskette ins laufwerk');
+    }
+    s.c('LOAD"*",8');
+    s.c('RUN');
+    s.key('RETURN');
+    s.key('RETURN');
+    s.key('ARROW_LEFT');
+    dev(s, 'item disk_key drive');
+    const menu = s.key('RETURN');
+    expect(menu).toContain('VOLLBETRIEB');
+    expect(menu).toContain('SCHLUESSEL GELADEN');
+    expect(s.key('3')).toContain('SCHLUESSEL VON DISK 2');
+    login(s);
+    read(s, 'msg_k01_all');
+    expect(s.has('k01_decrypted')).toBe(true);
+    expect(s.key('2')).toContain('QUITTUNG AN K-01');
+  });
 });

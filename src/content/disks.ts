@@ -83,7 +83,22 @@ export const INITIAL_DISKS: Record<string, VirtualDisk> = {
     diskId: '??',
     writeProtected: true,
     blocksTotal: 664,
-    files: [], // TODO-STORY: Inhalt der Schlüsseldiskette offen (GDD §7.5 / §22.6)
+    // Seidels Original (STORY_DECISIONS: Diskette 2). Im regulären Spiel bekommt Jan sie nie in die Hand –
+    // sie taucht nur in den Enden auf. Liegt sie (z. B. per Entwicklerkonsole) im Laufwerk, läuft MODUL K voll.
+    files: [
+      {
+        name: 'WAHLDATEN',
+        type: 'SEQ',
+        blocks: 1,
+        textContent: 'DATEN VERSCHLUESSELT - NUR UEBER MODUL LESBAR.',
+      },
+      {
+        name: 'SCHLUESSEL',
+        type: 'USR',
+        blocks: 1,
+        textContent: 'DATEN VERSCHLUESSELT - NUR UEBER MODUL LESBAR.',
+      },
+    ],
   },
 };
 

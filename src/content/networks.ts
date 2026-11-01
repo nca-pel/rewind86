@@ -242,7 +242,8 @@ export const SECRET_MAILBOX: MailboxSystem = {
           effects: [{ type: 'discoverFact', id: 'net_who' }],
         },
         // Symptome von Seidels Verdacht (GDD §9.3: sichtbar nur als Tonfall von Nachrichten).
-        // TODO-STORY: Wortlaut und ob Seidel selbst schreibt, ist offen.
+        // Entschieden: Hinter SYSTEM steht Seidel, der die Infrastruktur des Netzes betreut. Das Spiel sagt es
+        // nie ausdrücklich; der Tonfall und die Uhrzeiten (abends, wenn er „noch arbeitet“) verraten es.
         {
           id: 'msg_sys_watch',
           from: 'SYSTEM',
