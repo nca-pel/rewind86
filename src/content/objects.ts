@@ -48,7 +48,7 @@ export const OBJECTS: WorldObject[] = [
     nouns: ['schreibtisch', 'tisch', 'zimmer', 'raum'],
     description: [
       {
-        text: 'Dein Schreibtisch: Brandlöcher von der Lötkolbenzeit, ein klebriger Colaring vom letzten Wochenende. Darauf dein C64 mit Monitor, die 1541, Telefon und Akustikkoppler, das Radio, ein Kassettenrekorder und dein Notizblock. Rechts die Schublade.',
+        text: 'Der Schreibtisch ist älter als du: Pressspan, eine Furnierkante, die sich an einer Ecke löst. Brandlöcher von der Lötkolbenzeit (deine Mutter erwähnt sie noch immer), ein klebriger Colaring, der nie ganz abgehen will. Und mittendrin alles, was zählt: C64 und Monitor, die 1541, das Telefon mit dem Akustikkoppler, das Radio, der Kassettenrekorder, dein Notizblock. Rechts die Schublade. Sie klemmt.',
       },
     ],
     historicalStatus: 'plausible',
@@ -75,7 +75,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Dein Commodore 64, der »Brotkasten«. Die Tasten sind vom vielen Tippen leicht vergilbt. Der Netzschalter sitzt rechts an der Seite.',
+        text: 'Dein Commodore 64, der Brotkasten. Beige, ein bisschen vergilbt, die Tasten glänzen dort, wo deine Finger am häufigsten landen. Der Netzschalter sitzt rechts an der Seite, und jedes Mal, wenn du ihn umlegst, läuft dir ein kleiner Schauer über den Rücken. Immer noch.',
       },
     ],
     historicalStatus: 'verified',
@@ -88,7 +88,11 @@ export const OBJECTS: WorldObject[] = [
     short: 'Monitor',
     gender: 'm',
     nouns: ['monitor', 'bildschirm', 'schirm'],
-    description: [{ text: 'Ein Farbmonitor, gebraucht gekauft, mit leichtem Brummen.' }],
+    description: [
+      {
+        text: 'Ein Farbmonitor, gebraucht gekauft von einem Mann, der ihn nicht schnell genug loswerden konnte. Er brummt leise, wenn er an ist, wie ein Tier im Schlaf. Man gewöhnt sich dran.',
+      },
+    ],
     historicalStatus: 'verified',
   },
   {
@@ -102,7 +106,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Die Commodore 1541, schwer wie ein Ziegelstein und warm wie ein Toaster. Vorn der Schlitz mit der Verriegelungsklappe.',
+        text: 'Die Commodore 1541: schwer wie ein Ziegelstein, nach einer halben Stunde warm wie ein Toaster. Wenn sie lädt, rattert sie, als säße jemand mit einem Hämmerchen darin. Vorn der Schlitz mit der Verriegelungsklappe.',
       },
     ],
     historicalStatus: 'verified',
@@ -118,7 +122,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Ein graues Telefon mit Wählscheibe, von der Post gemietet, mit langer Schnur, damit es bis an den Schreibtisch reicht. Es hängt an derselben Leitung wie der Apparat unten im Flur.',
+        text: 'Ein graues Telefon mit Wählscheibe, von der Post gemietet. Die Schnur ist so lang, dass du sie einmal quer durchs Zimmer spannen könntest – und genau deshalb stolperst du alle paar Wochen darüber. Es hängt an derselben Leitung wie der Apparat unten im Flur. Wenn du telefonierst, telefoniert niemand sonst.',
       },
     ],
     historicalStatus: 'plausible',
@@ -131,7 +135,11 @@ export const OBJECTS: WorldObject[] = [
     short: 'Hörer',
     gender: 'm',
     nouns: ['hoerer', 'telefonhoerer', 'handapparat'],
-    description: [{ text: 'Der Telefonhörer – passt genau in die Gummimuffen des Akustikkopplers.' }],
+    description: [
+      {
+        text: 'Der Telefonhörer, schwarz und schwerer, als man denkt, in der Muschel noch ein Hauch vom Parfüm deiner Mutter. Er passt genau in die Gummimuffen des Akustikkopplers.',
+      },
+    ],
     historicalStatus: 'plausible',
   },
   {
@@ -145,7 +153,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Dein Akustikkoppler, 300 Baud, mit zwei Gummimuffen für den Telefonhörer. Ein Kabel führt zum Userport des C64. Eine kleine LED zeigt den Träger an.',
+        text: 'Dein Akustikkoppler, 300 Baud, ein grauer Kasten mit zwei Gummimuffen, die aussehen wie Ohren. Ein Kabel führt zum Userport des C64. Eine kleine LED zeigt den Träger an. Wenn sie leuchtet, redet am anderen Ende jemand mit dir. Oder etwas.',
       },
     ],
     historicalStatus: 'needs_research',
@@ -159,7 +167,11 @@ export const OBJECTS: WorldObject[] = [
     gender: 'n',
     nouns: ['radio', 'radiogeraet', 'empfaenger', 'transistorradio'],
     hotspot: true,
-    description: [{ text: 'Ein kleines UKW-Radio mit Drehknopf und drei Stationstasten.' }],
+    description: [
+      {
+        text: 'Ein kleines UKW-Radio mit Drehknopf und drei Stationstasten. An einer Seite ist der Lack abgeplatzt, seit es dir einmal vom Regal gefallen ist. Es hat’s überlebt, wie fast alles in diesem Zimmer.',
+      },
+    ],
     historicalStatus: 'plausible',
   },
   {
@@ -173,7 +185,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Ein Mono-Kassettenrekorder für Musik. Gerade liegt keine Kassette drin.',
+        text: 'Ein Mono-Kassettenrekorder. Auf den Tasten haben deine Finger die Beschriftung längst weggeschliffen. Gerade liegt keine Kassette drin; das Fach steht offen wie ein Mund, der gleich etwas sagen will.',
       },
     ],
     historicalStatus: 'plausible',
@@ -192,7 +204,7 @@ export const OBJECTS: WorldObject[] = [
         text: 'Deine alte Datasette hängt wieder am Kassettenport des C64. Laden: LOAD am C64 (Gerät 1 ist der Standard).',
       },
       {
-        text: 'Deine alte Datasette steht abgestöpselt hinter dem Monitor. Seit du die 1541 hast, nimmst du sie kaum noch.',
+        text: 'Deine alte Datasette steht abgestöpselt hinter dem Monitor und sammelt Staub. Seit du die 1541 hast, fasst du sie kaum noch an. Ein kleines schlechtes Gewissen ist dabei.',
       },
     ],
     historicalStatus: 'verified',
@@ -206,7 +218,11 @@ export const OBJECTS: WorldObject[] = [
     gender: 'f',
     nouns: ['schublade', 'schreibtischschublade', 'lade'],
     hotspot: true,
-    description: [{ text: 'Die Schreibtischschublade. Sie klemmt ein bisschen.' }],
+    description: [
+      {
+        text: 'Die Schreibtischschublade. Sie klemmt, und wenn man sie endlich aufbekommt, quietscht sie auf genau der einen Note, die einem durch die Zähne geht.',
+      },
+    ],
     historicalStatus: 'plausible',
   },
   {
@@ -220,7 +236,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Dein karierter Notizblock. Hier landet alles, was du herausfindest – und was du selbst notierst.',
+        text: 'Dein karierter Notizblock, die Ecken schon weich vom Anfassen. Hier landet alles, was du herausfindest, in deiner kleinen, schrägen Schrift – und alles, was du lieber nicht vergessen willst.',
       },
     ],
     historicalStatus: 'plausible',
@@ -249,7 +265,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Die neue Ausgabe des »Heimcomputer-Journals« (fiktive Zeitschrift), heute mit der Post gekommen. Inhalt: eine ZEICHENTABELLE, ein ARTIKEL über Akustikkoppler, die LESERTIPPS und die KLEINANZEIGEN.',
+        text: 'Die neue Ausgabe des »Heimcomputer-Journals« (fiktive Zeitschrift), heute mit der Post gekommen. Sie riecht noch nach Druckerschwärze. Auf dem Umschlag steht, was drin ist: eine ZEICHENTABELLE, ein ARTIKEL über Akustikkoppler, die LESERTIPPS und die KLEINANZEIGEN.',
       },
     ],
     historicalStatus: 'fictional',
@@ -350,7 +366,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: `Eine 5,25-Zoll-Diskette, offensichtlich eine Kopie. Auf dem Etikett in Ralfs krakeliger Schrift abgemalt: »${B} ARBEITSKOPIE – DISK 1«. Daneben, ebenfalls abgeschrieben: »NICHT WEITERGEBEN!«. Die Schreibschutzkerbe ist zugeklebt.`,
+        text: `Eine 5,25-Zoll-Diskette, offensichtlich eine Kopie. Auf dem Etikett Ralfs krakelige Schrift: »${B} ARBEITSKOPIE – DISK 1«. Darunter, ebenfalls von Hand: »NICHT WEITERGEBEN!« – zwei Wörter, dreimal unterstrichen. Die Schreibschutzkerbe ist zugeklebt.`,
       },
     ],
     historicalStatus: 'fictional',
@@ -369,7 +385,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Eine abgegriffene Diskette, auf dem Etikett nur mit Edding: »1001«. Darauf ist INTRUDER by 1001 FIGHTERS – deine Lieblingsdemo.',
+        text: 'Eine abgegriffene Diskette, auf dem Etikett nur mit Edding: »1001«. Darauf ist INTRUDER by 1001 FIGHTERS, deine Lieblingsdemo. Du hast sie bestimmt vierzigmal gesehen, und bei der Musik läuft dir trotzdem jedes Mal etwas den Rücken runter.',
       },
     ],
     historicalStatus: 'fictional',
@@ -397,7 +413,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Deine Archivdiskette, Etikett »JANS ARCHIV«. Darauf dein selbst geschriebenes Archivprogramm für Personen, Nummern, Mailboxen und Notizen.',
+        text: 'Deine Archivdiskette, Etikett »JANS ARCHIV«. Darauf das Programm, das du dir selbst zusammengebaut hast, an drei Wochenenden und einem halben Dutzend Nächten: Personen, Nummern, Mailboxen, Notizen.',
       },
     ],
     historicalStatus: 'fictional',
@@ -415,7 +431,7 @@ export const OBJECTS: WorldObject[] = [
     initialLocation: 'nowhere',
     description: [
       {
-        text: 'Eine C60-Kassette ohne Hülle. Auf dem Etikett mit Kuli: »WT-07 PRÜFBAND 3«. Musik ist da sicher keine drauf – das ist ein Band für die Datasette.',
+        text: 'Eine C60-Kassette ohne Hülle, die Bandwickel leicht schief. Auf dem Etikett steht mit Kuli: »WT-07 PRÜFBAND 3«. Musik ist da sicher keine drauf. Das ist ein Band für die Datasette.',
       },
     ],
     historicalStatus: 'plausible',
@@ -433,7 +449,7 @@ export const OBJECTS: WorldObject[] = [
     initialLocation: 'nowhere',
     description: [
       {
-        text: 'Eine schlichte Diskette ohne Aufdruck, nur zwei Fragezeichen auf dem Etikett: die Schlüsseldiskette.',
+        text: 'Eine schlichte Diskette ohne Aufdruck. Auf dem Etikett nur zwei Fragezeichen, so sorgfältig gemalt, als hätte jemand lange darüber nachgedacht: die Schlüsseldiskette.',
       },
     ],
     historicalStatus: 'fictional',
@@ -449,7 +465,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Deine Zimmertür, beklebt mit einem Aufkleber »Computer-Zone – Eltern bitte klopfen«. Von unten hört man gedämpft den Fernseher.',
+        text: 'Deine Zimmertür. Auf Augenhöhe klebt ein Aufkleber: »Computer-Zone – Eltern bitte klopfen«. Sie klopfen. Meistens. Von unten dringt gedämpft der Fernseher herauf, irgendein Mann mit tiefer Stimme erklärt der Welt, wie es um sie steht.',
       },
     ],
     historicalStatus: 'plausible',
@@ -465,9 +481,11 @@ export const OBJECTS: WorldObject[] = [
     description: [
       {
         when: { timeAfter: '1986-11-14T17:15' },
-        text: 'Draußen ist es dunkel. Die Straßenlaternen spiegeln sich im nassen Asphalt.',
+        text: 'Draußen ist es dunkel. Die Straßenlaternen spiegeln sich im nassen Asphalt, und irgendwo bellt ein Hund, einmal, zweimal, dann gibt er auf.',
       },
-      { text: 'Draußen zieht ein grauer Novembernachmittag über die Dächer. Es nieselt.' },
+      {
+        text: 'Draußen hängt ein grauer Novembernachmittag so tief über den Dächern, dass man fast dagegenstoßen könnte. Es nieselt. Es nieselt schon seit Tagen.',
+      },
     ],
     historicalStatus: 'plausible',
   },
@@ -483,7 +501,7 @@ export const OBJECTS: WorldObject[] = [
     present: { flag: 'ralfPresent', eq: true },
     description: [
       {
-        text: 'Ralf, dein bester Freund. Früher wohnte er nebenan – bis seine Eltern sich scheiden ließen und er mit seiner Mutter wegzog. Sporttasche, Trainingsjacke, immer in Eile.',
+        text: 'Ralf, dein bester Freund. Früher wohnte er nebenan, bis seine Eltern sich scheiden ließen und er mit seiner Mutter wegzog. Seitdem ist er immer ein bisschen zu schnell unterwegs, als wäre jemand hinter ihm her. Sporttasche, Trainingsjacke, ein Grinsen, das nicht bis in die Augen reicht.',
       },
     ],
     historicalStatus: 'fictional',
@@ -498,7 +516,11 @@ export const OBJECTS: WorldObject[] = [
     nouns: ['mutter', 'mama', 'mutti'],
     npc: true,
     present: { flag: 'motherPresent', eq: true },
-    description: [{ text: 'Deine Mutter. Ihr entgeht wenig.' }],
+    description: [
+      {
+        text: 'Deine Mutter. Sie hat diesen Blick, der durch geschlossene Türen sehen kann. Ihr entgeht wenig, und was ihr entgeht, fällt ihr spätestens beim Abendbrot auf.',
+      },
+    ],
     historicalStatus: 'fictional',
   },
   {
@@ -511,7 +533,11 @@ export const OBJECTS: WorldObject[] = [
     nouns: ['vater', 'papa', 'paps', 'vati'],
     npc: true,
     present: { flag: 'fatherPresent', eq: true },
-    description: [{ text: 'Dein Vater, noch in Arbeitsklamotten.' }],
+    description: [
+      {
+        text: 'Dein Vater, noch in Arbeitsklamotten; die Hände riechen nach Holz und Maschinenöl. Er sieht müde aus, auf diese Art, die nicht von einer einzigen Nacht kommt.',
+      },
+    ],
     historicalStatus: 'fictional',
   },
   {

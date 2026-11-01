@@ -134,8 +134,9 @@ select {
   display: grid;
   grid-template-columns: minmax(0, 26rem) minmax(0, 28rem);
   justify-content: center;
+  align-content: center;
   align-items: center;
-  gap: clamp(1.5rem, 5vw, 4rem);
+  gap: clamp(1rem, 3vw, 2rem) clamp(1.5rem, 5vw, 4rem);
   padding: 1rem;
   background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 2px, transparent 2px 4px),
     radial-gradient(circle at 50% 30%, #3a2a54, #120d14 70%);
@@ -143,50 +144,51 @@ select {
 .title-box {
   text-align: left;
 }
-.title-box h1,
+.title-head h1,
 .logo {
   font-family: var(--font-retro);
   letter-spacing: 0.08em;
   color: var(--accent);
   margin: 0;
 }
-.title-box {
-  container-type: inline-size;
+.title-head {
+  grid-column: 1 / -1;
+  text-align: center;
 }
-.title-box h1 {
-  /* Logo bleibt einzeilig: Schriftgröße folgt der Spaltenbreite (11 Zeichen) */
+.title-head h1 {
+  /* Logo mittig über dem gesamten Inhalt, einzeilig: Schriftgröße folgt der Fensterbreite (11 Zeichen) */
   white-space: nowrap;
-  font-size: min(3.2rem, 8cqw);
+  font-size: min(4.4rem, 7.6vw);
   filter: drop-shadow(4px 4px 0 #2a1f4a);
 }
 /* Schriftzug mit Raster-Balken wie in einem Demo-Intro: Farbverlauf in harten Stufen, durch die Schrift gestanzt */
-.title-box h1,
+.title-head h1,
 .logo {
   background: var(--raster);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-.title-box h1 span,
+.title-head h1 span,
 .logo span {
   background: linear-gradient(180deg, #e6f6ff 0 20%, #8fc7ff 20% 45%, #4d8ce8 45% 70%, #3a4cc8 70%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-html[data-contrast='high'] .title-box h1,
+html[data-contrast='high'] .title-head h1,
 html[data-contrast='high'] .logo,
-html[data-contrast='high'] .title-box h1 span,
+html[data-contrast='high'] .title-head h1 span,
 html[data-contrast='high'] .logo span {
   background: none;
   color: var(--accent);
 }
 .tagline {
   font-family: var(--font-retro);
-  font-size: min(0.6rem, 2.4cqw);
+  font-size: min(0.8rem, 2.2vw);
   line-height: 1.9;
   letter-spacing: 0.04em;
-  margin: 1.2rem 0 1.6rem;
+  margin: 1rem 0 0;
 }
 /* Drei Sinnzeilen statt Fließtext: Ort, dann zwei Satzhälften, die jeweils zusammenbleiben */
 .tagline span {
@@ -255,8 +257,12 @@ html[data-contrast='high'] .logo span {
   /* Traktorlochung links und rechts */
   background-image: radial-gradient(circle, #3b3550 0 3px, transparent 3.5px),
     radial-gradient(circle, #3b3550 0 3px, transparent 3.5px);
-  background-size: 18px 22px, 18px 22px;
-  background-position: 6px 4px, calc(100% - 6px) 4px;
+  background-size:
+    18px 22px,
+    18px 22px;
+  background-position:
+    6px 4px,
+    calc(100% - 6px) 4px;
   background-repeat: repeat-y, repeat-y;
   border-left: 1px dashed #b9b19a;
   border-right: 1px dashed #b9b19a;

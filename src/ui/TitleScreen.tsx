@@ -44,7 +44,7 @@ export function TitleScreen({
   const autoFile = auto && auto.ok ? auto.file : null;
   return (
     <main className="title-screen">
-      <div className="title-box">
+      <header className="title-head">
         <h1>
           REWIND <span>1986</span>
         </h1>
@@ -52,6 +52,8 @@ export function TitleScreen({
           <span className="tagline-place">Rheda-Wiedenbrück, Herbst 1986</span>{' '}
           <span>Ein C64, eine kopierte Diskette –</span> <span>und ein Netz, das es nicht geben dürfte.</span>
         </p>
+      </header>
+      <div className="title-box">
         <div className="title-buttons">
           <button type="button" onClick={() => onNew(difficulty)} data-testid="new-game">
             Neues Spiel

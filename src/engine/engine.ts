@@ -19,9 +19,9 @@ const MAX_NOTE = 500;
 function introText(state: GameState): string {
   return `${formatClock(state.gameClock)}. Rheda-Wiedenbrück.
 
-Herbst 1986. Draußen nieselt es seit Mittag, drinnen ist es warm. Auf deinem Schreibtisch stehen dein Commodore 64 mit Monitor, die 1541, das Telefon mit dem Akustikkoppler und ein Radio. Daneben liegt die neue Ausgabe des »Heimcomputer-Journals«, die heute mit der Post kam. Aus dem Wohnzimmer dringen gedämpfte Fernsehstimmen.
+Herbst 1986. Seit Mittag nieselt es, dieses feine, zähe Novemberwetter, das nicht richtig regnet und nicht richtig aufhört. Drinnen ist es warm. Auf deinem Schreibtisch stehen der Commodore 64 mit Monitor, die 1541, das Telefon mit dem Akustikkoppler und dein Radio, und daneben liegt das neue »Heimcomputer-Journal«, heute mit der Post gekommen. Aus dem Wohnzimmer dringen gedämpfte Fernsehstimmen. Irgendwo im Gebälk knackt es, wie immer, wenn der Wind dreht.
 
-Du bist Jan Keller, 16 – und das Wochenende fängt gerade erst an.`;
+Du bist Jan Keller, 16 – und das Wochenende fängt gerade erst an. Was soll schon passieren?`;
 }
 
 /** Offene Mehrdeutigkeitsrückfrage mit der neuen Eingabe beantworten, falls möglich. */

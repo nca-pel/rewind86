@@ -20,7 +20,7 @@ export interface MusicTrack {
 }
 
 export const DEMO_TRACK: MusicTrack = { bpm: BPM, at: songStep };
-export const TITLE_TRACK: MusicTrack = { bpm: TITLE_BPM, at: titleStep, lead: 'triangle' };
+export const TITLE_TRACK: MusicTrack = { bpm: TITLE_BPM, at: titleStep, lead: 'sawtooth' };
 
 type Group = 'effects' | 'device' | 'music' | 'radio';
 
