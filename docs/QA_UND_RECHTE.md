@@ -1,0 +1,44 @@
+# Qualitätssicherung, Rechte und historische Prüfung (Stand: Abschluss des Ausschnitts)
+
+## Rechte und Herkunft der Inhalte
+
+| Bereich                      | Stand                                                                                                                                                       |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ROM-Dateien, Fremdressourcen | Keine. Zeichensatz, Töne, Musik, Grafiken, Texte und BASIC-Interpreter sind eigene Arbeiten (`src/c64/charset.ts` wurde aus Regeln neu gezeichnet).         |
+| Musik und Klänge             | Eigene Synthese zur Laufzeit (`src/audio/*`); keine Samples, keine Übernahme von SID-Stücken.                                                               |
+| Grafik                       | Eigene Zeichnungen: Pixel-Schreibtisch (`DeskPixel.tsx`), realistischer Schreibtisch (`Desk.tsx`), Gerätebilder (`DeviceArt.tsx`), Demo-Zeichner.           |
+| Schrift                      | Press Start 2P (SIL Open Font License) über `@fontsource`; Lizenz liegt im Paket.                                                                           |
+| Markennamen                  | Einschaltmeldung und Gerätebezeichnungen nur im Bootprofil `authentic` (`src/c64/boot.ts`); Profil `neutral` ohne Marken (`VITE_C64_BOOT_PROFILE=neutral`). |
+| Personen, Firmen, Gruppen    | Fiktiv (Demo-Gruppen, Mailboxen, Computerclub, Heimcomputer-Journal, Filmplakat „SPACE RIDERS“). Reale Orte nur als Umfeld.                                 |
+| Telefonnummern, BTX-Nummern  | Fiktiv; es werden keine echten Nummern gewählt (Hinweis auf dem Titelbild).                                                                                 |
+| Filmanspielungen             | Im Ausschnitt keine; bei Ausbau Rechte prüfen.                                                                                                              |
+
+**Vor einer Veröffentlichung:** Entscheidung über das Bootprofil (`authentic` oder `neutral`), Rechtsprüfung der Markennennung und der
+Ortsnamen, Prüfung, ob fiktive Nummern/Kennungen unbeabsichtigt real wirken.
+
+## Historische Prüfung (`needs_research`)
+
+Nicht belegt, bewusst als Spielökonomie bzw. Annahme gekennzeichnet:
+
+- Telefongebühren (0,23 DM je Einheit, 8 Minuten je Ortseinheit), Zeitzonen der Fernzone.
+- BTX: Zugangsformat, Seitengebühr (0,02 DM), Tarife des Postmodems, Seitenlayout (CEPT-Mosaik wird nicht dargestellt, nur Text).
+- Ob ein Anschluss 1986 über die Bundespost ermittelbar war (Grundlage der Entdeckungslogik).
+- Radioprogramm, Nachrichten der Tage (nur erfundene Meldungen; echte nur nach Prüfung).
+- Technische Details der 1541, Datasette und des Kommandokanals sind vereinfacht, aber im Verhalten an das Original angelehnt.
+
+## Barrierefreiheit
+
+- Automatisiert: `e2e/a11y.spec.ts` prüft Titel, Schreibtisch (Pixel und realistisch) und Menü mit axe-core gegen WCAG 2 A/AA, ohne Befunde.
+- Bedienung: jede Aktion per Textbefehl; Schreibtischobjekte per Tastatur (Tab, Enter/Leertaste) und Klick; Schaltflächen der Detailansicht
+  entsprechen Textbefehlen; Ton-Ereignisse haben Textentsprechungen; Demo mit Untertiteln und Effektbeschreibungen.
+- Einstellungen: Textgröße, hoher Kontrast, reduzierte Bewegung, CRT-Effekt aus, Ton aus.
+- **Noch nicht geprüft:** Test mit echten Screenreadern (NVDA, VoiceOver, TalkBack) und auf echten Geräten. Das braucht Menschen und Hardware.
+
+## Spielstände und Datenschutz
+
+IndexedDB im Browser (Rückfall `localStorage`), Export/Import als Datei. Kein Server, kein Login, keine Übertragung; das Playtest-Protokoll bleibt lokal
+und ist abschaltbar.
+
+## Offline (PWA)
+
+`manifest.webmanifest`, `icon.svg` und `sw.js` (Cache nach erstem Besuch, nur Produktionsbau). Spielstände sind vom Cache unabhängig.

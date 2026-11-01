@@ -115,7 +115,7 @@ Webserver ausliefern (z. B. `python -m http.server 8000` im Ordner, dann http://
 
 ### Hinweise
 
-- **Spielstände** liegen im Browser auf Windows (`localStorage`), nicht auf dem Server. Sie sind an die Adresse
+- **Spielstände** liegen im Browser (IndexedDB, Rückfall `localStorage`), nicht auf dem Server. Sie sind an die Adresse
   gebunden: `http://localhost:4173` und `http://server:4173` haben getrennte Spielstände. Zum Umziehen im Spiel
   _Menü → Exportieren_ und am anderen Ort _Importieren_ verwenden.
 - **Ton** startet erst nach dem ersten Klick oder Tastendruck (Autoplay-Regel der Browser).
@@ -168,7 +168,7 @@ Textgröße, hoher Kontrast. Alle Geräusche haben Texteinblendungen – das Spi
 ### Spielstände
 
 Autosave nach jedem Befehl und bei Meilensteinen (Slot „Auto“), drei manuelle Slots, Export/Import als JSON
-(validiert, max. 2 MB). Alles liegt lokal im Browser (`localStorage`).
+(validiert, max. 2 MB). Alles liegt lokal im Browser (IndexedDB; alte `localStorage`-Stände werden beim Start übernommen).
 
 ## Lösungsweg des Ausschnitts (Spoiler)
 
@@ -182,7 +182,13 @@ Autosave nach jedem Befehl und bei Meilensteinen (Slot „Auto“), drei manuell
 6. Modul erneut starten, `1`; im Adventure `WÄHLE 41973`, `LEGE HÖRER IN DEN KOPPLER`; am C64 RETURN.
 7. Nachrichten lesen (`1`, `1`, `2`), abmelden (`4`), `LEGE AUF` → Ende des Ausschnitts.
 
-Optional: Diskette `1001` aus der Schublade → Demo INTRUDER; Archivdiskette → Jans Archivprogramm.
+Optional: Diskette `1001` aus der Schublade → Demo INTRUDER (acht Teile, Leertaste = weiter, `1`–`8` = direkt, `DEL` = zurück, über zwei Minuten Musik); Archivdiskette → Jans Archivprogramm.
+
+Das Spiel auf Ralfs Diskette (FERNHANDEL) ist spielbar: Im Intro startet die **Leertaste** eine kleine Handelssimulation (30 Tage, fünf Städte, fünf Waren, Kredit, Telex-Aufträge, Lagerausbau). Tasten: `1`–`5` Ware, `B`/`V` kaufen/verkaufen, `M`/`A` maximal kaufen/alles verkaufen, `R` + Ziffer reisen, `L` Auftrag liefern, `K`/`T` Kredit/Tilgung, `U` Lagerausbau, `H` Hilfe, `I` zurück zum Intro. Der Pfeil-Hinweis in den Credits (Taste `←`) bleibt unverändert.
+
+**Grafikstil des Schreibtischs:** Im Menü schaltet „Pixelgrafik im Stil von 1986“ zwischen Pixelgrafik (16 Farben, Rasterung, harte Kanten; Standard) und einem realistisch gezeichneten Schreibtisch um. Beide haben dieselben Hotspots und Zustände; die Wahl wird gespeichert.
+
+**Offline und Barrierefreiheit:** Im Produktionsbau lässt sich das Spiel als App installieren und offline spielen (Manifest + Service Worker). Ein automatisierter axe-Test (WCAG 2 A/AA) läuft in der Playwright-Suite. Siehe `docs/QA_UND_RECHTE.md`.
 
 Nebenspur Mailbox: `LIES KLEINANZEIGEN` → BIT-SCHUPPEN GT (ab 18 Uhr). Archivdiskette einlegen, `LOAD"TERMINAL",8` +
 `RUN`, `WÄHLE 23586`, Hörer in den Koppler, RETURN, eigenen Namen eingeben, `J`. Nach der Freischaltung (später erneut
@@ -202,11 +208,21 @@ LESERTIPPS` in der Zeitschrift).
 4. Modul starten, `3`, `730219584426` + RETURN, einwählen, Rundschreiben von K-01 lesen → Klartext. Expertenweg: im
    Rundschreiben `S` (Rohdaten auf die Archivdiskette) und mit `OPEN`/`INPUT#` selbst entschlüsseln.
 
+BTX: `LIES RUNDBRIEF` (Samstag) verrät das Leihset und die Nummer der Clubtafel. `GEHE ZUM CLUB` (Donnerstag
+18:30–19:30), dann `SCHALTE COMPUTER AUS`, `STECKE BTX-SET IN DEN C64`, `SCHALTE COMPUTER EIN` → Decoder startet,
+RETURN verbindet. Seiten mit Ziffern oder `*Nummer#`; die Clubtafel liegt unter der Nummer aus dem Rundbrief.
+
 Vorsicht im geheimen Netz: Wer sich immer wieder mit der Testkennung anmeldet oder lange online bleibt, fällt auf.
 Das Spiel kündigt Folgen deutlich an (Systemnachrichten, Sperre, eine letzte Warnung), bevor es vorbei ist; nach einem
 Spielende lässt sich der letzte Schritt zurücknehmen.
 
 </details>
+
+## Playtest-Protokoll
+
+Eingaben, die das Spiel nicht versteht, merkt es sich lokal im Browser (nie gesendet; abschaltbar im Menü). Zum
+Auswerten: `?dev=1`, Entwicklerkonsole → Tab „Parser“ → „Kopieren“. Daraus entstehen neue Vokabeln und Fälle in
+`src/tests/parserCorpus.test.ts`.
 
 ## Entwicklerkonsole
 

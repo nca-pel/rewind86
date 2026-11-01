@@ -73,6 +73,16 @@ Ergebnis des Storydesign-Workshops vom 31.10.2026 zu den offenen Punkten aus GDD
 | Inhalt           | **Vage Ankündigung:** „Operation REWIND beginnt Freitag. Alle Kennungen bereithalten. Keine Testzugänge mehr. Weitere Anweisung folgt.“ Keine Details zu Ziel oder Ablauf.                                                                                                                                                |
 | INTRUDER-Hinweis | `hintLink` zeigt auf P08; der Rand-Trick ist der Denkanstoß. Zusätzlich erklären die Lesertipps im Heimcomputer-Journal Farbcodes in REM-Zeilen.                                                                                                                                                                          |
 
+## BTX (Ausbauplan Punkt 7) – Annahmen, bitte prüfen
+
+| Frage      | Annahme (leicht änderbar in `config.btx`)                                                                                                                                                                                                                                           |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ausrüstung | Jan besitzt kein BTX. Die Post schloss Teilnehmer nur über ihr **Postmodem** an (1200/75 Baud, V.23); der 300-Baud-Akustikkoppler reicht nicht. Der Computerclub hat ein Leih-Set (Decoder-Modul + Postmodem) und gibt es am **Clubabend (20.11.)** an Mitglieder. `needs_research` |
+| Zugang     | Vereinskennung »COMPUTERCLUB WD-86«; Zugangsnummer und alle Seitennummern fiktiv. Kosten: normale Telefoneinheiten plus 2 Pf pro Seite (Spielökonomie).                                                                                                                             |
+| Angebot    | »Wiedenbrücker Kurier«: Nachrichten und Wetter tagesabhängig (14.–21.11.), Fernsehen, Kleinanzeigen, Computer-Ecke, Hilfe, verdeckte **Clubtafel**. Eine Meldung (17./18.11.) erwähnt einen Einbruch bei einer Gütersloher Softwarefirma ohne Namen (Fährte oder falsche Fährte).   |
+| Clubtafel  | Seitennummer nur im Rundbrief. Vor dem Clubabend leer, danach eine kryptische Nachricht „an den Gast, der gerne fragt“ (TODO-STORY, Brücke zu GHOST, ohne Namen).                                                                                                                   |
+| Zeitrahmen | BTX ist damit ab Do. 20.11. abends nutzbar – als Werkzeug für den Endspurt, nicht für die ganze Woche.                                                                                                                                                                              |
+
 ## Umsetzung im Code
 
 - `src/content/config.ts`: `unreleasedGame` (Titel, Genre), `secretNetwork.nodeName`, `ralf.familyName`, `parents`,

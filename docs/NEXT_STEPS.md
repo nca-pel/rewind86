@@ -20,7 +20,7 @@
   (DATA-Codes → Nummer), Telefon/Koppler/Leitungszustände, Gebühren, Eltern-/Leitungsereignisse; keine echten Verbindungen.
 - Notizblock (automatische Fakten nach Kategorien, eigene Notizen mit Bearbeiten/Löschen, Vermutungen),
   dreistufige Denkhilfe, C64-Archivprogramm mit Datenmodell.
-- Diskette `1001` mit INTRUDER: drei animierte Demo-Teile, Laufschriften als Untertitel, synthetisierte Musik,
+- Diskette `1001` mit INTRUDER: acht animierte Demo-Teile (Logo, Rand, Sterne, Plasma, Vektorwürfel, Tunnel, Sinus-Scroller, Grußliste mit Equalizer), Navigation per Leertaste/Ziffern, Effektbeschreibungen als Untertitel, 88-taktiger synthetisierter Song (rund 2:40, neun Abschnitte inkl. Rockteil mit nachgeahmter E-Gitarre und Solo),
   konfigurierbarer `hintLink`.
 - Illustrierter Schreibtisch (SVG-Platzhalter) mit zustandsabhängigen Hotspots, Detailansichten, Inventarleiste,
   Statusleiste (Zeit, Geld, Telefonkosten, Leitung).
@@ -39,30 +39,36 @@
 - Schlüssel-Strang: drei Fragmente (unsichtbare REM-Zeile im LADER, fehlgeleitete Netzmeldung, Datasette-Kassette
   von Ralf), Ersatzschlüssel im Modul mit Klartextanzeige, Expertenweg über Rohdaten als SEQ-Datei und eigenes
   BASIC-Programm (`OPEN`/`CLOSE`/`PRINT#`/`INPUT#`/`GET#`/`ST`), nutzbare Datasette, Rätsel P07–P09.
+- BTX: Leih-Set vom Computerclub (Clubabend), Decoder-Modul im Modulschacht mit Autostart, Verbindung über die
+  Hausleitung mit Gebühren, Seitennavigation (Ziffer, `*Nummer#`, `#`), tagesabhängige Seiten, verdeckte Clubtafel
+  (P17).
+- Parser-Ausbau (Punkt 8): lokales Playtest-Protokoll nicht verstandener Eingaben (Dev-Tab „Parser“, im Menü
+  abschaltbar), Redewendungen (`WO BIN ICH`, `WAS IST IN DER SCHUBLADE`, `WAS SOLL ICH TUN` …), neue Verben/Nomen
+  (`BEFRAGE`, `ERKLÄRE`, Schachtel, Etikett), hilfreichere Meldungen für Dinge im geschlossenen Päckchen/in der Schublade,
+  Korpus-Test.
 - Barrierefreiheit/UX: Ton an/aus + Lautstärke, Texte für Tonsignale, reduzierte Bewegung, CRT-Effekt abschaltbar,
   Textgröße, hoher Kontrast, Tastaturbedienung, Fokusmarkierung, mobile Tabs und Sondertasten.
 
 ### Getestet (automatisiert, zuletzt alle grün)
 
-- `npm test`: 153 Vitest-Tests in 11 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
+- `npm test`: 204 Vitest-Tests in 18 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
   Prolog-Durchlauf, Demo, Archiv, Content-Integrität, Entwicklerkonsole/Meilensteine, Mailbox-System, Verdacht,
-  Tagesablauf, Schlüssel-Strang).
-- `npm run test:e2e`: 8 Playwright-Szenarien × 2 Geräteprofile (Desktop Chrome, Pixel 7) = 16 Tests, darunter der
+  Tagesablauf, Schlüssel-Strang, BTX).
+- `npm run test:e2e`: 13 Playwright-Szenarien × 2 Geräteprofile (Desktop Chrome, Pixel 7) = 26 Tests, darunter der
   komplette Prolog über die echte UI bis „Fortsetzung folgt“, die Entwicklerkonsole, eine reguläre Mailbox, das
-  Spielende und die unsichtbare REM-Zeile.
+  Spielende, die unsichtbare REM-Zeile, BTX und das Parser-Protokoll.
 - `npm run lint`, `npm run build` fehlerfrei.
 - Manuell: Screenshots Desktop/Mobil (Titel, Schreibtisch, C64, Demo) geprüft.
 
 ### Nicht implementiert
 
 - Akte 2–6, weitere Handlungsstränge, GHOST, Operation REWIND, reguläre Enden (ein Game-Over „Entdeckt“ existiert).
-- BTX, Usenet-Gateway; Nachrichten senden im geheimen Netz.
+- Usenet-Gateway; historisch geprüfte BTX-Details (Mosaikgrafik/CEPT-Darstellung, Tarife); Nachrichten senden im geheimen Netz.
 - Die echte Diskette 2; was das Modul mit vollem Schlüssel zusätzlich kann (Senden).
 - Story-Inhalte der Folgetage (Akt 2+); der Alltag selbst läuft.
 - Weitere Kassetten, Speichern auf Band, TV/VHS.
-- Sprachausgabe, echte Illustrationen, komponierte Musik.
+- Sprachausgabe (braucht Aufnahmen und Rechte); echte, von Menschen gezeichnete Illustrationen (jetzt zwei eigene Grafikstile, siehe Schalter „Pixelgrafik“).
 - Symptome für Ralfs Vertrauen und Netzglaubwürdigkeit; Abklingen des Verdachts.
-- IndexedDB (derzeit `localStorage`, Datenmenge klein).
 
 ### Bekannte Grenzen
 
@@ -74,7 +80,7 @@
 - Verb-/Objektvokabular ist auf den Ausschnitt zugeschnitten; seltene Formulierungen führen zu „verstehe ich nicht“
   statt zu falschen Aktionen.
 - Gebühren und Tarife sind Spielökonomie, nicht historisch verifiziert.
-- Die Schreibtisch-Illustration ist ein schlichter Platzhalter.
+- Der Schreibtisch hat zwei eigene Grafikstile (Pixel 1986/realistisch); beides sind generierte Vektor-/Pixelzeichnungen, keine Handillustrationen.
 
 ## Priorisierter Ausbauplan
 
@@ -91,12 +97,21 @@
    Ralf-Strang (Überzeugen, Loyalitätskrise), weitere Ralf-Themen.
 6. ~~**Schlüssel-Strang**~~ – erledigt (siehe oben). Offen: Folgen des Klartexts für Akt 2 (Freitag als Frist),
    Reaktion Ralfs auf den Inhalt der Kassette, Senden mit Schlüssel, ein Entwickler-Meilenstein für den Strang.
-7. **BTX** mit eigener Seitendarstellung und historisch geprüfter Ausrüstung.
-8. **Parser-Ausbau** anhand von Playtest-Protokollen (fehlgeschlagene Eingaben loggen, lokal).
-9. **BASIC-Erweiterungen** nach Rätselbedarf (SEQ-Dateien, `DEF FN` und Trigonometrie sind erledigt; offen z. B.
-   Kommandokanal 15, `CMD`, Bildschirmeditor).
-10. **Audio/Grafik:** echte Illustrationen, Detailansichten pro Gerät, komponierte SID-inspirierte Stücke,
-    ausgewählte Sprachaufnahmen mit Transkript.
-11. **Persistenz:** IndexedDB-Backend und Migrationstests, sobald Zustände wachsen.
-12. **QA:** Historisches Fact-Checking (Tarife, Radio, Ortsbilder), Rechteklärung, Accessibility-Audit mit
-    Screenreadern, Tests auf echten Geräten, PWA-Option.
+7. ~~**BTX**~~ – erledigt (siehe oben). Offen: historische Prüfung (`needs_research`), echte Mosaik-/Farbdarstellung
+   der Seiten, weitere Angebote, Rolle im Finale, Entwickler-Meilenstein.
+8. ~~**Parser-Ausbau**~~ – Werkzeug und erste Runde erledigt (siehe oben). Laufende Aufgabe: echte Protokolle von
+   Testspielern auswerten (Dev-Tab „Parser“ → Kopieren), Fälle in `parserCorpus.test.ts` ergänzen.
+9. **BASIC-Erweiterungen** nach Rätselbedarf (SEQ-Dateien, `DEF FN`, Trigonometrie und Kommandokanal 15 –
+   löschen/umbenennen/Fehlerkanal – sind erledigt; offen z. B. `CMD`, Bildschirmeditor, echte `TI`/`TI$`).
+10. **Audio/Grafik:** teilweise erledigt – gezeichnete Platzhalter-Detailbilder je Gerät (`ui/DeviceArt.tsx`: C64, Laufwerk,
+    Telefon, Koppler, Radio, Datasette, Disketten, BTX-Set; zeigen Zustand wie LED, Diskette, Hörer), Diskette WT-07 in der
+    Schublade, zweites komponiertes Stück (`audio/fernhandelSong.ts`, Marsch für FERNHANDEL, 20 Takte), Musik folgt jetzt dem
+    Zustand (Demo/Spiel an → Musik, sonst Stille). Offen: echte Illustrationen, weitere Stücke (Titel, Ausblick),
+    ausgewählte Sprachaufnahmen mit Transkript (Rechte/Aufnahme nötig).
+11. ~~**Persistenz**~~ – erledigt: IndexedDB als Speicherort der Slots (`app/slotBackend.ts`, `app/storage.ts`), alter
+    `localStorage` wird einmalig übernommen und bleibt Rückfall; Migrationskette 1→7 getestet. Offen: Zusatzdaten
+    (Playtest-Protokoll, Einstellungen) liegen weiter in `localStorage`; Export/Import als Datei bleibt der Sicherungsweg.
+12. **QA:** teilweise erledigt (siehe `QA_UND_RECHTE.md`): automatisierter Barrierefreiheitstest (axe, WCAG 2 A/AA),
+    PWA-Option (Offline-Cache), Rechte- und Herkunftsübersicht. Offen, weil Menschen oder Hardware nötig sind:
+    historisches Fact-Checking (Tarife, Radio, Ortsbilder, BTX), rechtliche Klärung (Bootprofil, Markennamen),
+    Screenreader-Tests, Tests auf echten Geräten.
