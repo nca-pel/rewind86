@@ -23,7 +23,7 @@ import { stageOf, threshold, thresholdNames } from '../engine/pressure';
 
 const TABS = ['Zustand', 'Ereignisse', 'Graph', 'Meilensteine', 'Parser', 'Log'] as const;
 type Tab = (typeof TABS)[number];
-const LOCATIONS = ['inventory', 'desk', 'drawer', 'package', 'drive', 'datasette', 'port', 'nowhere'];
+const LOCATIONS = ['inventory', 'desk', 'drawer', 'drive', 'datasette', 'port', 'nowhere'];
 const PUZZLE_STATES = ['unknown', 'discovered', 'solving', 'solved', 'bypassed'];
 
 /** Entwicklermodus über ?dev=1 (bleibt für die Sitzung aktiv) */

@@ -13,7 +13,7 @@ import type { GameState, ItemLocation, ScreenState } from './types';
  * 2: Bildschirm als Bildschirm-/Farbspeicher statt Textzeilen · 3: Mailbox-Konten (telecom.bbs) ·
  * 4: Kennungssperren, Risiko-Minuten · 5: Tagesablauf (tägliche Ereignisse, Gebührenablesung, Brief)
  */
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 /** Erste Termine der täglichen Ereignisse ab `clock` */
 export function dailySchedule(clock: string): Array<{ id: string; at: string; status: 'pending' }> {
@@ -45,7 +45,6 @@ export function createInitialState(seed = 1986): GameState {
     itemLocations,
     objectStates: {
       drawer: { open: false },
-      package: { open: true },
       radio: { on: false, station: 'pop' },
       coupler: { carrier: false },
       door: { open: false },

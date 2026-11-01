@@ -68,10 +68,6 @@ function actionsFor(state: GameState, id: string): Action[] {
         for (const d of itemsAt(state, 'drawer'))
           a.push({ label: `${OBJECT_BY_ID[d].short} nehmen`, cmd: `NIMM ${cmdName(d)}` });
       break;
-    case 'package':
-      if (!state.objectStates.package.open) a.push({ label: 'Öffnen', cmd: 'ÖFFNE PÄCKCHEN' });
-      else a.push({ label: 'Zeitschrift lesen', cmd: 'LIES ZEITSCHRIFT' });
-      break;
     case 'magazine':
       a.push(
         { label: 'Zeichentabelle', cmd: 'LIES ZEICHENTABELLE' },

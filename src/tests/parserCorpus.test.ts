@@ -17,7 +17,7 @@ const CASES: Array<[string, RegExp]> = [
   ['leg dich hin', /schlaf|Müde|zu früh|noch nicht/i],
   ['befrage ralf', /Ralf|nicht hier|Telefon/],
   ['erkläre ralf alles', /Ralf|nicht hier|Telefon|Hörer/],
-  ['öffne die schachtel', /Päckchen|Schnur|Zeitschrift|offen/i],
+  ['öffne das päckchen', /Zeitschrift|Heimcomputer-Journal|ZEICHENTABELLE/i],
   ['ja', /Niemand hat dich gerade etwas gefragt/],
   ['nein', /Niemand hat dich gerade etwas gefragt/],
 ];
@@ -39,14 +39,5 @@ describe('Parser-Korpus', () => {
     s.state = milestoneState('c64', step)!;
     s.a('zeige mir die dateien');
     expect(s.screen()).toContain('SPIEL.07');
-  });
-
-  test('Zeitschrift im geschlossenen Päckchen: hilfreicher Hinweis statt „nichts zu sehen“', () => {
-    const s = new Session(false);
-    s.state = milestoneState('c64', step)!;
-    // Neue Spiele beginnen mit offenem Päckchen; ältere Spielstände können es noch geschlossen haben
-    s.state.objectStates.package.open = false;
-    expect(s.a('lies den artikel')).toMatch(/Päckchen/);
-    expect(s.a('lies die zeitschrift')).toMatch(/ÖFFNE PÄCKCHEN/);
   });
 });

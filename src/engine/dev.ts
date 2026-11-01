@@ -34,7 +34,7 @@ import type {
   RelationshipId,
 } from './types';
 
-const ITEM_LOCATIONS: ItemLocation[] = ['inventory', 'desk', 'drawer', 'package', 'drive', 'nowhere'];
+const ITEM_LOCATIONS: ItemLocation[] = ['inventory', 'desk', 'drawer', 'drive', 'nowhere'];
 const PUZZLE_STATES: PuzzleStatus[] = ['unknown', 'discovered', 'solving', 'solved', 'bypassed'];
 export const RELATIONSHIP_IDS = Object.keys(GAME_CONFIG.relationshipsStart) as RelationshipId[];
 export const ITEM_IDS = OBJECTS.filter((o) => o.portable).map((o) => o.id);
@@ -44,7 +44,7 @@ export const DEV_HELP = [
   'flag <id> <wert> | flag -<id>     Flag setzen (true/false/Zahl/Text) / löschen',
   'bez <id> <0–100>                  Verdeckten Beziehungswert setzen',
   'rätsel <id> <status>              unknown|discovered|solving|solved|bypassed',
-  'item <id> <ort>                   inventory|desk|drawer|package|drive|nowhere',
+  'item <id> <ort>                   inventory|desk|drawer|drive|nowhere',
   'zeit +<min> | <HH:MM> | <Datum>T<HH:MM>  Zeit vorspulen (Ereignisse und Zeitblöcke laufen ab)',
   'ereignis <id> | ereignis <id> +<min>   sofort auslösen / einplanen',
   'geld <DM>                         Taschengeld setzen',
@@ -229,7 +229,6 @@ const NUMBER_KNOWN = [
   K('4'),
   L('LOAD"LADER",8'),
   L('LIST'),
-  A('öffne päckchen'),
   A('lies tabelle'),
 ];
 const ONLINE = [
@@ -270,7 +269,6 @@ const BBS_MEMBER = [
   A('nimm archivdiskette'),
   A('lege archivdiskette ins laufwerk'),
   A('schalte computer ein'),
-  A('öffne päckchen'),
   A('lies kleinanzeigen'),
   A('warte 100'),
   L('LOAD"TERMINAL",8'),

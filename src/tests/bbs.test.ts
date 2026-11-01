@@ -61,7 +61,6 @@ describe('Öffnungszeiten und Handles', () => {
 describe('Reguläre Mailbox BIT-SCHUPPEN (Ausbauplan Punkt 3)', () => {
   test('Kleinanzeige liefert Nummer und Zeiten als Fakt', () => {
     const s = new Session();
-    s.a('öffne päckchen');
     expect(s.a('lies kleinanzeigen')).toContain(BS.phoneNumber);
     expect(s.has('bbs_bitschuppen')).toBe(true);
   });

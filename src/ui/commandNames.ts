@@ -11,7 +11,6 @@ export const COMMAND_NAME: Record<string, string> = {
   tape: 'KASSETTENREKORDER',
   drawer: 'SCHUBLADE',
   notebook: 'NOTIZBLOCK',
-  package: 'PÄCKCHEN',
   magazine: 'ZEITSCHRIFT',
   disk_game: 'SPIELEDISKETTE',
   disk_1001: 'DISKETTE 1001',

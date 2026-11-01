@@ -51,7 +51,7 @@ Zustand + gleiche Befehle = gleicher Verlauf (getestet).
 
 ### Spielzustand
 
-`GameState` (`engine/types.ts`) enthält u. a. `gameClock`, `itemLocations` (inventory/desk/drawer/package/drive/
+`GameState` (`engine/types.ts`) enthält u. a. `gameClock`, `itemLocations` (inventory/desk/drawer/drive/
 nowhere), `objectStates`, `flags`, `knownFacts`, `knownTopics`, `hypotheses`, `puzzles`, `hintLevels`, verdeckte
 `relationships` (`seidelSuspicion`, `ralfTrust`, `networkCredibility`, 0–100, **nie angezeigt**), `moneyDm`,
 `phoneCostsDm`, `deskNotes`, `archive`, `computer` (Bildschirm, Programm, BASIC-Laufzeit inkl. INPUT-Pause,
@@ -349,11 +349,19 @@ Ersatzschlüssel ungeprüft an; erst `readWithKey` beim Lesen entscheidet (Klart
 
 ## UI
 
-- `ui/Desk.tsx` (`DeskScene`): Schreibtisch als Pixel-Szene, 384×216 Pixel, 32 Farben (`assets/desk/desk.png`, gebaut von `scripts/build-desk.py` aus `docs/00-raw/finalpixel.jpg`). Bild, Klickflächen (`DESK_AREAS`, Bildpixel) und Zustands-Sprites liegen in einem SVG; die Bühne skaliert in ganzen Gerätepixeln, solange das höchstens 15 % Größe kostet (geprüft in `e2e/desk.spec.ts` auf drei Fenstergrößen). Hover/Fokus: Pixel-Umriss + Name in der Zeile unter dem Bild; „Namen“ bzw. Taste N blendet alle Namen ein. Sprites nur, wo der Zustand fürs Spiel zählt: Monitorbild (C64-Farben, Zeilen angedeutet), LEDs, Radio-Skala, klingelnder Hörer, offene Schublade, Disketten; Fenster, Telefon, Päckchen und Zeitschrift bleiben wie im Bild (das Päckchen ist ab Spielbeginn offen). `DeviceArt.tsx` zeigt in der Detailansicht Ausschnitte derselben Szene, die Zeitschrift als eigenes Pixel-Titelbild („Heimcomputer-Journal 11/86“). Gemeinsame `Hotspot.tsx`; Hotspots sind `role="button"`, per Tab erreichbar,
-  mit `aria-label`; ihr Aussehen folgt dem Zustand (Hörer, LEDs, Schublade, Päckchen, Disketten, Tageszeit).
+- `ui/Desk.tsx` (`DeskScene`): Schreibtisch als Pixel-Szene, 384×216 Pixel, 32 Farben (`assets/desk/desk.png`, gebaut von `scripts/build-desk.py` aus `docs/00-raw/finalpixel.jpg`). Bild, Klickflächen (`DESK_AREAS`, Bildpixel) und Zustands-Sprites liegen in einem SVG; die Bühne skaliert in ganzen Gerätepixeln, solange das höchstens 15 % Größe kostet (geprüft in `e2e/desk.spec.ts` auf drei Fenstergrößen). Hover/Fokus: Pixel-Umriss + Name in der Zeile unter dem Bild; „Namen“ bzw. Taste N blendet alle Namen ein. Sprites nur, wo der Zustand fürs Spiel zählt: Monitorbild (C64-Farben, Zeilen angedeutet), LEDs, klingelnder Hörer, offene Schublade, Disketten; Fenster, Radio, Telefon und Zeitschrift bleiben wie im Bild. Das offene Päckchen ist reine Kulisse (kein Gegenstand, seit Spielstand-Schema 8); nur die Zeitschrift darin ist klickbar, und „Päckchen“/„Paket“ im Parser meinen die Zeitschrift. `DeviceArt.tsx` zeigt in der Detailansicht Ausschnitte derselben Szene, die Zeitschrift als eigenes Pixel-Titelbild („Heimcomputer-Journal 11/86“). Gemeinsame `Hotspot.tsx`; Hotspots sind `role="button"`, per Tab erreichbar,
+  mit `aria-label`; ihr Aussehen folgt dem Zustand (Hörer, LEDs, Schublade, Disketten, Tageszeit).
 - `ui/C64Panel.tsx`: 40×25-Raster, Größe über Container-Query-Einheiten skaliert; eigene Eingabe mit Fokusrahmen,
-  Sondertasten, Tastenmodus inkl. Fallback für mobile Bildschirmtastaturen.
-- `ui/AdventurePanel.tsx`: Protokoll (`role="log"`), Eingabe mit Historie.
+  Sondertasten, Tastenmodus inkl. Fallback für mobile Bildschirmtastaturen. `ui/MonitorCase.tsx` legt ein beiges
+  Monitorgehäuse um die Röhre (CSS-Gehäuse, SVG-Glasreflex, SVG-Frontleiste mit Reglern und Betriebs-LED,
+  Fantasiemodell „COLOR 14“); darunter die Tastenleiste mit Tastenkappen (F-Tasten hell, rechts).
+- `ui/AdventurePanel.tsx`: Protokoll (`role="log"`), Eingabe mit Historie. Fenster mit gestreifter Titelleiste;
+  jeder Absatz ist ein eigener Block – eigene Eingaben grün, alle Antworten, Durchsagen und Kommentare weiß.
+- Stil (Retro-Layout, `styles.css`): Tapete als SVG-Muster, Kopfleiste mit Raster-Balken und LCD-Werten (VT323),
+  kantige 3D-Schaltflächen. Detailansicht, Menü/Modals und Spielende-Dialoge sind „Pixel-Fenster“ (gestreifte
+  Titelleiste, Schließkästchen links, harter Schatten) in eigenen Farben über die Variablen `--win*`. Schriften
+  kommen lokal über `@fontsource` (Press Start 2P, Courier Prime für Detail- und Notiztexte, VT323; alle OFL). Hoher Kontrast schaltet
+  Muster, Verläufe und Papierfarben ab.
 - Barrierefreiheit: sichtbarer Fokus, Tastaturbedienung, Untertitel für Töne, Laufschrift als Text, reduzierte
   Bewegung (keine Animationen, statische Demo-Frames), Textgröße, hoher Kontrast.
 

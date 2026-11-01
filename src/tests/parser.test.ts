@@ -105,13 +105,10 @@ describe('Parser-Szenarien (GDD §19.1)', () => {
     expect(s.state.itemLocations.disk_archive).toBe('drawer');
   });
 
-  test('UNTERSUCHE PAKET, dann ÖFFNE ES öffnet das Paket (Pronomen)', () => {
+  test('Das Päckchen ist nur Kulisse: UNTERSUCHE PÄCKCHEN zeigt die Zeitschrift', () => {
     const s = new Session();
-    s.state.objectStates.package.open = false; // Spielstand von vor der Änderung: noch zugeklebt
-    s.a('UNTERSUCHE PAKET');
-    const out = s.a('ÖFFNE ES');
-    expect(s.state.objectStates.package.open).toBe(true);
-    expect(out).toMatch(/Päckchen/);
+    expect(s.a('UNTERSUCHE PÄCKCHEN')).toMatch(/Heimcomputer-Journal/);
+    expect(s.state.itemLocations.magazine).toBe('desk');
   });
 
   test('Unerreichbare oder unbekannte Dinge: keine erfundene Aktion', () => {

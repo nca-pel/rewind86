@@ -6,7 +6,7 @@
  * - Alles liegt in EINEM SVG in diesen Pixelkoordinaten: Bild, Klickflächen (DESK_AREAS), Zustands-Sprites.
  *   Dadurch passen Klickflächen auf jeder Auflösung; die Bühne skaliert in ganzen Gerätepixeln (scharf).
  * - Hover/Fokus: Umriss des Gegenstands + Name in der Zeile unter dem Bild; „Namen“ (Taste N) zeigt alle Namen.
- * - Kleine Animationen: klingelndes Telefon, LEDs, Radio-Skala. Fenster, Päckchen und Hörer bleiben wie im Bild.
+ * - Kleine Animationen: klingelndes Telefon, LEDs. Fenster, Radio, Päckchen (nur Kulisse) und Hörer bleiben wie im Bild.
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import deskUrl from '../assets/desk/desk.png';
@@ -46,7 +46,6 @@ export const DESK_AREAS: Record<string, string> = {
   coupler: 'M254 85H284V107H254Z',
   phone: 'M211 92H251V126H211Z',
   notebook: 'M74 143L100 136L125 157L97 167L84 164Z',
-  package: 'M200 152L232 140L262 130L300 128L326 137L318 158L290 176L242 177L205 165Z',
   magazine: 'M243 152L272 137L300 143L276 163Z',
   drawer: 'M229 176H317V203H229Z',
 };
@@ -192,10 +191,8 @@ export function DeskScene({
   const loc = state.itemLocations;
   const t = state.telecom;
   const drawerOpen = state.objectStates.drawer.open === true;
-  const pkgOpen = state.objectStates.package.open === true;
-  const radioOn = state.objectStates.radio.on === true;
   const inDrive = Object.entries(loc).find(([, l]) => l === 'drive')?.[0];
-  const magVisible = pkgOpen && (loc.magazine === 'package' || loc.magazine === 'desk');
+  const magVisible = loc.magazine === 'desk';
   const uid = useId().replace(/:/g, '');
   const ref = (n: string) => `${n}-${uid}`;
 
@@ -220,8 +217,7 @@ export function DeskScene({
   const handsetImg = <path d={HANDSET} fill={`url(#${ref('img')})`} />;
 
   const named = interactive && showNames;
-  const visibleAreas = (k: string) =>
-    (k !== 'magazine' || magVisible) && (k !== 'package' || loc.package === 'desk');
+  const visibleAreas = (k: string) => k !== 'magazine' || magVisible;
 
   return (
     <svg
@@ -244,7 +240,7 @@ export function DeskScene({
       {spot('window')}
       {spot('door')}
 
-      {spot('radio', radioOn && <R x={68} y={113} w={10} h={2} c={C.yellow} className="glow" />)}
+      {spot('radio')}
 
       {spot(
         'monitor',
@@ -286,8 +282,7 @@ export function DeskScene({
 
       {spot('notebook')}
 
-      {/* Päckchen und Zeitschrift: so wie im Bild (offen) */}
-      {loc.package === 'desk' && spot('package')}
+      {/* Zeitschrift: so wie im Bild (im offenen Päckchen, das nur Kulisse ist) */}
       {magVisible && spot('magazine')}
 
       {/* Disketten vorn auf dem Tisch */}

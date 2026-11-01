@@ -82,11 +82,6 @@ export function dynamicDescription(state: GameState, id: string): string {
         ? `Sie ist offen. Darin: ${listNames(items)}.`
         : 'Sie ist offen und – bis auf Kabelbinder und einen Kuli – leer.';
     }
-    case 'package': {
-      if (!state.objectStates.package.open) return '';
-      const items = itemsAt(state, 'package');
-      return items.length ? `Darin: ${listNames(items)}.` : 'Es ist leer.';
-    }
     default:
       return '';
   }

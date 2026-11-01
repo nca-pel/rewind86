@@ -18,7 +18,7 @@ export const MAX_SAVE_BYTES = 2 * 1024 * 1024;
 
 const flagValue = z.union([z.boolean(), z.number(), z.string()]);
 const clock = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
-const location = z.enum(['inventory', 'desk', 'drawer', 'package', 'drive', 'datasette', 'port', 'nowhere']);
+const location = z.enum(['inventory', 'desk', 'drawer', 'drive', 'datasette', 'port', 'nowhere']);
 const puzzleStatus = z.enum(['unknown', 'discovered', 'solving', 'solved', 'bypassed']);
 const color = z.number().int().min(0).max(15);
 const shortStr = z.string().max(2000);
@@ -295,6 +295,17 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
       itemLocations: { club_letter: 'nowhere', ...items },
       scheduledEvents: [...events, ...missing],
     };
+  },
+  7: (s) => {
+    // Das Päckchen ist kein eigener Gegenstand mehr: was darin lag, liegt jetzt auf dem Tisch
+    const items = Object.fromEntries(
+      Object.entries((s.itemLocations ?? {}) as Record<string, unknown>)
+        .filter(([id]) => id !== 'package')
+        .map(([id, loc]) => [id, loc === 'package' ? 'desk' : loc]),
+    );
+    const objectStates = { ...((s.objectStates ?? {}) as Record<string, unknown>) };
+    delete objectStates.package;
+    return { ...s, schemaVersion: 8, itemLocations: items, objectStates };
   },
   6: (s) => {
     const items = (s.itemLocations ?? {}) as Record<string, unknown>;

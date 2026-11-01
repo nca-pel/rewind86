@@ -45,7 +45,6 @@ test('kompletter Prolog bis zur Mailbox und „Fortsetzung folgt“', async ({ p
   await c64(page, 'LOAD"LADER",8');
   await c64(page, 'LIST');
   await expect(screen(page)).toContainText('910 DATA 52,49,57,55,51');
-  await adv(page, 'öffne das päckchen');
   await adv(page, 'lies die zeichentabelle');
   await expect(log(page)).toContainText('48 = 0');
 

@@ -4,7 +4,7 @@ import { evalCondition } from '../engine/conditions';
 import { milestoneState } from '../engine/dev';
 import { step } from '../engine/engine';
 import { migrate } from '../engine/save';
-import { createInitialState } from '../engine/state';
+import { SCHEMA_VERSION, createInitialState } from '../engine/state';
 import { Session } from './helpers';
 
 const B = GAME_CONFIG.btx;
@@ -160,7 +160,23 @@ describe('BTX (Ausbauplan Punkt 7)', () => {
     old.schemaVersion = 6;
     delete old.itemLocations.btx_kit;
     const m = migrate(old) as typeof old;
-    expect(m.schemaVersion).toBe(7);
+    expect(m.schemaVersion).toBe(SCHEMA_VERSION);
     expect(m.itemLocations.btx_kit).toBe('nowhere');
+  });
+
+  test('Migration 7 → 8: das Päckchen verschwindet, sein Inhalt liegt auf dem Tisch', () => {
+    const old = structuredClone(createInitialState()) as unknown as Record<string, unknown> & {
+      itemLocations: Record<string, string>;
+      objectStates: Record<string, unknown>;
+    };
+    old.schemaVersion = 7;
+    old.itemLocations.package = 'desk';
+    old.itemLocations.magazine = 'package';
+    old.objectStates.package = { open: false };
+    const m = migrate(old) as typeof old;
+    expect(m.schemaVersion).toBe(8);
+    expect(m.itemLocations.package).toBeUndefined();
+    expect(m.itemLocations.magazine).toBe('desk');
+    expect(m.objectStates.package).toBeUndefined();
   });
 });

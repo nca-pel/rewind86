@@ -82,7 +82,9 @@ export function GameScreen({ game }: { game: GameUi }) {
       )}
       {game.sliceEnd && (
         <div className="slice-end" role="dialog" aria-label="Ende des Ausschnitts">
-          <h2>Fortsetzung folgt …</h2>
+          <h2>
+            <span>Fortsetzung folgt …</span>
+          </h2>
           <p>
             Das war der Prolog von REWIND 1986. Die Geschichte geht weiter: Die nächsten Tage laufen als
             Alltag, und irgendwo muss sich finden lassen, was auf Diskette 2 steht.
@@ -94,7 +96,9 @@ export function GameScreen({ game }: { game: GameUi }) {
       )}
       {ending && !game.menuOpen && (
         <div className="slice-end game-over" role="alertdialog" aria-label={`Spielende: ${ending.title}`}>
-          <h2>Ende: {ending.title}</h2>
+          <h2>
+            <span>Ende: {ending.title}</span>
+          </h2>
           <p>{ending.text}</p>
           <div className="game-over-actions">
             <button type="button" onClick={game.undoGameOver} data-testid="undo-game-over">

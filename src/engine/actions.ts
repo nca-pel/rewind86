@@ -86,8 +86,6 @@ function obj(ctx: Ctx, intent: Verb, index: number, opts: ResolveOptions = {}): 
       else if (o.npc) ctx.say(`${capitalize(o.name)} ist nicht hier.`);
       else if (ctx.state.itemLocations[r.id] === 'nowhere')
         ctx.say(`${capitalize(o.name)} hast du (noch) nicht.`);
-      else if (ctx.state.itemLocations[o.partOf ?? r.id] === 'package')
-        ctx.say(`${capitalize(o.name)} steckt noch im geschlossenen Päckchen. (ÖFFNE PÄCKCHEN)`);
       else if (ctx.state.itemLocations[o.partOf ?? r.id] === 'drawer')
         ctx.say(`${capitalize(o.name)} liegt in der Schublade – und die ist zu. (ÖFFNE SCHUBLADE)`);
       else ctx.say(`Davon ist hier gerade nichts zu sehen.`);
@@ -177,14 +175,7 @@ function take(ctx: Ctx, id: string): number {
   if (loc === 'drive') return eject(ctx, id);
   if (loc === 'port') return kitOutOfPort(ctx);
   s.itemLocations[id] = 'inventory';
-  const from =
-    loc === 'drawer'
-      ? ' aus der Schublade'
-      : loc === 'package'
-        ? ' aus dem Päckchen'
-        : loc === 'datasette'
-          ? ' aus der Datasette'
-          : '';
+  const from = loc === 'drawer' ? ' aus der Schublade' : loc === 'datasette' ? ' aus der Datasette' : '';
   ctx.say(`Du nimmst ${o.acc}${from}.`);
   return DEFAULT_MINUTES;
 }
@@ -334,15 +325,6 @@ function open(ctx: Ctx, id: string): number {
         );
       }
       return DEFAULT_MINUTES;
-    case 'package':
-      if (s.objectStates.package.open) {
-        ctx.say('Das Päckchen ist schon offen.');
-        return 0;
-      }
-      s.objectStates.package.open = true;
-      ctx.say('Du reißt das Klebeband ab. Im Päckchen liegt die neue Ausgabe des »Heimcomputer-Journals«!');
-      s.parser.lastObjectId = 'magazine';
-      return DEFAULT_MINUTES;
     case 'door':
       ctx.say(
         'Du öffnest die Tür und schaust in den Flur. Unten läuft der Fernseher, aus der Küche riecht es nach Bratkartoffeln. Du machst die Tür wieder zu – dein Platz ist am Schreibtisch.',
@@ -370,8 +352,7 @@ function close(ctx: Ctx, id: string): number {
     }
     return DEFAULT_MINUTES;
   }
-  if (id === 'package') ctx.say('Das aufgerissene Päckchen lässt sich nicht wieder zukleben.');
-  else if (id === 'door') ctx.say('Die Tür ist zu.');
+  if (id === 'door') ctx.say('Die Tür ist zu.');
   else ctx.say(`${capitalize(OBJECT_BY_ID[id].name)} lässt sich nicht schließen.`);
   return 0;
 }
@@ -1072,8 +1053,7 @@ function verb(ctx: Ctx, intent: Verb): number {
     case 'search': {
       const id = obj(ctx, intent, direct.length ? 0 : (seg(intent, 'in', 'im')?.index ?? 0));
       if (!id) return 0;
-      if (id === 'drawer' || id === 'package')
-        return s.objectStates[id].open ? (ctx.say(describe(s, id)), 1) : open(ctx, id);
+      if (id === 'drawer') return s.objectStates[id].open ? (ctx.say(describe(s, id)), 1) : open(ctx, id);
       if (id === 'desk') return meta(ctx, { kind: 'meta', meta: 'look' });
       ctx.say(describe(s, id));
       return DEFAULT_MINUTES;

@@ -109,7 +109,6 @@ describe('Prolog (GDD §19.4, §18.1)', () => {
     s.c('LOAD"LADER",8');
     s.c('LIST');
     expect(s.has('data_lines')).toBe(true);
-    s.a('öffne päckchen');
     s.a('lies tabelle');
     expect(s.has('chr_table')).toBe(true);
     s.a('lies artikel');

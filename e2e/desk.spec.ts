@@ -1,8 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
 
-/** Gegenstände, die in einem anderen liegen: ein Klick auf die Mitte des Behälters darf den Inhalt treffen */
-const INSIDE: Record<string, string[]> = { package: ['magazine'] };
-
 /** Prüft, dass jede Klickfläche im Bild liegt und ein Klick auf ihre Mitte genau diesen Gegenstand trifft */
 async function checkHotspots(page: Page): Promise<string[]> {
   const svg = page.locator('svg.desk-svg');
@@ -26,7 +23,7 @@ async function checkHotspots(page: Page): Promise<string[]> {
       ({ x, y }) => document.elementFromPoint(x, y)?.closest('[data-hotspot]')?.getAttribute('data-hotspot'),
       { x: r.x + r.width / 2, y: r.y + r.height / 2 },
     );
-    expect([id, ...(INSIDE[id] ?? [])], `Mitte von ${id}`).toContain(hit);
+    expect(hit, `Mitte von ${id}`).toBe(id);
   }
   return ids;
 }
@@ -72,7 +69,7 @@ test('Schreibtisch-Szene: Klickflächen liegen auf den Gegenständen, bei jeder 
   await expect(page.getByTestId('detail-panel').locator('svg.device-crop')).toBeVisible();
 });
 
-test('Schreibtisch-Szene: Päckchen ist von Anfang an offen, Zeitschrift mit eigenem Titelbild', async ({
+test('Schreibtisch-Szene: nur die Zeitschrift ist klickbar (Päckchen ist Kulisse), mit eigenem Titelbild', async ({
   page,
 }) => {
   await page.goto('/');
@@ -81,6 +78,7 @@ test('Schreibtisch-Szene: Päckchen ist von Anfang an offen, Zeitschrift mit eig
   await input.fill('öffne schublade');
   await input.press('Enter');
   await expect(page.locator('svg.desk-svg [data-hotspot="magazine"]')).toHaveCount(1);
+  await expect(page.locator('svg.desk-svg [data-hotspot="package"]')).toHaveCount(0);
   await page.locator('[data-hotspot="magazine"]').click({ force: true });
   await expect(
     page.getByTestId('detail-panel').getByRole('img', { name: /Heimcomputer-Journal/ }),

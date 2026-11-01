@@ -93,7 +93,7 @@ export const PUZZLES: PuzzleDef[] = [
         hints: [
           'Die Zahlen in der DATA-Zeile liegen alle zwischen 48 und 57. Was könnten sie bedeuten?',
           'Vielleicht sind es Zeichencodes. In deiner neuen Zeitschrift gibt es eine Tabelle dazu.',
-          'Die Zeitschrift liegt im Päckchen: LIES ZEICHENTABELLE. Oder lass den C64 rechnen: z. B. 1000 FOR I=1 TO 5:READ A:PRINT CHR$(A);:NEXT – dann RUN 1000.',
+          'Die Zeitschrift liegt auf dem Schreibtisch: LIES ZEICHENTABELLE. Oder lass den C64 rechnen: z. B. 1000 FOR I=1 TO 5:READ A:PRINT CHR$(A);:NEXT – dann RUN 1000.',
         ],
       },
       {

@@ -25,7 +25,6 @@ export function isReachable(state: GameState, id: string): boolean {
     if (loc === 'inventory' || loc === 'desk' || loc === 'drive' || loc === 'datasette' || loc === 'port')
       return true;
     if (loc === 'drawer') return state.objectStates.drawer?.open === true;
-    if (loc === 'package') return state.objectStates.package?.open === true;
     return false;
   }
   return true;

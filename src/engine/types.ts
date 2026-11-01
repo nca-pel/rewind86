@@ -21,15 +21,7 @@ export type AbsenceKind = 'school' | 'sleep' | 'meal' | 'club';
 export type GameMode = 'title' | 'desk' | 'conversation';
 
 /** Orte, an denen sich bewegliche Gegenstände befinden können. */
-export type ItemLocation =
-  | 'inventory'
-  | 'desk'
-  | 'drawer'
-  | 'package'
-  | 'drive'
-  | 'datasette'
-  | 'port'
-  | 'nowhere';
+export type ItemLocation = 'inventory' | 'desk' | 'drawer' | 'drive' | 'datasette' | 'port' | 'nowhere';
 
 export type C64Color = number; // 0..15, C64-Palettenindex
 

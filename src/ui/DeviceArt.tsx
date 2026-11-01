@@ -108,7 +108,6 @@ const CROPS: Record<string, [number, number, number, number]> = {
   window: [0, 0, 72, 122],
   door: [296, 0, 88, 180],
   notebook: [68, 130, 64, 42],
-  package: [196, 122, 136, 60],
   drawer: [222, 170, 102, 46],
 };
 

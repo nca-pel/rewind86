@@ -101,7 +101,6 @@ describe('Schlüssel-Strang im Spiel (Ausbauplan Punkt 6)', () => {
 
   test('Lesertipps erklären den Trick (Hinweis ohne Lösung im Notizblock)', () => {
     const s = afterSlice();
-    s.a('öffne päckchen');
     expect(s.a('lies lesertipps')).toContain('53281');
     expect(s.has('hidden_text')).toBe(true);
   });

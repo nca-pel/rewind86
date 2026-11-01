@@ -13,6 +13,30 @@
   --focus: #ffd27a;
   --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-retro: 'Press Start 2P', ui-monospace, monospace;
+  --font-type: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+  --font-lcd: 'VT323', ui-monospace, monospace;
+  /* Kanten für 3D-Schaltflächen (hell oben/links, dunkel unten/rechts) */
+  --bevel-hi: #8a7158;
+  --bevel-lo: #120c08;
+  --btn: #4a3829;
+  /* Fenster im Stil später Heimcomputer-Oberflächen – eigene Farben */
+  --win: #e8dec6;
+  --win-ink: #1f1a14;
+  --win-muted: #574c3e;
+  --win-title: #8a2b1b;
+  --win-hi: #fffaf0;
+  --win-lo: #8f826a;
+  /* Raster-Balken (Demoszene) */
+  --raster: linear-gradient(
+    180deg,
+    #ffe9a0 0 14%,
+    #f7c14a 14% 28%,
+    #f08a2c 28% 42%,
+    #e0562f 42% 56%,
+    #c43a5a 56% 70%,
+    #8c3d9a 70% 84%,
+    #4d4bb8 84%
+  );
   color-scheme: dark;
 }
 html {
@@ -32,6 +56,15 @@ html[data-contrast='high'] {
   --muted: #ddd;
   --line: #fff;
   --accent: #ffdd00;
+  --bevel-hi: #fff;
+  --bevel-lo: #fff;
+  --btn: #000;
+  --win: #000;
+  --win-ink: #fff;
+  --win-muted: #ddd;
+  --win-title: #ffdd00;
+  --win-hi: #fff;
+  --win-lo: #fff;
 }
 * {
   box-sizing: border-box;
@@ -49,20 +82,26 @@ select {
   font: inherit;
   color: inherit;
 }
+/* Schaltflächen: kantige 3D-Knöpfe wie auf Heimcomputer-Oberflächen; gedrückt kehrt sich die Kante um */
 button {
-  background: var(--panel-2);
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  background: var(--btn);
+  border: 2px solid;
+  border-color: var(--bevel-hi) var(--bevel-lo) var(--bevel-lo) var(--bevel-hi);
+  border-radius: 0;
   padding: 0.35rem 0.7rem;
   cursor: pointer;
   min-height: 2.2rem;
 }
 button:hover {
-  border-color: var(--accent);
+  background: #5a4431;
+}
+button:active,
+button[aria-pressed='true'] {
+  border-color: var(--bevel-lo) var(--bevel-hi) var(--bevel-hi) var(--bevel-lo);
 }
 button[aria-pressed='true'] {
-  background: #4a3824;
-  border-color: var(--accent);
+  background: #6a4a26;
+  color: #ffe6b0;
 }
 input,
 select {
@@ -111,11 +150,29 @@ select {
 }
 .title-box h1 {
   font-size: clamp(1.6rem, 7vw, 3.2rem);
-  text-shadow: 4px 4px 0 #6c5eb5;
+  filter: drop-shadow(4px 4px 0 #2a1f4a);
+}
+/* Schriftzug mit Raster-Balken wie in einem Demo-Intro: Farbverlauf in harten Stufen, durch die Schrift gestanzt */
+.title-box h1,
+.logo {
+  background: var(--raster);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .title-box h1 span,
 .logo span {
-  color: var(--accent-2);
+  background: linear-gradient(180deg, #e6f6ff 0 20%, #8fc7ff 20% 45%, #4d8ce8 45% 70%, #3a4cc8 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+html[data-contrast='high'] .title-box h1,
+html[data-contrast='high'] .logo,
+html[data-contrast='high'] .title-box h1 span,
+html[data-contrast='high'] .logo span {
+  background: none;
+  color: var(--accent);
 }
 .tagline {
   font-size: 1.1rem;
@@ -129,8 +186,10 @@ select {
   margin: 0 auto;
 }
 .title-buttons button {
-  font-size: 1.05rem;
-  padding: 0.7rem;
+  font-family: var(--font-retro);
+  font-size: 0.75rem;
+  padding: 0.8rem;
+  text-transform: uppercase;
 }
 .disclaimer {
   margin-top: 2rem;
@@ -162,47 +221,122 @@ select {
 }
 
 /* ---------------------------------------------------------------- Spiel-Layout */
+/* Hintergrund: Tapete mit Rautenmuster in gedeckten Brauntönen, wie im Jugendzimmer 1986 */
 .game {
   height: 100dvh;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='%23f2b84b' stroke-opacity='.07' stroke-width='2'%3E%3Cpath d='M28 4 52 28 28 52 4 28Z'/%3E%3Cpath d='M28 16 40 28 28 40 16 28Z' stroke-opacity='.05'/%3E%3C/g%3E%3Ccircle cx='0' cy='0' r='3' fill='%23c4704a' fill-opacity='.12'/%3E%3Ccircle cx='56' cy='0' r='3' fill='%23c4704a' fill-opacity='.12'/%3E%3Ccircle cx='0' cy='56' r='3' fill='%23c4704a' fill-opacity='.12'/%3E%3Ccircle cx='56' cy='56' r='3' fill='%23c4704a' fill-opacity='.12'/%3E%3C/svg%3E"),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.25), transparent 12%, transparent 88%, rgba(0, 0, 0, 0.25));
 }
+html[data-contrast='high'] .game {
+  background-image: none;
+}
+/* Kopfleiste: dunkles Kunststoffgehäuse, unten ein Streifen Raster-Balken */
 .status-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem 1rem;
-  padding: 0.4rem 0.8rem;
-  background: #120d0a;
-  border-bottom: 1px solid var(--line);
+  padding: 0.45rem 0.8rem calc(0.45rem + 7px);
+  background:
+    linear-gradient(
+        180deg,
+        #f7c14a 0 1px,
+        transparent 1px 2px,
+        #f08a2c 2px 3px,
+        transparent 3px 4px,
+        #e0562f 4px 5px,
+        transparent 5px 6px,
+        #8c3d9a 6px 7px
+      )
+      bottom / 100% 7px no-repeat,
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #2a211b, #15100c);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 2;
+}
+html[data-contrast='high'] .status-bar {
+  background: #000;
+  border-bottom: 2px solid #fff;
+  padding-bottom: 0.45rem;
 }
 .logo {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  animation: raster 6s steps(12) infinite;
+  background-size: 100% 200%;
 }
+@keyframes raster {
+  50% {
+    background-position: 0 100%;
+  }
+}
+/* Werte als LCD-Anzeige wie auf einer Digitaluhr */
 .status-values {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.2rem 0.9rem;
+  gap: 0.3rem 0.4rem;
   margin: 0;
 }
 .status-values div {
   display: flex;
-  gap: 0.3rem;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.25rem 0.3rem 0.3rem;
+  background: linear-gradient(180deg, #3a2f26, #251d17);
+  border: 2px solid;
+  border-color: #6b5a48 #0d0a07 #0d0a07 #6b5a48;
+  border-radius: 3px;
+  min-width: 4.2rem;
 }
+/* Beschriftung auf dem Gehäuse über dem Anzeigefenster */
 .status-values dt {
-  color: var(--muted);
+  padding: 0 0.15rem;
+  font-family: var(--font-retro);
+  font-size: 0.45rem;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d9cbb2;
 }
+/* LCD-Fenster wie auf einer Digitaluhr */
 .status-values dd {
   margin: 0;
-  font-variant-numeric: tabular-nums;
+  padding: 0.15rem 0.4rem 0.1rem;
+  background: linear-gradient(180deg, #9da98a, #b7c2a0 40%, #aab595);
+  border: 1px solid #0d0a07;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.4);
+  font-family: var(--font-lcd);
+  font-size: 1.35rem;
+  line-height: 1;
+  color: #141a10;
+  text-shadow: 1px 1px 0 rgba(20, 26, 16, 0.18);
+  white-space: nowrap;
 }
 .line-online,
 .line-klingelt {
-  color: var(--accent);
-  font-weight: bold;
+  font-weight: normal;
+}
+.line-klingelt {
+  animation: blink 0.6s steps(1) infinite;
 }
 .line-belegt {
-  color: var(--danger);
+  color: #7a1010 !important;
+}
+html[data-contrast='high'] .status-values div {
+  background: #000;
+  border-color: #fff;
+}
+html[data-contrast='high'] .status-values dt,
+html[data-contrast='high'] .status-values dd {
+  color: #fff !important;
+}
+html[data-contrast='high'] .status-values dd {
+  background: #000;
+  border-color: #fff;
 }
 .inventory {
   display: flex;
@@ -213,16 +347,45 @@ select {
 .inv-label,
 .inv-empty {
   color: var(--muted);
+  font-family: var(--font-retro);
+  font-size: 0.55rem;
+  text-transform: uppercase;
 }
+/* Gegenstände in der Hand: kleine Karteikarten-Etiketten */
 .inv-item {
   min-height: 1.8rem;
   padding: 0.1rem 0.5rem;
-  font-size: 0.85rem;
+  font-family: var(--font-type);
+  font-weight: 700;
+  font-size: 0.9rem;
+  background: #efe6cf;
+  color: #2a2016;
+  border-color: #fffaf0 #8f826a #8f826a #fffaf0;
+}
+.inv-item:hover {
+  background: #fff6dc;
 }
 .status-actions {
   margin-left: auto;
   display: flex;
   gap: 0.3rem;
+}
+.status-actions button {
+  font-family: var(--font-retro);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+}
+.modal input[type='checkbox'],
+.modal input[type='range'] {
+  accent-color: var(--win-title);
+  min-height: 0;
+  padding: 0;
+  vertical-align: middle;
+}
+.modal input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0 0.3rem 0 0;
 }
 .mobile-tabs {
   display: none;
@@ -266,6 +429,7 @@ select {
   border: 1px solid var(--line);
   background: #19120e;
   image-rendering: pixelated;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
 }
 .desk-svg image,
 .device-crop image {
@@ -322,7 +486,7 @@ select {
   background: #f2cf3a;
   color: #19120e;
 }
-/* Animationen: Regen, Laterne, LEDs, Radio-Skala */
+/* Animationen: Regen, Laterne, LEDs */
 .desk-scene .rain {
   animation: rain 0.6s steps(3) infinite;
 }
@@ -354,9 +518,6 @@ select {
     opacity: 0;
   }
 }
-.desk-scene .glow {
-  animation: flicker 4s steps(1) infinite;
-}
 .ring-mark {
   animation: blink 0.5s steps(1) infinite;
 }
@@ -376,20 +537,122 @@ select {
   max-height: calc(100% - 1rem);
   transform-origin: 0 0;
   overflow: auto;
-  background: rgba(18, 12, 9, 0.95);
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  padding: 0.6rem 0.8rem;
+  padding: 0 0.8rem 0.7rem;
 }
-.detail-head {
+/* ------------------------------------------------ Pixel-Fenster (Detailansicht, Menü, Dialoge)
+   Eigene Gestaltung nach dem Vorbild später 80er-Heimcomputer-Oberflächen: harter Rand, Schlagschatten
+   ohne Weichzeichnung, gestreifte Titelleiste mit Schließkästchen und eingelassener Titel. */
+.detail-panel,
+.modal,
+.slice-end {
+  background: var(--win);
+  color: var(--win-ink);
+  border: 2px solid #0d0a07;
+  border-radius: 0;
+  box-shadow:
+    inset 2px 2px 0 var(--win-hi),
+    inset -2px -2px 0 var(--win-lo),
+    6px 6px 0 rgba(0, 0, 0, 0.55);
+  --ink: var(--win-ink);
+  --muted: var(--win-muted);
+  --line: var(--win-lo);
+  --accent: var(--win-title);
+  --btn: #d9ceb3;
+  --bevel-hi: var(--win-hi);
+  --bevel-lo: #5f5444;
+}
+.detail-panel button:hover,
+.modal button:hover,
+.slice-end button:hover {
+  background: #e9dfc6;
+}
+.detail-panel button[aria-pressed='true'],
+.modal button[aria-pressed='true'] {
+  background: #bfae88;
+  color: var(--win-ink);
+}
+.detail-panel input:not([type='checkbox']):not([type='range']),
+.detail-panel select,
+.modal input:not([type='checkbox']):not([type='range']),
+.modal select {
+  background: #fffaf0;
+  color: var(--win-ink);
+  border: 2px solid;
+  border-color: #5f5444 var(--win-hi) var(--win-hi) #5f5444;
+  border-radius: 0;
+}
+.detail-head,
+.modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
+  margin: 0 -0.8rem 0.6rem;
+  padding: 0.3rem 0.5rem;
+  background:
+    repeating-linear-gradient(180deg, #3b3127 0 2px, transparent 2px 4px) center / 100% 60% no-repeat,
+    var(--win);
+  border-bottom: 2px solid #0d0a07;
 }
-.detail-head h2 {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--accent);
+.detail-head h2,
+.modal-head h2 {
+  margin: 0 auto;
+  padding: 0.15rem 0.6rem;
+  background: var(--win);
+  font-family: var(--font-retro);
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--win-ink);
+  text-transform: uppercase;
+  text-align: center;
+}
+/* Schließkästchen: links in der Titelleiste, ein kleines Quadrat im Quadrat */
+.detail-head .close,
+.modal-head .close {
+  order: -1;
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  min-height: 0;
+  padding: 0;
+  font-size: 0;
+  background: var(--win);
+  border: 2px solid #0d0a07;
+  box-shadow: inset 2px 2px 0 var(--win-hi);
+  position: relative;
+}
+.detail-head .close::after,
+.modal-head .close::after {
+  content: '';
+  position: absolute;
+  inset: 0.32rem;
+  border: 2px solid #0d0a07;
+  background: var(--win);
+}
+.detail-head .close:active::after,
+.modal-head .close:active::after {
+  background: #0d0a07;
+}
+html[data-contrast='high'] .detail-head,
+html[data-contrast='high'] .modal-head {
+  background: #000;
+  border-bottom-color: #fff;
+}
+html[data-contrast='high'] .detail-panel,
+html[data-contrast='high'] .modal,
+html[data-contrast='high'] .slice-end {
+  border-color: #fff;
+  --btn: #000;
+  --bevel-lo: #fff;
+}
+html[data-contrast='high'] .detail-head .close,
+html[data-contrast='high'] .modal-head .close,
+html[data-contrast='high'] .detail-head .close::after,
+html[data-contrast='high'] .modal-head .close::after {
+  background: #000;
+  border-color: #fff;
 }
 .detail-text {
   margin: 0 0 0.5rem;
@@ -420,31 +683,12 @@ select {
   color: var(--muted);
   margin: 0.4rem 0 0;
 }
-.close {
-  min-height: 1.8rem;
-  padding: 0 0.5rem;
+.detail-panel .detail-text {
+  font-family: var(--font-type);
+  font-size: 1.02rem;
 }
 
 /* ---------------------------------------------------------------- Panels */
-.c64-panel,
-.adventure-panel {
-  background: var(--panel);
-  border: 2px solid var(--line);
-  border-radius: 8px;
-  padding: 0.5rem;
-}
-.c64-panel.input-focused {
-  border-color: var(--c64);
-}
-.adventure-panel.input-focused {
-  border-color: var(--accent);
-}
-.adventure-panel {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 12rem;
-}
 .panel-title {
   display: flex;
   gap: 0.6rem;
@@ -457,7 +701,6 @@ select {
   font-family: var(--font-retro);
   font-size: 0.65rem;
   padding: 0.25rem 0.4rem;
-  border-radius: 4px;
   color: #000;
 }
 .c64-badge {
@@ -466,66 +709,251 @@ select {
 .adv-badge {
   background: var(--accent);
 }
-.log {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 0.3rem;
-}
-.log-entry {
-  margin: 0 0 0.5rem;
-  white-space: pre-wrap;
-}
-.log-echo {
-  color: var(--accent-2);
-  font-weight: 600;
-  margin-top: 0.8rem;
-}
-.log-dialog {
-  color: #ffe08a;
-}
-.log-thought {
-  color: #cdbcff;
-  font-style: italic;
-}
-.log-system {
-  color: #a9c7a9;
-  font-size: 0.9em;
-}
-.log-caption {
-  color: #c8c8c8;
-  font-style: italic;
-  font-size: 0.9em;
-}
-.log-error {
-  color: var(--danger);
-}
-.adv-form {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-  padding-top: 0.4rem;
-  border-top: 1px solid var(--line);
-}
-.adv-form input {
-  flex: 1;
-  min-width: 0;
-  font-size: 1.05rem;
-}
 .prompt {
   font-family: var(--font-retro);
   font-size: 0.7rem;
   color: var(--muted);
 }
 
-/* ---------------------------------------------------------------- C64 */
+/* ------------------------------------------------ Adventure-Protokoll
+   Fenster wie die Dialoge (gestreifte Titelleiste). Jeder Absatz ist ein eigener Block: eigene Eingaben
+   grün hinterlegt, alle Antworten, Durchsagen und Kommentare weiß – gut lesbar in normaler Schrift. */
+.adventure-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 12rem;
+  background: var(--win);
+  color: var(--win-ink);
+  border: 2px solid #0d0a07;
+  box-shadow:
+    inset 2px 2px 0 var(--win-hi),
+    inset -2px -2px 0 var(--win-lo),
+    6px 6px 0 rgba(0, 0, 0, 0.45);
+}
+.adventure-panel .panel-title {
+  margin: 0;
+  padding: 0.3rem 0.5rem;
+  gap: 0.5rem;
+  background:
+    repeating-linear-gradient(180deg, #3b3127 0 2px, transparent 2px 4px) center / 100% 60% no-repeat,
+    var(--win);
+  border-bottom: 2px solid #0d0a07;
+}
+.adventure-panel .adv-badge,
+.adventure-panel .panel-hint {
+  padding: 0.15rem 0.5rem;
+  background: var(--win);
+  color: var(--win-ink);
+}
+.adventure-panel .adv-badge {
+  font-size: 0.7rem;
+}
+.adventure-panel .panel-hint {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--win-muted);
+}
+.adventure-panel .log {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  background: #cfc6b2;
+  box-shadow: inset 2px 2px 0 #8f826a;
+}
+.log-entry {
+  margin: 0 0 0.5rem;
+  white-space: pre-wrap;
+}
+.adventure-panel .log-entry {
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+  background: #fff;
+  color: #1d1a16;
+  border: 1px solid #a99c82;
+  line-height: 1.5;
+}
+.adventure-panel .log-entry.log-echo {
+  margin-top: 0.5rem;
+  background: #cdeac0;
+  color: #12401a;
+  border-color: #6fa060;
+  border-left: 4px solid #2f7a35;
+  font-weight: 700;
+}
+.adventure-panel .log-entry:first-child {
+  margin-top: 0;
+}
+.log-dialog .speaker {
+  color: #6b2a10;
+}
+.log-thought {
+  font-style: italic;
+  color: #3f2a6a !important;
+}
+.log-caption {
+  font-style: italic;
+  color: #3d4038 !important;
+}
+.log-system {
+  color: #2b4a2b !important;
+}
+.log-error {
+  color: #8f1414 !important;
+}
+/* Eingabe: beige Gehäuseleiste unter dem Protokoll */
+.adv-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  border-top: 2px solid #0d0a07;
+  background: var(--win);
+  color: var(--win-ink);
+}
+.adv-form .prompt {
+  color: var(--win-ink);
+}
+.adv-form input {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.05rem;
+  background: #fff;
+  color: #1d1a16;
+  border: 2px solid;
+  border-color: #5f5444 var(--win-hi) var(--win-hi) #5f5444;
+  border-radius: 0;
+}
+.adv-form input::placeholder {
+  color: #6c6e66;
+}
+.adv-form button {
+  --btn: #d9ceb3;
+  --bevel-hi: var(--win-hi);
+  --bevel-lo: #5f5444;
+  color: var(--win-ink);
+  font-family: var(--font-retro);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+}
+.adv-form button:hover {
+  background: #e9dfc6;
+}
+.adventure-panel.input-focused {
+  outline: 3px solid var(--accent);
+}
+html[data-contrast='high'] .adventure-panel,
+html[data-contrast='high'] .adventure-panel .panel-title,
+html[data-contrast='high'] .adventure-panel .adv-badge,
+html[data-contrast='high'] .adventure-panel .panel-hint,
+html[data-contrast='high'] .adventure-panel .log,
+html[data-contrast='high'] .adv-form,
+html[data-contrast='high'] .adv-form input {
+  background: #000;
+  color: #fff;
+  border-color: #fff;
+  box-shadow: none;
+}
+html[data-contrast='high'] .adventure-panel .log-entry {
+  background: #000;
+  color: #fff !important;
+  border-color: #fff;
+}
+html[data-contrast='high'] .adventure-panel .log-entry.log-echo {
+  color: #ffdd00 !important;
+  border-color: #ffdd00;
+}
+
+/* ------------------------------------------------ Farbmonitor
+   Beiges Gehäuse, tief eingelassene Röhre mit schwarzem Rand, Glasreflex (SVG) und Frontleiste (SVG). */
+.c64-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.monitor {
+  position: relative;
+  padding: 4.5% 4.5% 0;
+  background: radial-gradient(ellipse at 30% 0%, rgba(255, 255, 255, 0.35), transparent 55%),
+    linear-gradient(180deg, #e6dcc3 0%, #d6c9a9 55%, #c4b590 100%);
+  border-radius: 16px 16px 10px 10px;
+  box-shadow:
+    inset 2px 2px 0 rgba(255, 255, 255, 0.55),
+    inset -3px -3px 0 rgba(90, 74, 50, 0.45),
+    0 2px 0 #8e7f60,
+    0 10px 22px rgba(0, 0, 0, 0.55);
+}
+/* Fuge zwischen Gehäuse und Röhrenrahmen */
+.monitor-bezel {
+  padding: 3%;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #c3b592, #d9cdae);
+  box-shadow:
+    inset 3px 3px 6px rgba(70, 56, 36, 0.55),
+    inset -2px -2px 0 rgba(255, 255, 255, 0.5);
+}
+.c64-panel.input-focused .monitor {
+  box-shadow:
+    inset 2px 2px 0 rgba(255, 255, 255, 0.55),
+    inset -3px -3px 0 rgba(90, 74, 50, 0.45),
+    0 0 0 3px var(--c64),
+    0 10px 22px rgba(0, 0, 0, 0.55);
+}
+.monitor-front {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 1%;
+}
+.monitor-brand {
+  font-family: var(--font-retro);
+  font-size: 8px;
+  fill: #e6dcc3;
+  letter-spacing: 1px;
+}
+.monitor-label {
+  font-family: var(--font-retro);
+  font-size: 4.5px;
+  fill: #5a4c38;
+}
+.monitor-led.on {
+  animation: led 3s ease-in-out infinite;
+}
+@keyframes led {
+  50% {
+    fill: #ff8a68;
+  }
+}
+.monitor-glass {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: 10px / 12px;
+}
 .c64-frame {
   position: relative;
-  border-radius: 14px;
+  border-radius: 10px / 12px;
   overflow: hidden;
   background: #0b0c0b;
   padding: 2.2%;
-  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.8);
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.9),
+    0 0 0 2px #2b241d;
   cursor: text;
+}
+html[data-contrast='high'] .monitor,
+html[data-contrast='high'] .monitor-bezel {
+  background: #000;
+  border: 2px solid #fff;
+  box-shadow: none;
+}
+html[data-contrast='high'] .monitor-glass {
+  display: none;
 }
 /* Sichtbares Bild inkl. Rahmen: 384×272 PAL-Pixel, Seitenverhältnis per Inline-Style */
 .c64-display {
@@ -651,11 +1079,25 @@ select {
   height: 100%;
   image-rendering: pixelated;
 }
+/* ------------------------------------------------ Tastatur-Leiste vor dem Monitor
+   Braunes Gehäuse mit Eingabezeile und echten Tastenkappen: Kappe mit hellerer Oberfläche, beim Drücken sinkt sie ein. */
+.keyboard-deck {
+  padding: 0.6rem 0.7rem 0.75rem;
+  background: repeating-linear-gradient(90deg, transparent 0 3px, rgba(0, 0, 0, 0.06) 3px 4px),
+    linear-gradient(180deg, #6a5848, #4e3f33 30%, #3e3229);
+  border-radius: 6px 6px 12px 12px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.35),
+    0 8px 16px rgba(0, 0, 0, 0.5);
+}
 .c64-input-row {
   display: flex;
   gap: 0.4rem;
   align-items: center;
-  margin-top: 0.5rem;
+}
+.keyboard-deck .prompt {
+  color: #d9cbb2;
 }
 .c64-input {
   flex: 1;
@@ -665,66 +1107,129 @@ select {
   text-transform: uppercase;
   background: #352879;
   color: #b5adf0;
-  border-color: #6c5eb5;
+  border: 2px solid;
+  border-color: #1a1410 #8a7562 #8a7562 #1a1410;
+  border-radius: 0;
+}
+.c64-input::placeholder {
+  color: #8f86d4;
 }
 .special-keys {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.4rem;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+.special-keys button {
+  position: relative;
+  min-width: 2.9rem;
+  min-height: 2.5rem;
+  padding: 0.2rem 0.45rem 0.45rem;
+  font-family: var(--font-retro);
+  font-size: 0.55rem;
+  color: #f1e6d2;
+  background: linear-gradient(180deg, #5d4c40 0 72%, #3a2e26 72%);
+  border: 1px solid #140e0a;
+  border-radius: 4px;
+  box-shadow:
+    inset 3px 2px 0 -1px #7a675a,
+    inset -2px 0 0 #3a2e26,
+    0 2px 0 #140e0a;
+  transition: transform 60ms;
+}
+.special-keys button:hover {
+  background: linear-gradient(180deg, #6b5a4c 0 72%, #3a2e26 72%);
+}
+.special-keys button:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 3px 2px 0 -1px #7a675a,
+    0 0 0 #140e0a;
+}
+/* Funktionstasten: hellgraue Kappen in einem eigenen Block */
+.special-keys button[data-key^='F'] {
+  color: #2a2016;
+  background: linear-gradient(180deg, #d8d0c0 0 72%, #9e9584 72%);
+  box-shadow:
+    inset 3px 2px 0 -1px #f4efe4,
+    inset -2px 0 0 #9e9584,
+    0 2px 0 #140e0a;
+}
+.special-keys button[data-key='F1'] {
+  margin-left: auto;
+}
+.special-keys button[data-key^='F']:hover {
+  background: linear-gradient(180deg, #e6dfd1 0 72%, #9e9584 72%);
+}
+.special-keys button[data-key='SPACE'] {
+  flex: 1 1 5rem;
 }
 .special-keys button[data-key='ARROW_LEFT'] {
   font-family: var(--font-ui);
   font-size: 1rem;
 }
-.special-keys button {
-  font-family: var(--font-retro);
-  font-size: 0.6rem;
-  background: #4a4136;
-  min-width: 2.6rem;
+html[data-contrast='high'] .keyboard-deck {
+  background: #000;
+  border: 2px solid #fff;
+}
+html[data-contrast='high'] .special-keys button,
+html[data-contrast='high'] .special-keys button[data-key^='F'] {
+  background: #000;
+  color: #fff;
+  border-color: #fff;
+  box-shadow: none;
 }
 
 /* ---------------------------------------------------------------- Modals */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  /* gerastertes Abdunkeln wie bei Heimcomputer-Oberflächen (Schachbrett statt Transparenz) */
+  background: repeating-conic-gradient(rgba(0, 0, 0, 0.55) 0 25%, rgba(0, 0, 0, 0.25) 0 50%) 0 0 / 4px 4px;
   display: grid;
   place-items: center;
   z-index: 20;
   padding: 1rem;
 }
 .modal {
-  background: var(--panel);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
   width: min(44rem, 100%);
   max-height: 90dvh;
   overflow: auto;
-  padding: 0.8rem 1rem 1rem;
-}
-.modal-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.modal-head h2 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: var(--accent);
+  padding: 0 0.8rem 1rem;
 }
 .modal h3 {
   margin: 1rem 0 0.4rem;
-  font-size: 1rem;
+  font-family: var(--font-retro);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--win-title);
+  border-bottom: 2px solid var(--win-lo);
+  padding-bottom: 0.3rem;
 }
+/* Notizblock: Fenster mit liniertem Papier */
 .notebook {
-  background: #f8f1d9;
+  --win: #f8f1d9;
+  background: repeating-linear-gradient(
+      180deg,
+      transparent 0 1.55rem,
+      rgba(70, 110, 170, 0.18) 1.55rem calc(1.55rem + 1px)
+    ),
+    linear-gradient(
+      90deg,
+      transparent 2.2rem,
+      rgba(200, 60, 60, 0.35) 2.2rem calc(2.2rem + 1px),
+      transparent 0
+    ),
+    #f8f1d9;
   color: #2a2a3a;
   --muted: #5a5a6a;
-  --line: #c9bfa0;
 }
-.notebook .modal-head h2 {
-  color: #8a2b1b;
+.notebook .modal-body {
+  font-family: var(--font-type);
+}
+html[data-contrast='high'] .notebook {
+  background: #000;
+  color: #fff;
 }
 .notebook input {
   background: #fffdf2;
@@ -803,18 +1308,35 @@ select {
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: 25;
-  background: #120d14;
-  border: 2px solid var(--accent);
-  border-radius: 10px;
-  padding: 1.2rem;
+  padding: 0 1.2rem 1.2rem;
   width: min(30rem, 92vw);
   text-align: center;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
 }
+/* Titelleiste aus der Überschrift: gestreift, Text auf ausgesparter Fläche */
 .slice-end h2 {
+  margin: 0 -1.2rem 1rem;
+  padding: 0.35rem 0.5rem;
+  background:
+    repeating-linear-gradient(180deg, #3b3127 0 2px, transparent 2px 4px) center / 100% 60% no-repeat,
+    var(--win);
+  border-bottom: 2px solid #0d0a07;
   font-family: var(--font-retro);
-  font-size: 1rem;
-  color: var(--accent);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--win-ink);
+  text-align: center;
+}
+.slice-end h2 span {
+  padding: 0.1rem 0.6rem;
+  background: var(--win);
+}
+html[data-contrast='high'] .slice-end h2 {
+  background: #000;
+  border-bottom-color: #fff;
+}
+.slice-end p {
+  font-family: var(--font-type);
+  font-size: 1.02rem;
 }
 .game-over {
   text-align: left;
@@ -839,11 +1361,42 @@ select {
   pointer-events: none;
   max-width: 22rem;
 }
+/* Meldung wie eine Statuszeile: schwarzes Feld, Bernstein-Schrift, harter Schatten */
 .toast:not(:empty) {
-  background: #120d0a;
-  border: 1px solid var(--accent);
-  border-radius: 6px;
+  background: #0d0a07;
+  color: #ffc45a;
+  border: 2px solid #ffc45a;
   padding: 0.5rem 0.8rem;
+  font-family: var(--font-lcd);
+  font-size: 1.25rem;
+  line-height: 1.1;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Desktop: Monitor so breit, dass Monitor (Höhe ≈ 0,87 × Breite) und Tastenleiste ohne Scrollen in die Spalte passen.
+   Die Tastenleiste bleibt volle Breite und bricht nicht um, damit ihre Höhe fest bleibt. */
+@media (min-width: 900px) {
+  .c64-area {
+    container-type: size;
+  }
+  .monitor {
+    width: min(100%, calc((100cqh - 7.9rem) / 0.87));
+    margin: 0 auto;
+  }
+  .special-keys {
+    flex-wrap: nowrap;
+  }
+  .special-keys button {
+    min-width: 0;
+    flex: 1 1 auto;
+    padding-inline: 0.35rem;
+  }
+  .special-keys button[data-key='SPACE'] {
+    flex: 3 1 auto;
+  }
+  .special-keys button[data-key='F1'] {
+    margin-left: 0.6rem;
+  }
 }
 
 /* ---------------------------------------------------------------- Mobil */
@@ -858,14 +1411,37 @@ select {
   .status-actions {
     margin-left: 0;
   }
+  .status-actions button {
+    min-height: 1.9rem;
+    padding: 0.2rem 0.45rem;
+  }
+  .logo {
+    font-size: 0.75rem;
+  }
+  .status-values div {
+    min-width: 0;
+    padding: 0.2rem 0.25rem 0.25rem;
+  }
+  .status-values dd {
+    font-size: 1.1rem;
+  }
   .mobile-tabs {
     display: flex;
     gap: 0.3rem;
     padding: 0.3rem 0.6rem;
-    background: #120d0a;
+    background: #15100c;
   }
   .mobile-tabs button {
     flex: 1;
+    font-family: var(--font-retro);
+    font-size: 0.55rem;
+    text-transform: uppercase;
+  }
+  .adventure-panel .log {
+    padding: 0.35rem;
+  }
+  .adventure-panel .log-entry {
+    padding: 0.4rem 0.5rem;
   }
   .main-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -895,6 +1471,14 @@ select {
   /* Tooltips gibt es auf Touch-Geräten nicht – der Hinweis kostet hier nur Platz */
   .detail-panel .detail-note {
     display: none;
+  }
+  .detail-panel .detail-text {
+    font-size: 0.92rem;
+    line-height: 1.35;
+  }
+  .detail-head {
+    margin-bottom: 0.4rem;
+    padding: 0.2rem 0.4rem;
   }
   .c64-area {
     max-height: 62dvh;
