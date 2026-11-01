@@ -239,4 +239,46 @@ describe('Akt 2: Clubabend und GHOST', () => {
     dev(s, 'zeit +20');
     expect(s.state.flags.gameOver).toBe('end_cover');
   });
+
+  describe('Seidels Anruf im Finale', () => {
+    function seidelRings(): Session {
+      const s = new Session();
+      s.a('nimm hörer');
+      s.a('lege auf');
+      s.a('warte');
+      dev(s, `zeit ${GAME_CONFIG.finale.seidelCallAt}`);
+      expect(s.state.telecom.ringing).toBe('seidel');
+      return s;
+    }
+
+    test('Nach Ralf gefragt, verplappert er sich (Beweis) und legt nach drei Antworten auf', () => {
+      const s = seidelRings();
+      expect(s.a('nimm hörer')).toContain('Martin Seidel');
+      expect(s.a('frage seidel nach ralf')).toContain('Raststätte');
+      expect(s.has('seidel_rastplatz')).toBe(true);
+      expect(GAME_CONFIG.finale.evidence).toContain('seidel_rastplatz');
+      s.a('frage seidel nach dem spiel');
+      expect(s.a('frage seidel nach der arbeit')).toMatch(/Gute Nacht/);
+      expect(s.state.telecom.handset).toBe('cradle');
+      expect(s.state.conversation).toBeNull();
+    });
+
+    test('Wer Brandt erwähnt, warnt Seidel: Er legt auf und zieht die Übergabe vor', () => {
+      const s = seidelRings();
+      s.a('nimm hörer');
+      expect(s.a('frage seidel nach ghost')).toContain('Brandt');
+      expect(s.state.flags.seidelWarned).toBe(true);
+      expect(s.state.telecom.handset).toBe('cradle');
+      dev(s, `zeit +${GAME_CONFIG.finale.warnedCloseInMinutes + 1}`);
+      expect(s.state.flags.gameOver).toBe('end_silent');
+    });
+
+    test('Nicht abgenommen: Die Mutter geht ran, Seidel bleibt misstrauisch', () => {
+      const s = seidelRings();
+      dev(s, 'zeit +5');
+      expect(s.state.telecom.ringing).toBeNull();
+      expect(s.has('seidel_called')).toBe(true);
+      expect(text(s)).toContain('Herr Seidel');
+    });
+  });
 });

@@ -88,6 +88,7 @@ export function pickUp(ctx: Ctx): number {
     );
     return 1;
   }
+  if (t.ringing === 'seidel') return answerSeidel(ctx);
   if (t.ringing === 'anon') {
     // Symptom von Seidels Verdacht (ev_susp_dangerous). TODO-STORY: Wer anruft, bleibt offen.
     t.ringing = null;
@@ -113,6 +114,33 @@ export function pickUp(ctx: Ctx): number {
   ctx.cue('dialtone');
   ctx.say('Du nimmst den Hörer ab. Das Freizeichen tutet.');
   return 0;
+}
+
+/** Finale: Seidel ruft an, bevor er losfährt. */
+function answerSeidel(ctx: Ctx): number {
+  const s = ctx.state;
+  const t = s.telecom;
+  t.ringing = null;
+  t.call = newCall(ctx, { kind: 'voice', with: 'seidel', outgoing: false });
+  s.flags.seidelCallDone = true;
+  for (const ev of s.scheduledEvents)
+    if (ev.id === 'ev_finale_seidel_end' && ev.status === 'pending') ev.status = 'cancelled';
+  s.conversation = { npc: 'seidel', turns: 0 };
+  s.mode = 'conversation';
+  ctx.say('Du nimmst ab. »Ja? Keller.«');
+  ctx.say(
+    s.flags.toldRalf
+      ? '»Jan. Hier ist Martin Seidel.« Die Stimme ist ruhig, zu ruhig. »Ralf stellt seit gestern merkwürdige Fragen. Über meine Arbeit. Über Freitag. Ich frage mich, woher er das hat.«'
+      : '»Jan. Hier ist Martin Seidel, Ralfs Vater.« Im Hintergrund klappert ein Schlüsselbund. »Entschuldige die Störung so spät. Ich muss gleich weg und wollte vorher kurz mit dir reden.«',
+    'dialog',
+    'SEIDEL',
+  );
+  for (const id of ['ralf', 'diskette']) if (!s.knownTopics.includes(id)) s.knownTopics.push(id);
+  ctx.say(
+    '(Seidel hat nicht viel Zeit – vielleicht drei Antworten. Z. B. FRAGE SEIDEL NACH RALF oder NACH DER DISKETTE. LEGE AUF beendet das Gespräch.)',
+    'system',
+  );
+  return 1;
 }
 
 /** Ralf ruft an einem späteren Zeitpunkt an (Samstag, Rückruf). */
@@ -207,7 +235,7 @@ export function hangUp(ctx: Ctx, quiet = false): number {
   t.handset = 'cradle';
   t.call = null;
   ctx.state.objectStates.coupler.carrier = false;
-  if (ctx.state.conversation?.npc === 'ralf') {
+  if (ctx.state.conversation?.npc === 'ralf' || ctx.state.conversation?.npc === 'seidel') {
     ctx.state.conversation = null;
     ctx.state.mode = 'desk';
   }
@@ -320,6 +348,8 @@ export function handsetIntoCoupler(ctx: Ctx): number {
 }
 
 /** Gespräch mit einer Person über ein Thema. */
+const SEIDEL_MAX_TURNS = 3;
+
 export function talkAbout(ctx: Ctx, npc: string, topic: string | null, rawTopic: string): number {
   const s = ctx.state;
   if (!topic) {
@@ -337,6 +367,20 @@ export function talkAbout(ctx: Ctx, npc: string, topic: string | null, rawTopic:
   } else {
     ctx.say(entry.text, 'dialog', entry.speaker);
     applyEffects(ctx, entry.effects);
+  }
+  if (s.conversation && npc === 'seidel') {
+    s.conversation.turns++;
+    if (s.flags.seidelHangsUp || s.conversation.turns >= SEIDEL_MAX_TURNS) {
+      if (!s.flags.seidelHangsUp)
+        ctx.say(
+          '»Ich muss los. Gute Nacht, Jan.« Er legt auf, bevor du antworten kannst.',
+          'dialog',
+          'SEIDEL',
+        );
+      hangUp(ctx, true);
+      ctx.say('Du legst den Hörer langsam zurück auf die Gabel.');
+    }
+    return 1;
   }
   if (s.conversation) {
     s.conversation.turns++;

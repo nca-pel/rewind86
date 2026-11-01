@@ -259,9 +259,16 @@ export const GAME_CONFIG = {
       'seidel_job',
       'seidel_phones',
       'secret_mailbox',
+      'seidel_rastplatz',
     ] as string[],
     /** ab so vielen Beweisfakten nimmt die Polizei Jan ernst */
     strongEvidence: 5,
+    /** Seidel ruft an, bevor er losfährt (Szene im Finale) */
+    seidelCallAt: '1986-11-21T21:00',
+    /** spätester Anrufversuch; danach fährt er los */
+    seidelCallUntil: '1986-11-21T22:15',
+    /** wird Seidel gewarnt, zieht er die Übergabe um so viele Minuten vor */
+    warnedCloseInMinutes: 60,
   },
 
   /** Entschieden: Operation REWIND (Details zu Ablauf und Finale folgen mit Akt 6). */

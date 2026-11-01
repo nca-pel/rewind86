@@ -171,6 +171,21 @@ export const FACTS: FactDef[] = [
     text: 'Im DATENKELLER heißt es: Im BIT-SCHUPPEN schreibt einer, der angeblich nur zuhört – und wirklich alles mitbekommt.',
   },
   {
+    id: 'seidel_rastplatz',
+    category: 'verdacht',
+    text: 'Seidel hat sich verplappert: Heute Nacht um halb zwölf, Raststätte bei Gütersloh – »dann ist alles erledigt«.',
+  },
+  {
+    id: 'seidel_knows_copy',
+    category: 'verdacht',
+    text: 'Seidel weiß, dass Ralf dir eine Diskette gegeben hat. Er will sie Montag zurück.',
+  },
+  {
+    id: 'seidel_called',
+    category: 'personen',
+    text: 'Seidel hat am Freitagabend bei euch angerufen und nach dir gefragt.',
+  },
+  {
     id: 'ralf_schedule',
     category: 'personen',
     text: 'Ralf hat dienstags, donnerstags und freitags ab halb fünf Training, samstags nach der Schule ein Spiel. Sonst ist er meist zu Hause.',

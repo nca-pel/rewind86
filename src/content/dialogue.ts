@@ -58,6 +58,7 @@ export const TOPICS: TopicDef[] = [
     label: 'GHOST und den Freitag',
     aliases: ['ghost', 'brandt', 'betreuer', 'freitag', 'operation', 'rewind'],
   },
+  { id: 'ralf', label: 'Ralf', aliases: ['ralf', 'sohn', 'stiefsohn', 'junge'] },
   { id: 'club', label: 'den Computerclub', aliases: ['club', 'computerclub', 'clubabend', 'jugendzentrum'] },
 ];
 
@@ -212,8 +213,70 @@ const RALF_LATER: DialogueEntry[] = [
   },
 ];
 
+/**
+ * Seidels Anruf im Finale (Fr. 21:00). Er sucht nach dem Leck und kämpft dabei mit sich selbst: Auftrag oder
+ * Familie (GDD §3.3). Nach drei Antworten oder einem Schreck legt er auf.
+ */
+const SEIDEL_CALL: DialogueEntry[] = [
+  {
+    npc: 'seidel',
+    topic: 'ralf',
+    speaker: 'SEIDEL',
+    text: '»Ralf.« Eine lange Pause. »Er ist das Einzige, was ich hier richtig gemacht habe, weißt du das? Ich bin heute Nacht weg. Dienstreise. Halb zwölf an der Raststätte, dann ist alles erledigt, und am Montag …« Er bricht ab. »Warum erzähl ich dir das. Pass auf ihn auf, Jan. Falls ich mal nicht da bin.«',
+    effects: [
+      { type: 'discoverFact', id: 'seidel_rastplatz' },
+      { type: 'setFlag', id: 'seidelDoubts', value: true },
+    ],
+  },
+  {
+    npc: 'seidel',
+    topic: 'diskette',
+    speaker: 'SEIDEL',
+    text: '»Ralf hat dir etwas gegeben. Eine Diskette aus meinem Arbeitszimmer.« Kein Vorwurf, nur eine Feststellung. »Bring sie Montag vorbei. Dann vergessen wir das. Alle beide.«',
+    effects: [
+      { type: 'discoverFact', id: 'seidel_knows_copy' },
+      { type: 'changeRelationship', id: 'seidelSuspicion', delta: 5 },
+    ],
+  },
+  {
+    npc: 'seidel',
+    topic: 'spiel',
+    speaker: 'SEIDEL',
+    text: '»Ein Spiel. Ja.« Er lacht kurz und freudlos. »Eine Wirtschaftssimulation. Nichts, was einen Jungen in deinem Alter interessieren sollte.«',
+  },
+  {
+    npc: 'seidel',
+    topic: 'ghost',
+    speaker: 'SEIDEL',
+    text: 'Stille. So lang, dass du glaubst, er hätte aufgelegt. Dann, sehr leise: »Brandt. Natürlich.« Seine Stimme wird kalt. »Halt dich raus aus Dingen, die du nicht verstehst, Jan. Das ist kein Spiel.« Es klickt.',
+    effects: [
+      { type: 'setFlag', id: 'seidelWarned', value: true },
+      { type: 'setFlag', id: 'seidelHangsUp', value: true },
+      { type: 'changeRelationship', id: 'seidelSuspicion', delta: 15 },
+      {
+        type: 'scheduleEvent',
+        id: 'ev_finale_close_early',
+        inMinutes: GAME_CONFIG.finale.warnedCloseInMinutes,
+      },
+    ],
+  },
+  {
+    npc: 'seidel',
+    topic: 'seidel',
+    speaker: 'SEIDEL',
+    text: '»Mir geht’s gut. Viel Arbeit.« Du hörst, wie er sich eine Zigarette anzündet. »Du stellst Fragen wie ein Erwachsener, Jan.«',
+  },
+  {
+    npc: 'seidel',
+    topic: 'arbeit',
+    speaker: 'SEIDEL',
+    text: '»Software. Langweiliges Zeug. Man sitzt am Schreibtisch und wartet, dass etwas fertig wird.« Er sieht dabei bestimmt auf die Uhr.',
+  },
+];
+
 /** Antworten werden in Reihenfolge geprüft; der erste Eintrag mit erfüllter Bedingung gewinnt. */
 export const DIALOGUE: DialogueEntry[] = [
+  ...SEIDEL_CALL,
   ...RALF_LATER,
   {
     npc: 'ralf',
@@ -284,4 +347,5 @@ export const DIALOGUE: DialogueEntry[] = [
 
 export const DIALOGUE_FALLBACK: Record<string, string> = {
   ralf: '»Hä? Keine Ahnung, wovon du redest. Ich muss gleich los!«',
+  seidel: '»Ich hab nicht viel Zeit, Jan. Ist Ralf bei dir gewesen heute?«',
 };

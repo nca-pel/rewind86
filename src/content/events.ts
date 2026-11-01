@@ -742,6 +742,69 @@ export const EVENTS: EventDef[] = [
     ],
   },
   {
+    id: 'ev_finale_seidel',
+    at: GAME_CONFIG.finale.seidelCallAt,
+    repeatable: true,
+    interrupts: true,
+    variants: [
+      { when: { any: [{ flag: 'gameOver' }, { flag: 'seidelCallDone' }] }, effects: [] },
+      {
+        when: { timeAfter: GAME_CONFIG.finale.seidelCallUntil },
+        effects: [{ type: 'setFlag', id: 'seidelCallDone', value: true }],
+      },
+      {
+        when: { any: [{ lineBusy: true }, { ringing: true }, { flag: 'away' }] },
+        effects: [{ type: 'scheduleEvent', id: 'ev_finale_seidel', inMinutes: 10 }],
+      },
+      {
+        effects: [
+          { type: 'telecom', op: 'ring', who: 'seidel' },
+          { type: 'audio', cue: 'phone_ring' },
+          { type: 'say', kind: 'caption', text: '[Das Telefon klingelt.]' },
+          { type: 'say', text: 'Das Telefon klingelt. Um diese Zeit?' },
+          { type: 'scheduleEvent', id: 'ev_finale_seidel_end', inMinutes: 3 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_finale_seidel_end',
+    variants: [
+      {
+        when: { ringing: true },
+        effects: [
+          { type: 'telecom', op: 'stopRinging' },
+          { type: 'setFlag', id: 'seidelCallDone', value: true },
+          { type: 'changeRelationship', id: 'seidelSuspicion', delta: 5 },
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'MUTTER',
+            text: '(von unten) »Jan? Das war Herr Seidel, Ralfs Vater. Er wollte dich sprechen. Er klang … komisch. Ich hab gesagt, du schläfst schon.«',
+          },
+          { type: 'discoverFact', id: 'seidel_called' },
+        ],
+      },
+      { effects: [] },
+    ],
+  },
+  {
+    id: 'ev_finale_close_early',
+    variants: [
+      { when: { flag: 'gameOver' }, effects: [] },
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Viel zu früh wird es still im Netz. Seidel hat nicht bis halb zwölf gewartet.',
+          },
+          { type: 'gameOver', ending: 'end_silent' },
+        ],
+      },
+    ],
+  },
+  {
     id: 'ev_finale_close',
     at: GAME_CONFIG.finale.closesAt,
     variants: [

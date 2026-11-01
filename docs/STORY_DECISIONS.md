@@ -121,7 +121,12 @@ wird K-01 ausgeschleust. Jan hat vier Wege, Beweislage = bekannte Fakten aus `fi
 | Ralf anrufen (Thema GHOST) | Vertrauen < 40     | `end_ralf_betrayal` (Ralf plaudert, Seidel besucht Jan)          |
 | nichts tun                 | –                  | `end_silent` (Freitag vergeht); dazu `end_discovered` wie bisher |
 
-Noch offen: Seidels Handlung im Finale als eigene Szene, mehr Beweisquellen (Sendefunktion im geheimen Netz),
+**Seidels Anruf (21:00, bis 22:15 neue Versuche):** Nimmt Jan ab, hat er drei Antworten. Nach Ralf gefragt, verplappert
+sich Seidel (Raststätte, halb zwölf → Beweisfakt `seidel_rastplatz`) und zeigt seinen Zwiespalt zwischen Auftrag und
+Familie. Nach der Diskette gefragt, weiß er Bescheid (Verdacht +5). Wer Brandt/GHOST erwähnt, warnt ihn: Er legt auf,
+Verdacht +15, die Übergabe rückt 60 Minuten vor (`ev_finale_close_early`). Nimmt Jan nicht ab, geht die Mutter ran.
+
+Noch offen: mehr Beweisquellen (Sendefunktion im geheimen Netz),
 GHOSTs wahre Absicht (die Enden zeigen nur seine Seite).
 
 ## Enden überarbeitet (01.11.2026)

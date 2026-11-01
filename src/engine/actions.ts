@@ -504,6 +504,7 @@ function tune(ctx: Ctx, words: string[]): number {
 
 const NPC_WORDS: Record<string, string> = {
   ralf: 'ralf',
+  seidel: 'seidel',
   mutter: 'mother',
   mama: 'mother',
   mutti: 'mother',
@@ -520,7 +521,8 @@ function npcNotHere(ctx: Ctx, npc: string): void {
         ? 'Ralf ist längst weg – auf dem Weg zum Fußballtraining.'
         : 'Ralf ist nicht hier. (Telefonieren könntest du mit ihm.)',
     );
-  } else if (npc === 'mother') ctx.say('Deine Mutter ist unten. Du könntest nach ihr rufen (RUFE MUTTER).');
+  } else if (npc === 'seidel') ctx.say('Seidel ist nicht hier – und das ist auch besser so.');
+  else if (npc === 'mother') ctx.say('Deine Mutter ist unten. Du könntest nach ihr rufen (RUFE MUTTER).');
   else ctx.say(ctx.state.flags.fatherHome ? 'Dein Vater ist unten.' : 'Dein Vater ist noch bei der Arbeit.');
 }
 
