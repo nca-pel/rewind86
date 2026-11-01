@@ -198,6 +198,8 @@ export interface SongStep {
   bar: number;
   pos: number;
   lead?: number;
+  /** Länge des Melodietons in Sechzehnteln (sonst kurz angeschlagen) */
+  leadLen?: number;
   arp?: number;
   bass?: { note: number; steps: number };
   /** Haltetöne, nur im ersten Sechzehntel eines Taktes */

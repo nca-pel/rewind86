@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DEMO_TRACK, audio, type MusicTrack } from '../audio/audio';
 import { FERNHANDEL_BPM, fernhandelStep } from '../audio/fernhandelSong';
+import { radioPlaylist, type RadioStation } from '../audio/radioProgram';
 import { step } from '../engine/engine';
 import { createInitialState } from '../engine/state';
 import type { Command, GameState, UiEffect } from '../engine/types';
@@ -187,6 +188,29 @@ export function useGame(): GameUi {
     else if (musicTrack === 'fernhandel') audio.startMusic(FERNHANDEL_TRACK);
     else audio.stopMusic();
   }, [musicTrack, demoMusic]);
+
+  // Telefonklingel solange es klingelt
+  const ringing = !!state?.telecom.ringing;
+  useEffect(() => {
+    audio.setRinging(ringing);
+  }, [ringing]);
+
+  // Radio hörbar, solange es an ist; Nachrichten richten sich nach der Spielzeit (beim nächsten Durchlauf)
+  const radio = state?.objectStates.radio;
+  const radioStation = radio?.on ? (radio.station as RadioStation) : null;
+  useEffect(() => {
+    if (!radioStation) return audio.stopRadio();
+    audio.startRadio(radioStation, () =>
+      radioPlaylist(radioStation, ref.current?.gameClock ?? '1986-11-14T18:00'),
+    );
+  }, [radioStation]);
+  useEffect(
+    () => () => {
+      audio.stopRadio();
+      audio.setRinging(false);
+    },
+    [],
+  );
 
   useEffect(() => {
     const save = () => {

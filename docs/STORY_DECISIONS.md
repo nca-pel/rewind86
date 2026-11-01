@@ -189,5 +189,12 @@ bringen – „zurückspulen“. Im Spiel bleibt er ein Schatten: ein Gerücht i
   17.11. gegen 20:30 ([Wikipedia](https://en.wikipedia.org/wiki/Georges_Besse)), Verheugen SPD-Sprecher 17.11.
   ([chroniknet](https://chroniknet.de/was-war-am/10.11.1986)). Nicht übernommen, weil nur einfach belegt: Anschlag auf
   IBM Heidelberg (16.11.) und FDP-Parteitag Mannheim (21.11.).
+- Gesprochene Nachrichten (Radio, `RADIO_NEWS`): zusätzlich Hamburger Bürgerschaftswahl 9.11., SPD verliert die absolute
+  Mehrheit ([Wikipedia](https://de.wikipedia.org/wiki/B%C3%BCrgerschaftswahl_in_Hamburg_1986)), Großbrand bei Sandoz
+  1.11. ([Wikipedia](https://de.wikipedia.org/wiki/Brand_in_Schweizerhalle)), Vergleich von Ivan Boesky mit der
+  SEC über 100 Mio. Dollar, bekannt gegeben 14.11. ([Wikipedia](https://en.wikipedia.org/wiki/Ivan_Boesky)),
+  Bundestagswahl 25.01.1987. Wettermeldungen sind erfunden und passen zu den BTX-Wetterseiten.
+- BFBS-Ansagen: Moderator, Bands (Velvet Junction, Kitty Marlowe, Glasshouse Choir, Danny Voss and the Night
+  Ferries) und Titel sind erfunden.
 - Kinostart „Der Name der Rose“ 16.10.1986 ([filmstarts](https://www.filmstarts.de/kritiken/2402.html),
   [moviejones](https://www.moviejones.de/filme/8856/name-der-rose.html)).

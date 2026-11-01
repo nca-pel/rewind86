@@ -25,7 +25,7 @@ src/
 │   ├── c64.ts        Laufwerk, Directory, LOAD/SAVE/SYS, App-Steuerung, Bildschirm
 │   └── apps/         Programmartige „Maschinenprogramme“: wt07, modk, archive, intruder
 ├── content/      Spielinhalte als Daten (Objekte, Fakten, Dialoge, Ereignisse, Rätsel, Disketten, Netze, Radio)
-├── audio/        Web-Audio-Synthese (Effekte + Demo-Musik)
+├── audio/        Web-Audio-Synthese (Effekte, Demo-Musik, Telefonklingel, Radio: Songs + Sprachausgabe)
 ├── app/          React-Anbindung: useGame (Dispatch, UI-Effekte, Autosave), Speicher, Einstellungen
 └── ui/           React-Komponenten (Schreibtisch-SVG, C64-Panel, Protokoll, Notizblock, Menüs)
 ```

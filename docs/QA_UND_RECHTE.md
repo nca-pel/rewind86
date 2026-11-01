@@ -2,16 +2,17 @@
 
 ## Rechte und Herkunft der Inhalte
 
-| Bereich                      | Stand                                                                                                                                                                                           |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ROM-Dateien, Fremdressourcen | Keine. Zeichensatz, Töne, Musik, Grafiken, Texte und BASIC-Interpreter sind eigene Arbeiten (`src/c64/charset.ts` wurde aus Regeln neu gezeichnet).                                             |
-| Musik und Klänge             | Eigene Synthese zur Laufzeit (`src/audio/*`); keine Samples, keine Übernahme von SID-Stücken.                                                                                                   |
-| Grafik                       | Eigene Zeichnungen: Pixel-Schreibtisch (`DeskPixel.tsx`), realistischer Schreibtisch (`Desk.tsx`), Gerätebilder (`DeviceArt.tsx`), Demo-Zeichner.                                               |
-| Schrift                      | Press Start 2P (SIL Open Font License) über `@fontsource`; Lizenz liegt im Paket.                                                                                                               |
-| Markennamen                  | Einschaltmeldung und Gerätebezeichnungen nur im Bootprofil `authentic` (`src/c64/boot.ts`); Profil `neutral` ohne Marken (`VITE_C64_BOOT_PROFILE=neutral`).                                     |
-| Personen, Firmen, Gruppen    | Fiktiv (Demo-Gruppen, Mailboxen, Computerclub, Heimcomputer-Journal, Filmplakat „SPACE RIDERS“). Reale Orte nur als Umfeld.                                                                     |
-| Telefonnummern, BTX-Nummern  | Fiktive fünfstellige Ortsnummern, nie mit Vorwahl genannt; Btx-Zugang `190` ist historisch (Dienst 2001 eingestellt). Es wird nichts real gewählt.                                              |
-| Filmanspielungen             | Reale Titel, nur genannt (keine Zitate, Bilder, Musik): „WarGames“, „Der Name der Rose“, „Zurück in die Zukunft“. Titelnennung gilt als unkritisch; vor Veröffentlichung juristisch bestätigen. |
+| Bereich                      | Stand                                                                                                                                                                                                                                                                                          |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ROM-Dateien, Fremdressourcen | Keine. Zeichensatz, Töne, Musik, Grafiken, Texte und BASIC-Interpreter sind eigene Arbeiten (`src/c64/charset.ts` wurde aus Regeln neu gezeichnet).                                                                                                                                            |
+| Musik und Klänge             | Eigene Synthese zur Laufzeit (`src/audio/*`); keine Samples, keine Übernahme von SID-Stücken.                                                                                                                                                                                                  |
+| Radio und Telefon            | Telefonklingel physikalisch nachgebildet (`audio/bell.ts`, zwei Glockenschalen, 25-Hz-Rufstrom, 1 s an/4 s aus). Radiosongs regelbasiert selbst komponiert (`audio/popSongs.ts`). Stimmen über die Sprachausgabe des Browsers (Web Speech API); ohne Sprachausgabe läuft nur die Sendezeit ab. |
+| Grafik                       | Eigene Zeichnungen: Pixel-Schreibtisch (`DeskPixel.tsx`), realistischer Schreibtisch (`Desk.tsx`), Gerätebilder (`DeviceArt.tsx`), Demo-Zeichner.                                                                                                                                              |
+| Schrift                      | Press Start 2P (SIL Open Font License) über `@fontsource`; Lizenz liegt im Paket.                                                                                                                                                                                                              |
+| Markennamen                  | Einschaltmeldung und Gerätebezeichnungen nur im Bootprofil `authentic` (`src/c64/boot.ts`); Profil `neutral` ohne Marken (`VITE_C64_BOOT_PROFILE=neutral`).                                                                                                                                    |
+| Personen, Firmen, Gruppen    | Fiktiv (Demo-Gruppen, Mailboxen, Computerclub, Heimcomputer-Journal, Filmplakat „SPACE RIDERS“). Reale Orte nur als Umfeld.                                                                                                                                                                    |
+| Telefonnummern, BTX-Nummern  | Fiktive fünfstellige Ortsnummern, nie mit Vorwahl genannt; Btx-Zugang `190` ist historisch (Dienst 2001 eingestellt). Es wird nichts real gewählt.                                                                                                                                             |
+| Filmanspielungen             | Reale Titel, nur genannt (keine Zitate, Bilder, Musik): „WarGames“, „Der Name der Rose“, „Zurück in die Zukunft“. Titelnennung gilt als unkritisch; vor Veröffentlichung juristisch bestätigen.                                                                                                |
 
 **Easter-Egg-Video:** `LOAD"ABANDON",8,1` bettet ein YouTube-Video ein (`youtube-nocookie.com`, nur beim Aufruf
 geladen, keine sonstigen externen Inhalte). Das Video wird nicht kopiert, nur eingebettet; die Rechte liegen bei den
@@ -36,6 +37,9 @@ Recherchiert am 01.11.2026 (Quellen in `STORY_DECISIONS.md`, Abschnitt „Recher
   Offen: CEPT-Mosaik (nur Text dargestellt).
 - **Radio:** Die Infowelle bringt an 14., 17., 18., 19. und 21.11. Meldungen, die für den Tag belegt oder sehr
   plausibel sind (Reagan/Iran, Kronzeugenregelung, Mord an Georges Besse erst ab 21 Uhr, Buß- und Bettag); sonst Regionales.
+  Hörbar: Die Infowelle liest zur Spielzeit höchstens zehn Meldungen (inkl. Wetter) vor, dann 60 s Pause
+  (`newsBulletin` in `content/radio.ts`). Popwelle: fünf eigene Songs (≈10 Min.). BFBS: vier englische Ansagen mit
+  je einem Song fiktiver Bands (≈9–10 Min.). Alles in Schleife, über einen „Kofferradio“-Filter mit leisem Rauschen.
 - **Feiertage:** 16.11.1986 Volkstrauertag (vorher fälschlich Totensonntag), 19.11. Buß- und Bettag.
 
 Weiter offen:
