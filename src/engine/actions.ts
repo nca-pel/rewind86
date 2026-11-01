@@ -31,7 +31,7 @@ const HELP_TEXT = `So spielst du (Beispiele – Groß-/Kleinschreibung und Umlau
 • Geräte: SCHALTE COMPUTER EIN · SCHALTE RADIO EIN · STELLE RADIO AUF BFBS
 • Telefon: NIMM HÖRER · WÄHLE 12345 · RUFE RALF AN · LEGE HÖRER IN DEN KOPPLER · LEGE AUF
 • Gespräche: FRAGE RALF NACH DEM SPIEL · REDE MIT RALF ÜBER DAS TRAINING · THEMEN
-• C64: Die Eingabezeile schaltest du mit dem Zeichen davor (> bzw. C64>) auf den C64 um (z. B. LOAD"$",8 zeigt das Diskettenverzeichnis). Vom Adventure aus: TIPPE LOAD"$",8 · DRÜCKE LEERTASTE · Alle C64-Befehle: HILFE C64
+• C64: Mit Alt+C (oder Klick auf das Zeichen > bzw. C64> vor der Eingabezeile) schaltest du zwischen Adventure und C64 um; im C64-Modus schickt ein ! vor der Zeile den Text ans Adventure. Beispiel: LOAD"$",8 zeigt das Diskettenverzeichnis. Vom Adventure aus: TIPPE LOAD"$",8 · DRÜCKE LEERTASTE · Alle C64-Befehle: HILFE C64
 • Notizen: NOTIZEN · NOTIERE <Text> · VERKNÜPFE <A> MIT <B> · DENKE NACH (Hilfe in 3 Stufen)
 • Zeit & Spiel: ZEIT · WARTE (15 Min.) · WARTE 30 · SCHLAFE (ab 21 Uhr) · INVENTAR · SPEICHERN 1 · LADEN 1 · SPIELSTÄNDE`;
 
