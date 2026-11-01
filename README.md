@@ -1,6 +1,6 @@
 # REWIND 1986
 
-Deutschsprachiges, browserbasiertes Text-Adventure: Rheda-Wiedenbrück, Herbst 1986. Jan Keller (17) bekommt von
+Deutschsprachiges, browserbasiertes Text-Adventure: Rheda-Wiedenbrück, Herbst 1986. Jan Keller (16, Schüler) bekommt von
 seinem Freund Ralf die heimlich kopierte Arbeitsdiskette eines unveröffentlichten C64-Spiels – und stößt auf ein
 verstecktes Kommunikationsmodul.
 
@@ -113,8 +113,8 @@ Webserver ausliefern (z. B. `python -m http.server 8000` im Ordner, dann http://
 ### Hinweise
 
 - **Spielstände** liegen im Browser (IndexedDB, Rückfall `localStorage`), nicht auf dem Server. Sie sind an die Adresse
-  gebunden: `http://localhost:4173` und `http://server:4173` haben getrennte Spielstände. Zum Umziehen im Spiel
-  _Menü → Exportieren_ und am anderen Ort _Importieren_ verwenden.
+  gebunden: `http://localhost:4173` und `http://server:4173` haben getrennte Spielstände. Ein Export oder Import
+  von Spielständen existiert nicht; wer ständig dieselbe Adresse nutzt (z. B. immer den SSH-Tunnel), behält seine Stände.
 - **Ton** startet erst nach dem ersten Klick oder Tastendruck (Autoplay-Regel der Browser).
 - **E2E-Tests** laufen headless direkt auf dem Server (`npm run test:e2e`), dafür ist kein Bildschirm nötig.
 - **Port belegt?** Die Skripte brechen dann ab (`--strictPort`). Anderen Port wählen, z. B.
@@ -124,11 +124,13 @@ Webserver ausliefern (z. B. `python -m http.server 8000` im Ordner, dann http://
 
 ## Steuerung
 
-Die Oberfläche hat **zwei getrennte Eingaben** – Tastendrücke gehen immer nur an das fokussierte Feld.
+Auf dem Titelbild stehen Neues Spiel (mit Schwierigkeit Normal/Schwer), Fortsetzen, Laden, Einstellungen und Credits links; rechts gibt ein Nadeldrucker die Vorgeschichte aus. Dazu läuft eine eigene, synthetisierte Titelmusik (nach dem ersten Klick oder Tastendruck).
 
-### Adventure-Eingabe (unten links / mobil unten)
+### Gemeinsame Eingabezeile (im ADVENTURE-Fenster)
 
-Freie deutsche Sätze, Groß-/Kleinschreibung und Umlaute (`ö`/`oe`) egal. Beispiele:
+Es gibt **eine** Eingabezeile. Ein Umschalter links davon (`>` / `C64>`) bestimmt, wohin sie schickt; **Alt+C** wechselt den Modus. Im C64-Modus gibt ein vorangestelltes `!` eine einzelne Zeile an das Adventure.
+
+**Adventure-Modus:** Freie deutsche Sätze, Groß-/Kleinschreibung und Umlaute (`ö`/`oe`) egal. Beispiele:
 
 ```
 SCHAU DICH UM            UNTERSUCHE DISKETTE        ÖFFNE SCHUBLADE
@@ -144,12 +146,12 @@ INVENTAR  ZEIT  THEMEN   SPEICHERN 1 / LADEN 1      HILFE
 Pronomen (`ÖFFNE ES`), Rückfragen bei Mehrdeutigkeit (`Welche Diskette meinst du …?` → `die 1001`), mehrere
 Befehle pro Zeile (`ÖFFNE SCHUBLADE. NIMM 1001`) und leichte Tippfehler werden unterstützt.
 
-### C64-Eingabe (unter dem Monitor)
+**C64-Modus:**
 
-- **BASIC-Modus:** Zeile tippen + Enter, z. B. `LOAD"$",8` · `LIST` · `LOAD"*",8` · `RUN` · `10 PRINT "HALLO"`.
+- **BASIC-Zeilen:** Zeile tippen + Enter, z. B. `LOAD"$",8` · `LIST` · `LOAD"*",8` · `RUN` · `10 PRINT "HALLO"`.
   ↑/↓ blättern in der Befehlshistorie. Vereinfacht geht auch `ZEIGE DATEIEN` und `LADE SPIEL`.
 - **Tastenmodus** (laufende Programme): jede Taste geht sofort an das Programm.
-  `Esc` = RUN/STOP, `^` oder `` ` `` = C64-Taste `←`. Sondertasten gibt es zusätzlich als Buttons (mobil wichtig).
+  `Esc` = RUN/STOP, `^` oder `` ` `` = C64-Taste `←`. Die C64-Tastenleiste ist wie eine Tastatur angeordnet und auch mobil per Touch bedienbar.
 
 ### Klick / Touch
 
@@ -182,7 +184,7 @@ Optional: Diskette `1001` aus der Schublade → Demo INTRUDER (acht Teile, Leert
 
 Das Spiel auf Ralfs Diskette (FERNHANDEL) ist spielbar: Im Intro startet die **Leertaste** eine kleine Handelssimulation (30 Tage, fünf Städte, fünf Waren, Kredit, Telex-Aufträge, Lagerausbau). Tasten: `1`–`5` Ware, `B`/`V` kaufen/verkaufen, `M`/`A` maximal kaufen/alles verkaufen, `R` + Ziffer reisen, `L` Auftrag liefern, `K`/`T` Kredit/Tilgung, `U` Lagerausbau, `H` Hilfe, `I` zurück zum Intro. Der Pfeil-Hinweis in den Credits (Taste `←`) bleibt unverändert.
 
-**Grafikstil des Schreibtischs:** Im Menü schaltet „Pixelgrafik im Stil von 1986“ zwischen Pixelgrafik (16 Farben, Rasterung, harte Kanten; Standard) und einem realistisch gezeichneten Schreibtisch um. Beide haben dieselben Hotspots und Zustände; die Wahl wird gespeichert.
+**Grafikstil des Schreibtischs:** Der Schreibtisch ist eine Pixelszene (384×216 Pixel, 32 Farben, ganzzahlig skaliert, harte Kanten); es gibt keinen zweiten, realistischen Stil mehr. Der C64-Bildschirm daneben ist eine eigene Simulation mit 16 Farben (siehe oben).
 
 **Offline und Barrierefreiheit:** Im Produktionsbau lässt sich das Spiel als App installieren und offline spielen (Manifest + Service Worker). Ein automatisierter axe-Test (WCAG 2 A/AA) läuft in der Playwright-Suite. Siehe `docs/QA_UND_RECHTE.md`.
 
@@ -222,7 +224,7 @@ Auswerten: `?dev=1`, Entwicklerkonsole → Tab „Parser“ → „Kopieren“. 
 
 ## Entwicklerkonsole
 
-`http://…/?dev=1` blendet unten links einen **DEV**-Knopf ein (für die Browser-Sitzung; `?dev=0` schaltet ab):
+`http://…/?dev=1` blendet oben mittig einen **DEV**-Knopf ein (für die Browser-Sitzung; `?dev=0` schaltet ab):
 Fakten/Flags/Rätsel/Gegenstände setzen, Zeit vorspulen, Ereignisse auslösen, Meilenstein-Spielstände laden
 („Geheimer Modus“, „Online“, „Ende des Ausschnitts“ …) und den Ereignis-/Rätselgraph prüfen. `hilfe` in der
 Konsole listet alle Befehle. Eingriffe werden im Debug-Log des Spielstands markiert.

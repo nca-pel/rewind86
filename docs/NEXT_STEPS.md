@@ -66,7 +66,7 @@
   `STORY_DECISIONS.md`).
 - Usenet-Gateway; historisch geprüfte BTX-Details (Mosaikgrafik/CEPT-Darstellung, Tarife).
 - Weitere Kassetten, Speichern auf Band, TV/VHS.
-- Sprachausgabe (braucht Aufnahmen und Rechte); echte, von Menschen gezeichnete Illustrationen (jetzt zwei eigene Grafikstile, siehe Schalter „Pixelgrafik“).
+- Sprachausgabe (braucht Aufnahmen und Rechte); echte, von Menschen gezeichnete Illustrationen (der Schreibtisch ist eine eigene Pixelszene).
 - Abklingen des Verdachts (sinkt nur durch die Mail an GHOST).
 
 ### Bekannte Grenzen
@@ -79,7 +79,7 @@
 - Verb-/Objektvokabular ist auf den Ausschnitt zugeschnitten; seltene Formulierungen führen zu „verstehe ich nicht“
   statt zu falschen Aktionen.
 - Gebühren und Tarife sind Spielökonomie, nicht historisch verifiziert.
-- Der Schreibtisch hat zwei eigene Grafikstile (Pixel 1986/realistisch); beides sind generierte Vektor-/Pixelzeichnungen, keine Handillustrationen.
+- Der Schreibtisch ist eine generierte Pixelszene (384×216, 32 Farben), keine Handillustration.
 
 ## Priorisierter Ausbauplan
 

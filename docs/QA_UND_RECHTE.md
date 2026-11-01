@@ -49,7 +49,7 @@ Weiter offen:
 
 ## Barrierefreiheit
 
-- Automatisiert: `e2e/a11y.spec.ts` prüft Titel, Schreibtisch (Pixel und realistisch) und Menü mit axe-core gegen WCAG 2 A/AA, ohne Befunde.
+- Automatisiert: `e2e/a11y.spec.ts` prüft Titel, Schreibtisch (Pixelszene) und Menü mit axe-core gegen WCAG 2 A/AA, ohne Befunde.
 - Bedienung: jede Aktion per Textbefehl; Schreibtischobjekte per Tastatur (Tab, Enter/Leertaste) und Klick; Schaltflächen der Detailansicht
   entsprechen Textbefehlen; Ton-Ereignisse haben Textentsprechungen; Demo mit Untertiteln und Effektbeschreibungen.
 - Einstellungen: Textgröße, hoher Kontrast, reduzierte Bewegung, CRT-Effekt aus, Ton aus.
