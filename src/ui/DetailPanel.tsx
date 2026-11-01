@@ -202,16 +202,17 @@ export function DetailPanel({ game }: { game: GameUi }) {
                 setNumber('');
               }}
             >
-              <label>
-                Nummer wählen{' '}
+              <label htmlFor="dial-number">Nummer wählen</label>
+              <div className="dial-row">
                 <input
+                  id="dial-number"
                   inputMode="numeric"
                   value={number}
                   onChange={(e) => setNumber(e.target.value.slice(0, 15))}
-                  aria-label="Telefonnummer"
+                  autoComplete="off"
                 />
-              </label>
-              <button type="submit">Wählen</button>
+                <button type="submit">Wählen</button>
+              </div>
             </form>
           )}
           <p className="detail-note">Jede Schaltfläche entspricht einem Textbefehl (Tooltip).</p>

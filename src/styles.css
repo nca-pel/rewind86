@@ -615,6 +615,23 @@ html[data-contrast='high'] .status-values dd {
   --bevel-hi: var(--win-hi);
   --bevel-lo: #5f5444;
 }
+.detail-panel button,
+.modal button,
+.slice-end button {
+  font-family: var(--font-retro);
+  font-size: 0.6rem;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.7rem;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+}
+.detail-panel button:active,
+.modal button:active,
+.slice-end button:active {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
 .detail-panel button:hover,
 .modal button:hover,
 .slice-end button:hover {
@@ -720,17 +737,33 @@ html[data-contrast='high'] .modal-head .close::after {
   align-items: center;
 }
 .dial-form {
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
 }
 .dial-form label {
+  font-family: var(--font-retro);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  color: var(--win-muted);
+}
+.dial-form,
+.dial-row {
+  min-width: 0;
+}
+.dial-row {
   display: flex;
-  align-items: center;
   gap: 0.4rem;
-  white-space: nowrap;
+  align-items: stretch;
 }
 .dial-form input {
-  width: 6.5rem;
+  flex: 1;
   min-width: 0;
+  width: 0;
+  font-family: var(--font-lcd);
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
 }
 .detail-note {
   font-size: 0.75rem;

@@ -62,9 +62,6 @@ export function StatusBar({ game }: { game: GameUi }) {
         ))}
       </div>
       <nav className="status-actions" aria-label="Spielmenü">
-        <button type="button" onClick={() => game.setNotebookOpen(true)}>
-          Notizblock
-        </button>
         <button
           type="button"
           aria-pressed={settings.audio}

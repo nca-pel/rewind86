@@ -86,7 +86,7 @@ test('kompletter Prolog bis zur Mailbox und „Fortsetzung folgt“', async ({ p
   await page.getByRole('button', { name: 'Weiterspielen' }).click();
 
   // Notizblock: Fakten, eigene Notiz, Denkhilfe
-  await page.getByRole('button', { name: 'Notizblock' }).first().click();
+  await adv(page, 'notizen');
   const nb = page.getByRole('dialog', { name: 'Notizblock' });
   await expect(nb).toContainText('WT-07');
   await nb.getByTestId('note-input').fill('Ralf morgen nach Diskette 2 fragen');
