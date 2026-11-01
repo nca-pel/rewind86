@@ -48,7 +48,7 @@ export const OBJECTS: WorldObject[] = [
     nouns: ['schreibtisch', 'tisch', 'zimmer', 'raum'],
     description: [
       {
-        text: 'Dein Schreibtisch: Brandlöcher von der Lötkolbenzeit, ein Kaffeerand vom letzten Wochenende. Darauf dein C64 mit Monitor, die 1541, Telefon und Akustikkoppler, das Radio, ein Kassettenrekorder und dein Notizblock. Rechts die Schublade.',
+        text: 'Dein Schreibtisch: Brandlöcher von der Lötkolbenzeit, ein klebriger Colaring vom letzten Wochenende. Darauf dein C64 mit Monitor, die 1541, Telefon und Akustikkoppler, das Radio, ein Kassettenrekorder und dein Notizblock. Rechts die Schublade.',
       },
     ],
     historicalStatus: 'plausible',

@@ -132,14 +132,16 @@ select {
 .title-screen {
   min-height: 100dvh;
   display: grid;
-  place-items: center;
+  grid-template-columns: minmax(0, 26rem) minmax(0, 28rem);
+  justify-content: center;
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 4rem);
   padding: 1rem;
   background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 2px, transparent 2px 4px),
     radial-gradient(circle at 50% 30%, #3a2a54, #120d14 70%);
 }
 .title-box {
-  max-width: 40rem;
-  text-align: center;
+  text-align: left;
 }
 .title-box h1,
 .logo {
@@ -148,8 +150,13 @@ select {
   color: var(--accent);
   margin: 0;
 }
+.title-box {
+  container-type: inline-size;
+}
 .title-box h1 {
-  font-size: clamp(1.6rem, 7vw, 3.2rem);
+  /* Logo bleibt einzeilig: Schriftgröße folgt der Spaltenbreite (11 Zeichen) */
+  white-space: nowrap;
+  font-size: min(3.2rem, 8cqw);
   filter: drop-shadow(4px 4px 0 #2a1f4a);
 }
 /* Schriftzug mit Raster-Balken wie in einem Demo-Intro: Farbverlauf in harten Stufen, durch die Schrift gestanzt */
@@ -175,15 +182,28 @@ html[data-contrast='high'] .logo span {
   color: var(--accent);
 }
 .tagline {
-  font-size: 1.1rem;
-  margin: 1.5rem 0;
+  font-family: var(--font-retro);
+  font-size: min(0.6rem, 2.4cqw);
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+  margin: 1.2rem 0 1.6rem;
+}
+/* Drei Sinnzeilen statt Fließtext: Ort, dann zwei Satzhälften, die jeweils zusammenbleiben */
+.tagline span {
+  display: block;
+  white-space: nowrap;
+}
+.tagline .tagline-place {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.4rem;
 }
 .title-buttons {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   max-width: 22rem;
-  margin: 0 auto;
 }
 .title-buttons button {
   font-family: var(--font-retro);
@@ -215,6 +235,151 @@ html[data-contrast='high'] .logo span {
   margin-top: 2rem;
   font-size: 0.8rem;
   color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* Nadeldrucker mit Endlospapier (Vorgeschichte) */
+.printer {
+  --paper-h: min(26rem, 52dvh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.6));
+}
+.printer-paper-window {
+  position: relative;
+  width: 85%;
+  height: var(--paper-h);
+  overflow: hidden;
+  background-color: #efe9d6;
+  /* Traktorlochung links und rechts */
+  background-image: radial-gradient(circle, #3b3550 0 3px, transparent 3.5px),
+    radial-gradient(circle, #3b3550 0 3px, transparent 3.5px);
+  background-size: 18px 22px, 18px 22px;
+  background-position: 6px 4px, calc(100% - 6px) 4px;
+  background-repeat: repeat-y, repeat-y;
+  border-left: 1px dashed #b9b19a;
+  border-right: 1px dashed #b9b19a;
+  mask-image: linear-gradient(180deg, transparent, #000 14%);
+}
+.printer-paper {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  padding: 0 1.8rem;
+  color: #26233a;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-shadow: 0.4px 0 0 rgba(38, 35, 58, 0.6);
+  animation: printer-feed 110s linear infinite;
+}
+.printer-paper p {
+  margin: 0 0 0.9em;
+  text-wrap: pretty;
+}
+.printer-paper .printer-head {
+  font-weight: bold;
+  letter-spacing: 0.2em;
+  text-align: center;
+}
+.printer-paper-window:hover .printer-paper {
+  animation-play-state: paused;
+}
+@keyframes printer-feed {
+  to {
+    transform: translateY(calc(-100% - var(--paper-h)));
+  }
+}
+.printer-slot {
+  width: 92%;
+  height: 0.55rem;
+  background: #0b0910;
+  border-radius: 2px;
+  box-shadow: inset 0 3px 4px #000;
+}
+.printer-body {
+  width: 100%;
+  min-height: 5.6rem;
+  margin-top: -2px;
+  padding: 0.7rem 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.4rem 1rem;
+  background: linear-gradient(180deg, #d8d0b8, #c3baa0 70%, #a89f86);
+  border: 2px solid #8d856e;
+  border-radius: 6px 6px 12px 12px;
+  color: #3b3550;
+  font-family: var(--font-retro);
+  font-size: 0.6rem;
+}
+.printer-brand {
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+}
+.printer-leds {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-self: end;
+}
+.led {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #4a2a2a;
+  margin-left: 0.4rem;
+}
+.led-on {
+  background: #ff4d3a;
+  box-shadow: 0 0 6px #ff4d3a;
+}
+.led-online {
+  background: #5dff7a;
+  box-shadow: 0 0 6px #5dff7a;
+  animation: led-blink 2.4s steps(1) infinite;
+}
+@keyframes led-blink {
+  60% {
+    opacity: 0.35;
+  }
+}
+.printer-keys {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.5rem;
+}
+.printer-keys b {
+  padding: 0.25rem 0.7rem;
+  background: #e8e1ca;
+  border: 1px solid #8d856e;
+  border-bottom-width: 3px;
+  border-radius: 3px;
+  font-weight: normal;
+}
+html[data-motion='reduced'] .printer-paper,
+html[data-motion='reduced'] .led-online {
+  animation: none;
+}
+html[data-motion='reduced'] .printer-paper-window {
+  overflow-y: auto;
+  mask-image: none;
+}
+html[data-motion='reduced'] .printer-paper {
+  position: static;
+  padding-block: 0.8rem;
+}
+@media (max-width: 52rem) {
+  .title-screen {
+    grid-template-columns: minmax(0, 28rem);
+    align-content: start;
+  }
+  .printer {
+    --paper-h: 16rem;
+  }
 }
 
 /* ---------------------------------------------------------------- Credits */

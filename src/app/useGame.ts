@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DEMO_TRACK, audio, type MusicTrack } from '../audio/audio';
+import { DEMO_TRACK, TITLE_TRACK, audio, type MusicTrack } from '../audio/audio';
 import { FERNHANDEL_BPM, fernhandelStep } from '../audio/fernhandelSong';
 import { radioPlaylist, type RadioStation } from '../audio/radioProgram';
 import { step } from '../engine/engine';
@@ -189,7 +189,7 @@ export function useGame(): GameUi {
   useEffect(() => {
     if (musicTrack === 'demo') audio.startMusic(DEMO_TRACK);
     else if (musicTrack === 'fernhandel') audio.startMusic(FERNHANDEL_TRACK);
-    else audio.stopMusic();
+    else audio.stopMusic(TITLE_TRACK);
   }, [musicTrack, demoMusic]);
 
   // Telefonklingel solange es klingelt

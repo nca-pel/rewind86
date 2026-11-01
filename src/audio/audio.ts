@@ -6,6 +6,7 @@
 import type { AudioCueId } from '../engine/types';
 import { RING_PERIOD_S, renderBell } from './bell';
 import { BPM, songStep, type SongStep } from './demoSong';
+import { TITLE_BPM, titleStep } from './titleSong';
 import { speechSeconds, type RadioItem } from './radioProgram';
 
 /** Musikstück: Tempo und Noten je Sechzehntel (siehe demoSong.ts, fernhandelSong.ts) */
@@ -19,6 +20,7 @@ export interface MusicTrack {
 }
 
 export const DEMO_TRACK: MusicTrack = { bpm: BPM, at: songStep };
+export const TITLE_TRACK: MusicTrack = { bpm: TITLE_BPM, at: titleStep, lead: 'triangle' };
 
 type Group = 'effects' | 'device' | 'music' | 'radio';
 
@@ -40,6 +42,8 @@ class AudioEngine {
   private groups: Partial<Record<Group, GainNode>> = {};
   private stopTrack: (() => void) | null = null;
   private track: MusicTrack | null = null;
+  /** Gewünschtes Stück: startet, sobald der Ton freigeschaltet ist (Titelmusik vor der ersten Interaktion) */
+  private musicWant: MusicTrack | null = null;
   /** Gewünschter Zustand – wird nach Freischalten/Wiedereinschalten des Tons hergestellt (sync) */
   private ringWant = false;
   private ringTimer: number | null = null;
@@ -95,7 +99,7 @@ class AudioEngine {
   setEnabled(on: boolean): void {
     this.enabled = on;
     if (!on) {
-      this.stopMusic();
+      this.haltMusic();
       this.haltRing();
       this.haltRadio();
       void this.ctx?.suspend();
@@ -105,6 +109,7 @@ class AudioEngine {
   /** Gewünschte Dauergeräusche (Klingeln, Radio) starten, sobald der Ton läuft */
   private sync(): void {
     if (!this.ready()) return;
+    if (this.musicWant && !this.stopTrack) this.startMusic(this.musicWant);
     if (this.ringWant && this.ringTimer === null) this.runRing();
     if (this.radioWant && !this.radioRunning) this.runRadio();
   }
@@ -500,6 +505,7 @@ class AudioEngine {
 
   /** Eigene, SID-inspirierte Komposition für die INTRUDER-Demo (siehe demoSong.ts), Wiederholung nach 88 Takten. */
   startMusic(track: MusicTrack = DEMO_TRACK): void {
+    this.musicWant = track;
     if (!this.ready()) return;
     if (this.stopTrack) {
       if (this.track === track) return;
@@ -509,7 +515,14 @@ class AudioEngine {
     this.stopTrack = this.runTrack(track, 'music');
   }
 
-  stopMusic(): void {
+  /** keep: dieses Stück weiterlaufen lassen (Titelmusik, wenn der Spielzustand nur „keine Spielmusik“ meldet) */
+  stopMusic(keep?: MusicTrack): void {
+    if (keep && this.musicWant === keep) return;
+    this.musicWant = null;
+    this.haltMusic();
+  }
+
+  private haltMusic(): void {
     this.stopTrack?.();
     this.stopTrack = null;
     this.track = null;

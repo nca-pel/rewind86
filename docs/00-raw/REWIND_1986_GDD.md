@@ -112,7 +112,7 @@ Das System verbietet **keine** fiktiven Inhalte, aber unplausible technische Eff
 
 ## 3.1 Jan Keller [FEST]
 
-- **17 Jahre**, Schüler, wohnhaft in Rheda-Wiedenbrück, 1986.
+- **16 Jahre** (Stand 01.11.2026, siehe STORY_DECISIONS.md), Schüler, wohnhaft in Rheda-Wiedenbrück, 1986.
 - Computerbegeistert, programmiert BASIC, tauscht Disketten, liebt C64-Demos, Computerzeitschriften, Filme und Datenfernübertragung.
 - Analytisch, geduldig, gut in Mustern und Technik, sozial nicht immer sicher, nicht körperlich heldenhaft.
 - Seine Gedanken und Gefühle werden gelegentlich wiedergegeben, ohne dem Spieler Handlungen abzunehmen.

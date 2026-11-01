@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { audio, TITLE_TRACK } from '../audio/audio';
 import { readSlot } from '../app/storage';
 import type { Difficulty, GameState } from '../engine/types';
 import { formatShort } from '../engine/clock';
 import { Credits } from './Credits';
 import { SaveList, SettingsForm } from './Menu';
 import { Modal } from './Modal';
+import { PrinterStory } from './PrinterStory';
 
 export function TitleScreen({
   onNew,
@@ -33,6 +35,11 @@ export function TitleScreen({
       /* ohne Speicher: nur für diese Sitzung */
     }
   };
+  // Titelmusik: startet nach der ersten Interaktion (Autoplay-Regeln) und endet mit dem Titelbild
+  useEffect(() => {
+    audio.startMusic(TITLE_TRACK);
+    return () => audio.stopMusic();
+  }, []);
   const auto = readSlot('auto');
   const autoFile = auto && auto.ok ? auto.file : null;
   return (
@@ -42,8 +49,8 @@ export function TitleScreen({
           REWIND <span>1986</span>
         </h1>
         <p className="tagline">
-          Rheda-Wiedenbrück, Herbst 1986. Ein C64, eine kopierte Diskette – und ein Netz, das es nicht geben
-          dürfte.
+          <span className="tagline-place">Rheda-Wiedenbrück, Herbst 1986</span>{' '}
+          <span>Ein C64, eine kopierte Diskette –</span> <span>und ein Netz, das es nicht geben dürfte.</span>
         </p>
         <div className="title-buttons">
           <button type="button" onClick={() => onNew(difficulty)} data-testid="new-game">
@@ -103,6 +110,7 @@ export function TitleScreen({
           Firmen und Orte dienen nur als historisches Umfeld. Es werden keine echten Telefonnummern gewählt.
         </p>
       </div>
+      <PrinterStory />
       {dialog === 'load' && (
         <Modal title="Spielstand laden" onClose={() => setDialog(null)}>
           <SaveList current={null} allowSave={false} onLoad={onLoad} onError={showToast} />
