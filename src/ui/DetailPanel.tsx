@@ -110,7 +110,10 @@ const ZOOM_OUT_MS = 230;
  * des Zooms). null, wenn der Gegenstand gerade nicht sichtbar ist (z. B. mobil im C64-Tab).
  */
 function zoomFrom(panel: HTMLElement, id: string): string | null {
-  const spot = document.querySelector(`[data-hotspot="${id}"]`);
+  // Klickfläche als Bezug (die Gruppe kann Overlays enthalten, die über den Gegenstand hinausragen)
+  const spot =
+    document.querySelector(`[data-hotspot="${id}"] .hs-area`) ??
+    document.querySelector(`[data-hotspot="${id}"]`);
   if (!spot) return null;
   const s = spot.getBoundingClientRect();
   const p = panel.getBoundingClientRect();

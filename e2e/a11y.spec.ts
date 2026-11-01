@@ -9,15 +9,14 @@ async function check(page: import('@playwright/test').Page, what: string) {
   expect(v, `${what}: ${v.join(' | ')}`).toEqual([]);
 }
 
-test('Barrierefreiheit: Titel, Spiel (Pixel und realistisch), Menü', async ({ page }) => {
+test('Barrierefreiheit: Titel, Spiel, Namen eingeblendet, Menü', async ({ page }) => {
   await page.goto('/');
   await check(page, 'Titel');
   await page.getByTestId('new-game').click();
-  await check(page, 'Schreibtisch (Pixelgrafik)');
+  await check(page, 'Schreibtisch');
   await adv(page, 'nimm hörer');
+  await page.getByTestId('desk-names').click();
+  await check(page, 'Schreibtisch mit Namen');
   await page.getByRole('button', { name: 'Menü' }).click();
   await check(page, 'Menü');
-  await page.getByTestId('pixel-art').uncheck();
-  await page.keyboard.press('Escape');
-  await check(page, 'Schreibtisch (realistisch)');
 });

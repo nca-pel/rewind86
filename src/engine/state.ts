@@ -45,7 +45,7 @@ export function createInitialState(seed = 1986): GameState {
     itemLocations,
     objectStates: {
       drawer: { open: false },
-      package: { open: false },
+      package: { open: true },
       radio: { on: false, station: 'pop' },
       coupler: { carrier: false },
       door: { open: false },

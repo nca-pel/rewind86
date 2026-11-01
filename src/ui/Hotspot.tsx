@@ -6,12 +6,15 @@ export function Hotspot({
   label,
   onSelect,
   selected,
+  onHover,
   children,
 }: {
   id: string;
   label: string;
   onSelect: (id: string) => void;
   selected: boolean;
+  /** meldet Zeiger/Fokus auf dem Gegenstand (Namenszeile unter dem Bild) */
+  onHover?: (id: string | null) => void;
   children: ReactNode;
 }) {
   const key = (e: KeyboardEvent) => {
@@ -29,6 +32,10 @@ export function Hotspot({
       data-hotspot={id}
       onClick={() => onSelect(id)}
       onKeyDown={key}
+      onPointerEnter={() => onHover?.(id)}
+      onPointerLeave={() => onHover?.(null)}
+      onFocus={() => onHover?.(id)}
+      onBlur={() => onHover?.(null)}
     >
       <title>{label}</title>
       {children}

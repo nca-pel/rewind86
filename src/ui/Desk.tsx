@@ -1,495 +1,424 @@
 /**
- * Illustrierter Schreibtisch als Hub – eigene, austauschbare Platzhalter-Illustration (SVG)
- * in leicht schräger, erhöhter Perspektive (realistischer Stil; Pixelstil: DeskPixel.tsx). Jeder Hotspot ist per Tastatur und Klick erreichbar;
- * alle Aktionen gibt es zusätzlich als Textbefehl.
+ * Jans Schreibtisch als Pixelgrafik-Szene im Stil der Point-and-Click-Adventures Ende der 80er.
+ *
+ * - Grundbild: 384×216 Pixel, 32 Farben (src/assets/desk/desk.png, gebaut von scripts/build-desk.py aus der
+ *   generierten Vorlage docs/00-raw/finalpixel.jpg).
+ * - Alles liegt in EINEM SVG in diesen Pixelkoordinaten: Bild, Klickflächen (DESK_AREAS), Zustands-Sprites.
+ *   Dadurch passen Klickflächen auf jeder Auflösung; die Bühne skaliert in ganzen Gerätepixeln (scharf).
+ * - Hover/Fokus: Umriss des Gegenstands + Name in der Zeile unter dem Bild; „Namen“ (Taste N) zeigt alle Namen.
+ * - Kleine Animationen: klingelndes Telefon, LEDs, Radio-Skala. Fenster, Päckchen und Hörer bleiben wie im Bild.
  */
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import deskUrl from '../assets/desk/desk.png';
 import { OBJECT_BY_ID } from '../content/objects';
 import type { GameState } from '../engine/types';
-import { isReachable } from '../engine/resolve';
 import { renderC64 } from '../sim/c64';
-import { DeskPixel } from './DeskPixel';
 import { Hotspot } from './Hotspot';
 import { C64_PALETTE } from './palette';
 
-interface Props {
-  state: GameState;
-  onSelect: (id: string) => void;
-  selected: string | null;
+export const DESK_W = 384;
+export const DESK_H = 216;
+
+/** Farben aus der Palette des Grundbilds (src/assets/desk/desk-palette.json) */
+const C = {
+  black: '#19120e',
+  ink: '#2b2119',
+  dark: '#392519',
+  woodLight: '#945b34',
+  paper: '#e6c593',
+  grey: '#555a65',
+  greyDark: '#3c4350',
+  night: '#2a314e',
+  red: '#c42a22',
+  yellow: '#f2cf3a',
+  green: '#5ec44a',
+};
+
+/** Klickflächen in Bildpixeln (eng am Umriss, am Bild vermessen). Reihenfolge = Zeichenreihenfolge. */
+export const DESK_AREAS: Record<string, string> = {
+  window: 'M0 0H64V112L0 118Z',
+  door: 'M303 0H384V178H303Z',
+  radio: 'M40 106L72 104L83 112V136L62 151L40 151Z',
+  monitor: 'M145 52H211V112H145Z',
+  c64: 'M121 112H226V152H121Z',
+  drive1541: 'M253 105H311V130H253Z',
+  tape: 'M284 92H306V108H284Z',
+  coupler: 'M254 85H284V107H254Z',
+  phone: 'M211 92H251V126H211Z',
+  notebook: 'M74 143L100 136L125 157L97 167L84 164Z',
+  package: 'M200 152L232 140L262 130L300 128L326 137L318 158L290 176L242 177L205 165Z',
+  magazine: 'M243 152L272 137L300 143L276 163Z',
+  drawer: 'M229 176H317V203H229Z',
+};
+
+/** Bildschirmfläche des Monitors */
+const SCREEN = { x: 150, y: 62, w: 53, h: 42 };
+/** Hörer auf der Gabel */
+const HANDSET = 'M214 96L219 93L245 93L250 96L250 104L244 105L242 99L222 99L219 105L213 104Z';
+
+const DISKS: Record<string, { x: number; label: string }> = {
+  disk_archive: { x: 130, label: C.night },
+  disk_1001: { x: 149, label: C.red },
+  disk_game: { x: 168, label: C.yellow },
+};
+const DRAWER_DISKS: Record<string, number> = { disk_1001: 240, disk_archive: 262, disk_game: 284 };
+
+/** Abweichende Position der Namensschilder, wo Gegenstände eng beieinander stehen */
+const NAME_POS: Record<string, [number, number]> = {
+  phone: [226, 132],
+  coupler: [262, 80],
+  tape: [312, 88],
+  drive1541: [282, 138],
+  door: [344, 70],
+};
+
+/** Mittelpunkt der Begrenzung eines Pfads aus M/L/H/V-Befehlen (für Namensschilder) */
+export function areaCenter(d: string): [number, number] {
+  const xs: number[] = [];
+  const ys: number[] = [];
+  let x = 0;
+  let y = 0;
+  for (const m of d.matchAll(/([MLHV])([^MLHVZ]*)/g)) {
+    const v = m[2]
+      .trim()
+      .split(/[\s,]+/)
+      .map(Number);
+    if (m[1] === 'M' || m[1] === 'L') [x, y] = v;
+    else if (m[1] === 'H') x = v[0];
+    else y = v[0];
+    xs.push(x);
+    ys.push(y);
+  }
+  return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
 }
 
-function Disk({ x, y, label, rot = 0 }: { x: number; y: number; label: string; rot?: number }) {
+/** Rechteck in Bildpixeln */
+function R({
+  x,
+  y,
+  w,
+  h,
+  c,
+  className,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  c: string;
+  className?: string;
+}) {
+  return <rect x={x} y={y} width={w} height={h} fill={c} className={className} />;
+}
+
+/** Diskette flach auf dem Tisch (15×10 Pixel) */
+function TableDisk({ x, y, label }: { x: number; y: number; label: string }) {
   return (
-    <g transform={`translate(${x} ${y}) rotate(${rot})`}>
-      <rect width="74" height="74" rx="3" fill="#1d1d22" stroke="#000" />
-      <circle cx="37" cy="37" r="9" fill="#4a4036" />
-      <rect x="31" y="50" width="12" height="20" rx="5" fill="#2a2a30" />
-      <rect x="8" y="5" width="58" height="18" fill="#efe6c8" />
-      <text x="37" y="18" textAnchor="middle" fontSize="11" fill="#223" fontFamily="'Comic Sans MS', cursive">
-        {label}
-      </text>
+    <g>
+      <R x={x + 1} y={y + 10} w={15} h={1} c={C.dark} />
+      <R x={x} y={y} w={15} h={10} c={C.black} />
+      <R x={x + 2} y={y + 1} w={11} h={3} c={C.paper} />
+      <R x={x + 2} y={y + 1} w={11} h={1} c={label} />
+      <R x={x + 6} y={y + 5} w={3} h={2} c={C.grey} />
+      <R x={x + 6} y={y + 8} w={3} h={2} c={C.greyDark} />
     </g>
   );
 }
 
-function DeskRealistic({ state, onSelect, selected }: Props) {
+/** Monitorbild: Rand- und Hintergrundfarbe des C64, Textzeilen angedeutet (lesbar im C64-Fenster) */
+function Screen({ state }: { state: GameState }) {
   const c64 = renderC64(state);
+  const s = SCREEN;
+  if (!c64.powerOn)
+    return (
+      <g>
+        <R x={s.x} y={s.y} w={s.w} h={s.h} c={C.greyDark} />
+        <R x={s.x + 1} y={s.y + 1} w={s.w - 2} h={s.h - 2} c={C.black} />
+        <R x={s.x + 4} y={s.y + 3} w={10} h={1} c={C.grey} />
+      </g>
+    );
+  const ix = s.x + 4;
+  const iy = s.y + 4;
+  const iw = s.w - 8;
+  const ih = s.h - 8;
+  const fg = C64_PALETTE[c64.video.text];
+  // 25 Textzeilen auf ih Pixel: jede zweite belegte Zeile als 1-Pixel-Strich, Länge nach Textlänge
+  return (
+    <g>
+      <R x={s.x} y={s.y} w={s.w} h={s.h} c={C64_PALETTE[c64.video.border]} />
+      <R x={ix} y={iy} w={iw} h={ih} c={C64_PALETTE[c64.video.background]} />
+      {c64.lines.slice(-25).map((l, i) => {
+        const len = l.trimEnd().length;
+        if (!len || i % 2) return null;
+        return (
+          <R
+            key={i}
+            x={ix + 1}
+            y={iy + 1 + Math.floor((i * (ih - 2)) / 25)}
+            w={Math.max(1, Math.round((len * (iw - 2)) / 40))}
+            h={1}
+            c={fg}
+          />
+        );
+      })}
+    </g>
+  );
+}
+
+interface SceneProps {
+  state: GameState;
+  onSelect: (id: string) => void;
+  selected: string | null;
+  /** Ausschnitt (Detailansicht); ohne Angabe die ganze Szene */
+  viewBox?: string;
+  interactive?: boolean;
+  label?: string;
+  showNames?: boolean;
+  onHover?: (id: string | null) => void;
+  width?: number;
+}
+
+export function DeskScene({
+  state,
+  onSelect,
+  selected,
+  viewBox,
+  interactive = true,
+  label = 'Jans Schreibtisch – klickbare Gegenstände',
+  showNames = false,
+  onHover,
+  width,
+}: SceneProps) {
   const loc = state.itemLocations;
   const t = state.telecom;
   const drawerOpen = state.objectStates.drawer.open === true;
   const pkgOpen = state.objectStates.package.open === true;
   const radioOn = state.objectStates.radio.on === true;
-  const hour = parseInt(state.gameClock.slice(11, 13), 10);
-  const dark = hour >= 17 || hour < 7;
   const inDrive = Object.entries(loc).find(([, l]) => l === 'drive')?.[0];
-  const hs = (id: string) => ({
-    id,
-    label: `${OBJECT_BY_ID[id].short} ansehen`,
-    onSelect,
-    selected: selected === id,
-  });
-  const screenColor = c64.powerOn ? C64_PALETTE[c64.video.background] : '#1a1d1a';
-  const borderColor = c64.powerOn ? C64_PALETTE[c64.video.border] : '#121412';
+  const magVisible = pkgOpen && (loc.magazine === 'package' || loc.magazine === 'desk');
+  const uid = useId().replace(/:/g, '');
+  const ref = (n: string) => `${n}-${uid}`;
+
+  const spot = (key: string, children: ReactNode = null, area = DESK_AREAS[key]) =>
+    interactive ? (
+      <Hotspot
+        key={key}
+        id={key}
+        label={`${OBJECT_BY_ID[key].short} ansehen`}
+        onSelect={onSelect}
+        selected={selected === key}
+        onHover={onHover}
+      >
+        {children}
+        <path className="hs-area" d={area} />
+      </Hotspot>
+    ) : (
+      <g key={key}>{children}</g>
+    );
+
+  // Hörer als Pfad mit dem Bild als Muster: Begrenzung = Hörer (ein Clip würde das ganze Bild mitzählen)
+  const handsetImg = <path d={HANDSET} fill={`url(#${ref('img')})`} />;
+
+  const named = interactive && showNames;
+  const visibleAreas = (k: string) =>
+    (k !== 'magazine' || magVisible) && (k !== 'package' || loc.package === 'desk');
 
   return (
     <svg
-      className="desk-svg"
-      viewBox="0 0 1000 640"
-      role="group"
-      aria-label="Jans Schreibtisch – klickbare Gegenstände"
+      className={interactive ? 'desk-svg desk-scene' : 'device-crop'}
+      viewBox={viewBox ?? `0 0 ${DESK_W} ${DESK_H}`}
+      width={width}
+      height={width ? Math.round((width * DESK_H) / DESK_W) : undefined}
+      role={interactive ? 'group' : 'img'}
+      aria-label={label}
+      shapeRendering="crispEdges"
     >
       <defs>
-        <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#5b4a3a" />
-          <stop offset="1" stopColor="#3a2e24" />
-        </linearGradient>
-        <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#8a5a34" />
-          <stop offset="1" stopColor="#5e3a1e" />
-        </linearGradient>
-        <linearGradient id="beige" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#e3d9c0" />
-          <stop offset="1" stopColor="#bfb294" />
-        </linearGradient>
-        <linearGradient id="breadbin" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#8d7f6a" />
-          <stop offset="1" stopColor="#5f5445" />
-        </linearGradient>
-        <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.28" />
-          <stop offset="0.45" stopColor="#fff" stopOpacity="0.05" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
-        </linearGradient>
-        <linearGradient id="key" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#5a5042" />
-          <stop offset="1" stopColor="#2c261e" />
-        </linearGradient>
-        <linearGradient id="phonebody" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#b9bfc2" />
-          <stop offset="1" stopColor="#7d8386" />
-        </linearGradient>
-        <linearGradient id="sunbeam" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#fff2c8" stopOpacity="0.32" />
-          <stop offset="1" stopColor="#fff2c8" stopOpacity="0" />
-        </linearGradient>
-        <pattern id="paper" width="14" height="260" patternUnits="userSpaceOnUse">
-          <rect width="14" height="260" fill="none" />
-          <rect x="0" width="2" height="260" fill="#000" opacity="0.07" />
-          <circle cx="9" cy="20" r="1.6" fill="#000" opacity="0.1" />
-          <circle cx="9" cy="60" r="1.6" fill="#000" opacity="0.1" />
-          <circle cx="9" cy="100" r="1.6" fill="#000" opacity="0.1" />
-          <circle cx="9" cy="140" r="1.6" fill="#000" opacity="0.1" />
-          <circle cx="9" cy="180" r="1.6" fill="#000" opacity="0.1" />
-          <circle cx="9" cy="220" r="1.6" fill="#000" opacity="0.1" />
+        <pattern id={ref('img')} width={DESK_W} height={DESK_H} patternUnits="userSpaceOnUse">
+          <image href={deskUrl} width={DESK_W} height={DESK_H} />
         </pattern>
-        <filter id="soft" x="-20%" y="-50%" width="140%" height="200%">
-          <feGaussianBlur stdDeviation="7" />
-        </filter>
-        <filter id="grain" x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.35" numOctaves="3" seed="7" result="n" />
-          <feColorMatrix
-            in="n"
-            type="matrix"
-            values="0 0 0 0 0.12  0 0 0 0 0.06  0 0 0 0 0.02  0 0 0 2.2 -0.85"
-          />
-        </filter>
-        <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="9" />
-        </filter>
-        <radialGradient id="vignette" cx="0.5" cy="0.45" r="0.75">
-          <stop offset="0.55" stopColor="#000" stopOpacity="0" />
-          <stop offset="1" stopColor="#000" stopOpacity="0.45" />
-        </radialGradient>
-        <radialGradient id="lamp" cx="0.55" cy="0.25" r="0.75">
-          <stop offset="0" stopColor="#ffd89a" stopOpacity="0.35" />
-          <stop offset="1" stopColor="#000" stopOpacity="0" />
-        </radialGradient>
       </defs>
 
-      {/* Wand + Fenster */}
-      <rect width="1000" height="260" fill="url(#wall)" />
-      <rect width="1000" height="260" fill="url(#paper)" />
-      <rect y="236" width="1000" height="24" fill="#2a1f16" opacity="0.55" />
-      <rect y="232" width="1000" height="5" fill="#8a7358" opacity="0.7" />
-      <Hotspot {...hs('window')}>
-        <rect
-          x="40"
-          y="20"
-          width="180"
-          height="140"
-          fill={dark ? '#0e1830' : '#7f93a6'}
-          stroke="#2b2118"
-          strokeWidth="8"
-        />
-        <line x1="130" y1="20" x2="130" y2="160" stroke="#2b2118" strokeWidth="6" />
-        {dark && <circle cx="185" cy="50" r="3" fill="#ffd27a" />}
-      </Hotspot>
-      {/* Poster (fiktiv) */}
-      <g transform="translate(260 30) rotate(-2)">
-        <rect width="120" height="150" fill="#1b2a4a" stroke="#111" />
-        <text
-          x="60"
-          y="60"
-          textAnchor="middle"
-          fill="#f2c14e"
-          fontSize="18"
-          fontFamily="'Press Start 2P', monospace"
-        >
-          SPACE
-        </text>
-        <text
-          x="60"
-          y="90"
-          textAnchor="middle"
-          fill="#f2c14e"
-          fontSize="12"
-          fontFamily="'Press Start 2P', monospace"
-        >
-          RIDERS
-        </text>
-        <text x="60" y="135" textAnchor="middle" fill="#88a" fontSize="8">
-          (fiktives Filmplakat)
-        </text>
-      </g>
-      {/* Tür */}
-      <Hotspot {...hs('door')}>
-        <rect x="880" y="10" width="110" height="250" fill="#6b4a2c" stroke="#2b1d10" strokeWidth="4" />
-        <circle cx="900" cy="140" r="6" fill="#d4b26a" />
-        <rect x="905" y="40" width="70" height="30" fill="#f4e04d" />
-        <text x="940" y="52" textAnchor="middle" fontSize="8" fill="#222">
-          COMPUTER-
-        </text>
-        <text x="940" y="64" textAnchor="middle" fontSize="8" fill="#222">
-          ZONE
-        </text>
-      </Hotspot>
+      <image href={deskUrl} width={DESK_W} height={DESK_H} className="desk-image" />
 
-      {/* Schreibtischplatte in Schrägansicht */}
-      <polygon points="40,250 960,250 1000,600 0,600" fill="url(#wood)" />
-      <polygon points="40,250 960,250 1000,600 0,600" filter="url(#grain)" opacity="0.5" />
-      <polygon points="40,250 960,250 962,262 38,262" fill="#000" opacity="0.28" />
-      <polygon points="0,600 1000,600 1000,640 0,640" fill="#4a2c16" />
-      <polygon points="0,600 1000,600 1000,606 0,606" fill="#9a6a3c" opacity="0.8" />
-      {!dark && <polygon points="60,20 220,20 520,330 160,420" fill="url(#sunbeam)" pointerEvents="none" />}
-      {/* weiche Schatten unter den Geräten */}
-      <g filter="url(#soft)" opacity="0.55" pointerEvents="none">
-        <ellipse cx="155" cy="285" rx="95" ry="14" />
-        <ellipse cx="450" cy="302" rx="170" ry="16" />
-        <ellipse cx="725" cy="310" rx="110" ry="14" />
-        <ellipse cx="450" cy="416" rx="230" ry="16" />
-        <ellipse cx="140" cy="414" rx="95" ry="12" />
-        <ellipse cx="160" cy="515" rx="110" ry="12" />
-        <ellipse cx="915" cy="404" rx="75" ry="10" />
-        <ellipse cx="640" cy="560" rx="80" ry="10" />
-        <ellipse cx="845" cy="545" rx="100" ry="12" />
-      </g>
+      {spot('window')}
+      {spot('door')}
 
-      {/* Radio */}
-      <Hotspot {...hs('radio')}>
-        <rect x="70" y="190" width="170" height="85" rx="8" fill="#2f2f33" />
-        <rect x="82" y="202" width="90" height="60" rx="4" fill="#4a4a50" />
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <line key={i} x1="86" y1={208 + i * 9} x2="168" y2={208 + i * 9} stroke="#222" strokeWidth="3" />
-        ))}
-        <circle cx="205" cy="225" r="16" fill="#777" />
-        <rect x="185" y="252" width="40" height="10" fill={radioOn ? '#ffb347' : '#553'} />
-        {radioOn && (
-          <text x="155" y="185" fill="#ffd27a" fontSize="16">
-            ♪ ♫
-          </text>
-        )}
-      </Hotspot>
+      {spot('radio', radioOn && <R x={68} y={113} w={10} h={2} c={C.yellow} className="glow" />)}
 
-      {/* Monitor */}
-      <Hotspot {...hs('monitor')}>
-        <rect
-          x="300"
-          y="60"
-          width="300"
-          height="240"
-          rx="12"
-          fill="url(#beige)"
-          stroke="#8b7f63"
-          strokeWidth="3"
-        />
-        <rect x="322" y="80" width="256" height="190" rx="10" fill={borderColor} />
-        <rect x="346" y="100" width="208" height="150" fill={screenColor} />
-        {c64.powerOn &&
-          c64.lines
-            .slice(-12)
-            .map((l, i) =>
-              l.trim() ? (
-                <rect
-                  key={i}
-                  x="350"
-                  y={104 + i * 12}
-                  width={Math.min(200, l.trimEnd().length * 5)}
-                  height="5"
-                  fill={C64_PALETTE[c64.video.text]}
-                  opacity="0.85"
-                />
-              ) : null,
-            )}
-        {c64.powerOn && (
-          <rect
-            x="346"
-            y="100"
-            width="208"
-            height="150"
-            fill={screenColor}
-            filter="url(#glow)"
-            opacity="0.45"
-          />
-        )}
-        <rect
-          x="322"
-          y="80"
-          width="256"
-          height="190"
-          rx="10"
-          fill="none"
-          stroke="#000"
-          strokeOpacity="0.45"
-          strokeWidth="5"
-        />
-        <polygon points="346,100 470,100 346,230" fill="url(#glass)" />
-        <rect x="300" y="60" width="300" height="6" rx="3" fill="#fff" opacity="0.35" />
-        <rect x="420" y="300" width="60" height="18" fill="#a99d7f" />
-        <circle cx="560" cy="285" r="4" fill={c64.powerOn ? '#3cff5a' : '#35412f'} />
-      </Hotspot>
-
-      {/* 1541 */}
-      <Hotspot {...hs('drive1541')}>
-        <rect
-          x="625"
-          y="200"
-          width="200"
-          height="105"
-          rx="6"
-          fill="url(#beige)"
-          stroke="#8b7f63"
-          strokeWidth="3"
-        />
-        <rect x="645" y="240" width="160" height="12" fill="#3a3530" />
-        <rect x="700" y="232" width="50" height="10" fill="#5b544a" />
-        <circle cx="650" cy="285" r="5" fill={state.computer.driveOn ? '#4dff6a' : '#234'} />
-        <text x="760" y="292" fontSize="12" fill="#5b544a" fontFamily="sans-serif">
-          1541
-        </text>
-        {inDrive && <rect x="690" y="226" width="70" height="8" fill="#1d1d22" />}
-      </Hotspot>
-
-      {/* C64 */}
-      <Hotspot {...hs('c64')}>
-        <path
-          d="M270,330 L630,330 L660,410 L240,410 Z"
-          fill="url(#breadbin)"
-          stroke="#3d352b"
-          strokeWidth="3"
-        />
-        {Array.from({ length: 4 }).map((_, row) =>
-          Array.from({ length: 16 }).map((__, col) => (
-            <rect
-              key={`${row}-${col}`}
-              x={290 + col * 20 + row * 4 - 6}
-              y={342 + row * 14}
-              width="15"
-              height="10"
-              rx="2"
-              fill="url(#key)"
-            />
-          )),
-        )}
-        <rect x="370" y="398" width="150" height="8" rx="3" fill="#3a332a" />
-        <circle cx="620" cy="345" r="4" fill={state.computer.powerOn ? '#ff3b30' : '#422'} />
-      </Hotspot>
-
-      {/* Telefon */}
-      <Hotspot {...hs('phone')}>
-        <rect
-          x="60"
-          y="330"
-          width="160"
-          height="80"
-          rx="14"
-          fill="url(#phonebody)"
-          stroke="#555"
-          strokeWidth="2"
-        />
-        {[0, 1, 2].map((r) =>
-          [0, 1, 2].map((c) => (
-            <rect
-              key={`${r}${c}`}
-              x={95 + c * 30}
-              y={360 + r * 14}
-              width="22"
-              height="10"
-              rx="2"
-              fill="#e9eef0"
-            />
-          )),
-        )}
-        {t.handset === 'cradle' && (
-          <rect x="55" y="315" width="170" height="26" rx="13" fill="#7e8487" stroke="#444" />
-        )}
-        {t.ringing && (
-          <text x="140" y="305" textAnchor="middle" fill="#ffdc6a" fontSize="22" className="ring">
-            ☎ !
-          </text>
-        )}
-      </Hotspot>
-
-      {/* Akustikkoppler */}
-      <Hotspot {...hs('coupler')}>
-        <rect x="60" y="440" width="200" height="70" rx="8" fill="#e6e1d3" stroke="#777" strokeWidth="2" />
-        <circle cx="105" cy="475" r="22" fill="#222" />
-        <circle cx="215" cy="475" r="22" fill="#222" />
-        <circle cx="160" cy="498" r="5" fill={state.objectStates.coupler.carrier ? '#3cff5a' : '#2c3a2c'} />
-        {t.handset === 'coupler' && (
-          <rect x="70" y="455" width="180" height="26" rx="13" fill="#7e8487" stroke="#444" />
-        )}
-      </Hotspot>
-      {t.handset === 'hand' && (
-        <text x="160" y="540" textAnchor="middle" fill="#ffe7b0" fontSize="14" fontFamily="sans-serif">
-          (Hörer in der Hand)
-        </text>
-      )}
-
-      {/* Kassettenrekorder */}
-      <Hotspot {...hs('tape')}>
-        <rect x="850" y="320" width="130" height="80" rx="6" fill="#26262a" />
-        <rect x="866" y="332" width="98" height="40" rx="3" fill="#3c3c44" />
-        <circle cx="893" cy="352" r="9" fill="#111" />
-        <circle cx="937" cy="352" r="9" fill="#111" />
-      </Hotspot>
-
-      {/* Notizblock */}
-      <Hotspot {...hs('notebook')}>
-        <g transform="translate(560 440) rotate(-6)">
-          <rect width="150" height="120" fill="#fbf7e6" stroke="#bbb" />
-          {Array.from({ length: 8 }).map((_, i) => (
-            <line key={i} x1="8" y1={18 + i * 13} x2="142" y2={18 + i * 13} stroke="#b9d0e6" />
-          ))}
-          <text x="14" y="30" fontSize="12" fill="#335" fontFamily="'Comic Sans MS', cursive">
-            {state.knownFacts.length ? `${state.knownFacts.length} Notizen` : 'Notizen'}
-          </text>
-        </g>
-      </Hotspot>
-
-      {/* Päckchen + Zeitschrift */}
-      {loc.package === 'desk' && (
-        <Hotspot {...hs('package')}>
-          <rect x="760" y="430" width="170" height="110" fill="#c79a5b" stroke="#7a5a2c" strokeWidth="2" />
-          {!pkgOpen ? (
-            <rect x="760" y="476" width="170" height="16" fill="#e8d8a8" opacity="0.8" />
-          ) : (
-            <polygon points="760,430 800,400 890,400 930,430" fill="#a87c40" />
-          )}
-        </Hotspot>
-      )}
-      {pkgOpen && isReachable(state, 'magazine') && (
-        <Hotspot {...hs('magazine')}>
-          <rect x="785" y="420" width="120" height="70" fill="#d23c3c" stroke="#7a1f1f" />
-          <text
-            x="845"
-            y="447"
-            textAnchor="middle"
-            fill="#fff"
-            fontSize="10"
-            fontFamily="sans-serif"
-            fontWeight="bold"
-          >
-            HEIMCOMPUTER
-          </text>
-          <text
-            x="845"
-            y="463"
-            textAnchor="middle"
-            fill="#fff"
-            fontSize="10"
-            fontFamily="sans-serif"
-            fontWeight="bold"
-          >
-            JOURNAL
-          </text>
-        </Hotspot>
-      )}
-
-      {/* Disketten auf dem Tisch */}
-      {loc.disk_game === 'desk' && (
-        <Hotspot {...hs('disk_game')}>
-          <Disk x={420} y={450} label="WT-07" rot={8} />
-        </Hotspot>
-      )}
-      {loc.disk_1001 === 'desk' && (
-        <Hotspot {...hs('disk_1001')}>
-          <Disk x={300} y={460} label="1001" rot={-6} />
-        </Hotspot>
-      )}
-      {loc.disk_archive === 'desk' && (
-        <Hotspot {...hs('disk_archive')}>
-          <Disk x={340} y={500} label="ARCHIV" rot={3} />
-        </Hotspot>
-      )}
-
-      {/* Schublade */}
-      <Hotspot {...hs('drawer')}>
-        <rect
-          x="380"
-          y="604"
-          width="300"
-          height="32"
-          fill={drawerOpen ? '#3b2310' : '#6b4424'}
-          stroke="#2b1a0a"
-          strokeWidth="2"
-        />
-        <rect x="505" y="613" width="50" height="10" rx="4" fill="#d4b26a" />
-      </Hotspot>
-      {drawerOpen && (
+      {spot(
+        'monitor',
         <g>
-          <rect x="370" y="540" width="320" height="66" fill="#2d1a0b" opacity="0.9" />
-          {loc.disk_1001 === 'drawer' && (
-            <Hotspot {...hs('disk_1001')}>
-              <Disk x={400} y={536} label="1001" rot={-4} />
-            </Hotspot>
-          )}
-          {loc.disk_game === 'drawer' && (
-            <Hotspot {...hs('disk_game')}>
-              <Disk x={600} y={537} label="WT-07" rot={3} />
-            </Hotspot>
-          )}
-          {loc.disk_archive === 'drawer' && (
-            <Hotspot {...hs('disk_archive')}>
-              <Disk x={500} y={538} label="ARCHIV" rot={5} />
-            </Hotspot>
-          )}
-        </g>
+          <Screen state={state} />
+          {state.computer.powerOn && <R x={203} y={108} w={2} h={1} c={C.green} />}
+        </g>,
       )}
 
-      <rect width="1000" height="640" fill="url(#lamp)" pointerEvents="none" />
+      {spot('c64', state.computer.powerOn && <R x={217} y={118} w={2} h={1} c={C.red} />)}
+
+      {spot(
+        'drive1541',
+        <g>
+          {inDrive && <R x={276} y={120} w={14} h={2} c={C.black} />}
+          {state.computer.driveOn && <R x={303} y={121} w={2} h={1} c={C.green} className="blink" />}
+        </g>,
+      )}
+
+      {spot('tape')}
+
+      {spot(
+        'coupler',
+        <g>{state.objectStates.coupler.carrier && <R x={279} y={103} w={2} h={1} c={C.green} />}</g>,
+      )}
+
+      {spot(
+        'phone',
+        <g>
+          {t.handset === 'cradle' && t.ringing && <g className="ring">{handsetImg}</g>}
+          {t.ringing && (
+            <g className="ring-mark" pointerEvents="none">
+              <R x={229} y={83} w={2} h={5} c={C.yellow} />
+              <R x={229} y={89} w={2} h={2} c={C.yellow} />
+            </g>
+          )}
+        </g>,
+      )}
+
+      {spot('notebook')}
+
+      {/* Päckchen und Zeitschrift: so wie im Bild (offen) */}
+      {loc.package === 'desk' && spot('package')}
+      {magVisible && spot('magazine')}
+
+      {/* Disketten vorn auf dem Tisch */}
+      {Object.entries(DISKS).map(
+        ([k, d]) =>
+          loc[k] === 'desk' &&
+          spot(k, <TableDisk x={d.x} y={154} label={d.label} />, `M${d.x} 154H${d.x + 15}V164H${d.x}Z`),
+      )}
+
+      {/* Schublade: herausgezogen, Inhalt von oben sichtbar */}
+      {spot(
+        'drawer',
+        drawerOpen && (
+          <g pointerEvents="none">
+            <R x={229} y={176} w={88} h={10} c={C.black} />
+            <R x={231} y={177} w={84} h={8} c={C.ink} />
+            <R x={229} y={186} w={88} h={1} c={C.woodLight} />
+          </g>
+        ),
+      )}
+      {drawerOpen &&
+        Object.entries(DRAWER_DISKS).map(
+          ([k, x]) =>
+            loc[k] === 'drawer' &&
+            spot(
+              k,
+              <g>
+                <R x={x} y={177} w={18} h={7} c={C.black} />
+                <R x={x + 2} y={178} w={14} h={2} c={C.paper} />
+                <R x={x + 2} y={178} w={14} h={1} c={DISKS[k].label} />
+              </g>,
+              `M${x} 177H${x + 18}V184H${x}Z`,
+            ),
+        )}
+
+      {named &&
+        Object.keys(DESK_AREAS)
+          .filter(visibleAreas)
+          .map((k) => {
+            const [cx, cy] = NAME_POS[k] ?? areaCenter(DESK_AREAS[k]);
+            return (
+              <text key={k} x={cx} y={cy + 2} className="desk-name" textAnchor="middle" pointerEvents="none">
+                {OBJECT_BY_ID[k].short}
+              </text>
+            );
+          })}
     </svg>
   );
 }
 
-export function Desk({ pixel, ...props }: Props & { pixel: boolean }) {
-  return pixel ? <DeskPixel {...props} /> : <DeskRealistic {...props} />;
+/** Breite der Bühne: so groß wie möglich, bei genug Platz in ganzen Gerätepixeln je Bildpixel (scharf) */
+function useStageWidth(ref: RefObject<HTMLDivElement | null>): number {
+  const [w, setW] = useState(DESK_W * 2);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const avail = el.clientWidth;
+      if (!avail) return;
+      const maxH = window.innerHeight * (window.matchMedia('(max-width: 760px)').matches ? 0.42 : 0.52);
+      const s = Math.min(avail / DESK_W, maxH / DESK_H);
+      const dpr = window.devicePixelRatio || 1;
+      const dev = s * dpr;
+      // ganze Gerätepixel je Bildpixel, solange das höchstens 15 % Größe kostet
+      const whole = Math.floor(dev);
+      const scale = whole >= 2 && whole / dev >= 0.85 ? whole / dpr : s;
+      setW(Math.floor(DESK_W * scale));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [ref]);
+  return w;
+}
+
+export function Desk({
+  state,
+  onSelect,
+  selected,
+}: {
+  state: GameState;
+  onSelect: (id: string) => void;
+  selected: string | null;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const width = useStageWidth(ref);
+  const [hover, setHover] = useState<string | null>(null);
+  const [showNames, setShowNames] = useState(false);
+  const name = hover ?? selected;
+
+  // Taste N blendet alle Namen ein und aus (nicht in Eingabefeldern)
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'n' || e.key === 'N') setShowNames((v) => !v);
+    };
+    window.addEventListener('keydown', key);
+    return () => window.removeEventListener('keydown', key);
+  }, []);
+
+  return (
+    <div className="desk-stage" ref={ref}>
+      <DeskScene
+        state={state}
+        onSelect={onSelect}
+        selected={selected}
+        showNames={showNames}
+        onHover={setHover}
+        width={width}
+      />
+      <div className="desk-bar" style={{ width }}>
+        <span className="desk-caption" data-testid="desk-caption">
+          {name && OBJECT_BY_ID[name] ? OBJECT_BY_ID[name].short : 'Jans Schreibtisch'}
+        </span>
+        <button
+          type="button"
+          className="desk-names"
+          aria-pressed={showNames}
+          onClick={() => setShowNames((v) => !v)}
+          title="Alle Gegenstände benennen (Taste N)"
+          data-testid="desk-names"
+        >
+          Namen
+        </button>
+      </div>
+    </div>
+  );
 }

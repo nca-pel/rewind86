@@ -107,7 +107,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Ein graues Tastentelefon von der Post, mit langer Schnur, damit es bis an den Schreibtisch reicht. Es hängt an derselben Leitung wie der Apparat unten im Flur.',
+        text: 'Ein graues Telefon mit Wählscheibe, von der Post gemietet, mit langer Schnur, damit es bis an den Schreibtisch reicht. Es hängt an derselben Leitung wie der Apparat unten im Flur.',
       },
     ],
     historicalStatus: 'plausible',
@@ -230,7 +230,9 @@ export const OBJECTS: WorldObject[] = [
         when: { objState: 'package', key: 'open', eq: false },
         text: 'Ein Päckchen vom Zeitschriftenversand. Deine Mutter hat es dir heute Mittag auf den Tisch gelegt. Noch zugeklebt.',
       },
-      { text: 'Das aufgerissene Päckchen vom Zeitschriftenversand.' },
+      {
+        text: 'Das aufgerissene Päckchen vom Zeitschriftenversand. Deine Mutter hat es dir heute Mittag auf den Tisch gelegt – du hast es sofort aufgemacht. Obenauf liegt die neue Ausgabe des »Heimcomputer-Journals«.',
+      },
     ],
     historicalStatus: 'plausible',
   },

@@ -187,15 +187,6 @@ export function SettingsForm() {
       <label>
         <input
           type="checkbox"
-          checked={settings.pixelArt}
-          onChange={(e) => set({ pixelArt: e.target.checked })}
-          data-testid="pixel-art"
-        />{' '}
-        Pixelgrafik im Stil von 1986 (aus = realistisch gezeichneter Schreibtisch)
-      </label>
-      <label>
-        <input
-          type="checkbox"
           checked={settings.logMisses}
           onChange={(e) => set({ logMisses: e.target.checked })}
         />{' '}

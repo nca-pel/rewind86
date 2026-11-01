@@ -1,17 +1,14 @@
 /**
- * Gezeichnete Detailansichten der Geräte (eigene Platzhalter-Illustrationen, kein Foto, keine Vorlage).
- * Die Bilder zeigen den Zustand: Betriebs-LED, Diskette im Laufwerk, abgehobener Hörer, Radio an.
+ * Bild in der Detailansicht. Gegenstände, die im Schreibtischbild zu sehen sind, zeigen einen vergrößerten
+ * Ausschnitt daraus – mit denselben Zustands-Overlays (Bildschirm, LEDs, Hörer, Radio). Alles andere
+ * (Disketten, Datasette, BTX-Set) bleibt eine eigene Zeichnung.
  */
-import { C64_PALETTE } from './palette';
-import { renderC64 } from '../sim/c64';
+import { DeskScene } from './Desk';
+import { glyphPath } from './glyphPath';
 import type { ReactNode } from 'react';
 import type { GameState } from '../engine/types';
 
 const DISK_LABEL: Record<string, string> = { disk_game: 'WT-07', disk_1001: '1001', disk_archive: 'ARCHIV' };
-
-function Led({ x, y, on, color = '#e33' }: { x: number; y: number; on: boolean; color?: string }) {
-  return <circle cx={x} cy={y} r="4" fill={on ? color : '#411'} stroke="#000" />;
-}
 
 function Floppy({ label, dark = false }: { label: string; dark?: boolean }) {
   return (
@@ -34,201 +31,8 @@ function Floppy({ label, dark = false }: { label: string; dark?: boolean }) {
   );
 }
 
-function art(state: GameState, id: string): { viewBox: string; body: ReactNode } | null {
-  const c = renderC64(state);
-  const t = state.telecom;
-  const inDrive = Object.entries(state.itemLocations).find(([, l]) => l === 'drive')?.[0];
+function art(id: string): { viewBox: string; body: ReactNode } | null {
   switch (id) {
-    case 'c64':
-    case 'monitor': {
-      const screen = c.powerOn ? C64_PALETTE[c.video.background] : '#151815';
-      const border = c.powerOn ? C64_PALETTE[c.video.border] : '#151815';
-      return {
-        viewBox: '0 0 300 210',
-        body: (
-          <g>
-            <rect
-              x="40"
-              y="6"
-              width="220"
-              height="150"
-              rx="12"
-              fill="#cfc6a8"
-              stroke="#6b6450"
-              strokeWidth="3"
-            />
-            <rect x="56" y="20" width="188" height="118" rx="8" fill={border} />
-            <rect x="74" y="34" width="152" height="90" fill={screen} />
-            {c.powerOn && (
-              <text x="80" y="52" fontSize="9" fill="#fff" fontFamily="monospace">
-                READY.
-              </text>
-            )}
-            <Led x={228} y={148} on={c.powerOn} color="#3d3" />
-            <rect
-              x="20"
-              y="164"
-              width="260"
-              height="38"
-              rx="6"
-              fill="#a99f82"
-              stroke="#6b6450"
-              strokeWidth="2"
-            />
-            {Array.from({ length: 12 }, (_, i) => (
-              <rect key={i} x={32 + i * 20} y="174" width="16" height="9" rx="2" fill="#5b5440" />
-            ))}
-            <rect x="60" y="188" width="140" height="8" rx="2" fill="#5b5440" />
-          </g>
-        ),
-      };
-    }
-    case 'drive1541':
-      return {
-        viewBox: '0 0 300 150',
-        body: (
-          <g>
-            <rect
-              x="10"
-              y="20"
-              width="280"
-              height="110"
-              rx="8"
-              fill="#cfc6a8"
-              stroke="#6b6450"
-              strokeWidth="3"
-            />
-            <rect x="40" y="52" width="150" height="14" rx="3" fill="#222" />
-            {inDrive && <rect x="48" y="55" width="134" height="8" fill="#1d1d22" />}
-            <rect x="210" y="46" width="12" height="8" fill="#5b5440" />
-            <Led x={250} y={60} on={!!inDrive} />
-            <Led x={250} y={80} on={c.powerOn} color="#3d3" />
-            <text x="40" y="100" fontSize="12" fill="#5b5440" fontFamily="monospace">
-              FLOPPY DISK DRIVE
-            </text>
-          </g>
-        ),
-      };
-    case 'phone':
-    case 'handset':
-      return {
-        viewBox: '0 0 260 200',
-        body: (
-          <g>
-            {/* Graues Tastentelefon der Post (wie im Beschreibungstext und auf dem Schreibtisch) */}
-            <rect
-              x="30"
-              y="70"
-              width="200"
-              height="110"
-              rx="16"
-              fill="#a7a9a4"
-              stroke="#222"
-              strokeWidth="3"
-            />
-            <rect x="80" y="92" width="100" height="80" rx="6" fill="#8d8f8a" stroke="#555" />
-            {Array.from({ length: 12 }, (_, i) => (
-              <rect
-                key={i}
-                x={90 + (i % 3) * 28}
-                y={98 + Math.floor(i / 3) * 18}
-                width="22"
-                height="13"
-                rx="2"
-                fill="#ecebe6"
-                stroke="#444"
-              />
-            ))}
-            {t.handset === 'cradle' ? (
-              <g transform={t.ringing ? 'rotate(-3 130 60)' : undefined}>
-                <rect
-                  x="45"
-                  y="52"
-                  width="170"
-                  height="24"
-                  rx="12"
-                  fill="#7c7e79"
-                  stroke="#222"
-                  strokeWidth="2"
-                />
-              </g>
-            ) : (
-              <g>
-                <path d="M30 100 q-18 -40 10 -70" stroke="#222" strokeWidth="3" fill="none" />
-                <rect
-                  x="6"
-                  y="12"
-                  width="90"
-                  height="22"
-                  rx="11"
-                  fill="#7c7e79"
-                  stroke="#222"
-                  strokeWidth="2"
-                  transform="rotate(-25 50 24)"
-                />
-              </g>
-            )}
-            {t.ringing && (
-              <text x="130" y="28" textAnchor="middle" fontSize="18" fill="#e5c35a">
-                ♪ klingelt ♪
-              </text>
-            )}
-          </g>
-        ),
-      };
-    case 'coupler':
-      return {
-        viewBox: '0 0 280 150',
-        body: (
-          <g>
-            <rect x="20" y="40" width="240" height="90" rx="8" fill="#2b2b30" stroke="#000" strokeWidth="3" />
-            <ellipse cx="80" cy="60" rx="34" ry="12" fill="#111" stroke="#555" />
-            <ellipse cx="200" cy="60" rx="34" ry="12" fill="#111" stroke="#555" />
-            <rect
-              x="110"
-              y="38"
-              width="60"
-              height="16"
-              rx="8"
-              fill="#7c7e79"
-              opacity={t.handset === 'coupler' ? 1 : 0.15}
-            />
-            <Led x={50} y={110} on={t.connectedSystemId !== null} color="#3d3" />
-            <text x="75" y="115" fontSize="11" fill="#bbb" fontFamily="monospace">
-              AKUSTIKKOPPLER
-            </text>
-          </g>
-        ),
-      };
-    case 'radio': {
-      const on = state.objectStates.radio.on === true;
-      return {
-        viewBox: '0 0 260 150',
-        body: (
-          <g>
-            <rect
-              x="20"
-              y="30"
-              width="220"
-              height="100"
-              rx="10"
-              fill="#7a4e2a"
-              stroke="#2b1a0a"
-              strokeWidth="3"
-            />
-            <rect x="36" y="46" width="110" height="60" rx="4" fill="#d8c38a" />
-            {Array.from({ length: 10 }, (_, i) => (
-              <rect key={i} x={44 + i * 10} y="52" width="2" height="14" fill="#6b4424" />
-            ))}
-            <line x1={on ? 100 : 54} y1="50" x2={on ? 100 : 54} y2="104" stroke="#c33" strokeWidth="2" />
-            <circle cx="190" cy="76" r="22" fill="#2b1a0a" stroke="#d4b26a" strokeWidth="3" />
-            <line x1="190" y1="76" x2="200" y2="62" stroke="#d4b26a" strokeWidth="3" />
-            <Led x={50} y={118} on={on} color="#fc4" />
-          </g>
-        ),
-      };
-    }
-    case 'tape':
     case 'datasette':
     case 'cassette':
       return {
@@ -291,11 +95,81 @@ function art(state: GameState, id: string): { viewBox: string; body: ReactNode }
   }
 }
 
+/** Ausschnitte aus der Schreibtisch-Szene (x, y, Breite, Höhe in Bildpixeln, siehe Desk.tsx) */
+const CROPS: Record<string, [number, number, number, number]> = {
+  c64: [116, 104, 116, 54],
+  monitor: [138, 46, 80, 70],
+  drive1541: [246, 80, 72, 54],
+  phone: [205, 78, 52, 52],
+  handset: [205, 78, 52, 52],
+  coupler: [246, 78, 66, 36],
+  tape: [276, 84, 40, 30],
+  radio: [32, 98, 60, 58],
+  window: [0, 0, 72, 122],
+  door: [296, 0, 88, 180],
+  notebook: [68, 130, 64, 42],
+  package: [196, 122, 136, 60],
+  drawer: [222, 170, 102, 46],
+};
+
+/** Titelseite der fiktiven Zeitschrift in Pixeln (eigener Zeichensatz) */
+function MagazineCover() {
+  return (
+    <svg
+      viewBox="0 0 120 90"
+      role="img"
+      aria-label="Titelseite Heimcomputer-Journal 11/86"
+      shapeRendering="crispEdges"
+    >
+      <rect width="120" height="90" fill="#e6c593" />
+      <rect width="120" height="26" fill="#c42a22" />
+      <path d={glyphPath('HEIM-', 0, 0)} fill="#f2cf3a" transform="translate(4 3)" />
+      <path d={glyphPath('COMPUTER', 0, 0)} fill="#f2cf3a" transform="translate(4 14)" />
+      <rect x="86" y="3" width="30" height="9" fill="#e6c593" />
+      <path d={glyphPath('11/86', 0, 0)} fill="#c42a22" transform="translate(88 5) scale(0.65)" />
+      <rect y="26" width="120" height="8" fill="#2a314e" />
+      <path d={glyphPath('JOURNAL', 0, 0)} fill="#e6c593" transform="translate(4 27.5) scale(0.7)" />
+      <rect x="8" y="40" width="58" height="34" fill="#2b2119" />
+      <rect x="12" y="43" width="34" height="24" fill="#2a314e" />
+      <rect x="15" y="46" width="28" height="18" fill="#6e7c8d" />
+      <rect x="50" y="46" width="12" height="20" fill="#af8964" />
+      <circle cx="92" cy="54" r="14" fill="#f2cf3a" />
+      <path d={glyphPath('TEST', 0, 0)} fill="#c42a22" transform="translate(81 46) scale(0.7)" />
+      <path d={glyphPath('KOPPLER', 0, 0)} fill="#c42a22" transform="translate(79.5 55) scale(0.5)" />
+      <path
+        d={glyphPath('LISTINGS TIPPS DFUE', 0, 0)}
+        fill="#2a314e"
+        transform="translate(6 79) scale(0.6)"
+      />
+    </svg>
+  );
+}
+
 export function DeviceArt({ state, id, label }: { state: GameState; id: string; label: string }) {
-  const a = art(state, id);
+  if (id === 'magazine')
+    return (
+      <figure className="device-art pixel-art">
+        <MagazineCover />
+      </figure>
+    );
+  const crop = CROPS[id];
+  if (crop)
+    return (
+      <figure className="device-art pixel-art">
+        <DeskScene
+          state={state}
+          viewBox={crop.join(' ')}
+          interactive={false}
+          onSelect={() => {}}
+          selected={null}
+          label={`Bild: ${label}`}
+        />
+      </figure>
+    );
+  const a = art(id);
   if (!a) return null;
   return (
-    <figure className="device-art" title="Platzhalter-Illustration">
+    <figure className="device-art" title="Eigene Zeichnung">
       <svg viewBox={a.viewBox} role="img" aria-label={`Zeichnung: ${label}`}>
         {a.body}
       </svg>

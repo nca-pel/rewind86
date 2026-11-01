@@ -18,6 +18,8 @@ const SPECIAL_KEYS: Array<{ key: C64Key; label: string; aria: string }> = [
   { key: 'SPACE', label: 'SPACE', aria: 'Leertaste' },
   { key: 'RETURN', label: 'RETURN', aria: 'Taste RETURN' },
   { key: 'F1', label: 'F1', aria: 'Funktionstaste F1' },
+  { key: 'F3', label: 'F3', aria: 'Funktionstaste F3' },
+  { key: 'F5', label: 'F5', aria: 'Funktionstaste F5' },
   { key: 'F7', label: 'F7', aria: 'Funktionstaste F7' },
   { key: 'CLRHOME', label: 'CLR', aria: 'Taste CLR/HOME' },
 ];

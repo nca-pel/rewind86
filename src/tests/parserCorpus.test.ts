@@ -44,6 +44,8 @@ describe('Parser-Korpus', () => {
   test('Zeitschrift im geschlossenen Päckchen: hilfreicher Hinweis statt „nichts zu sehen“', () => {
     const s = new Session(false);
     s.state = milestoneState('c64', step)!;
+    // Neue Spiele beginnen mit offenem Päckchen; ältere Spielstände können es noch geschlossen haben
+    s.state.objectStates.package.open = false;
     expect(s.a('lies den artikel')).toMatch(/Päckchen/);
     expect(s.a('lies die zeitschrift')).toMatch(/ÖFFNE PÄCKCHEN/);
   });

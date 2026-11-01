@@ -349,7 +349,7 @@ Ersatzschlüssel ungeprüft an; erst `readWithKey` beim Lesen entscheidet (Klart
 
 ## UI
 
-- `ui/Desk.tsx`: Weiche nach Einstellung `pixelArt` – `DeskRealistic` (SVG mit Verläufen, Schatten, Maserung, Glanz) oder `DeskPixel.tsx` (320×205 Pixel, C64-Palette, Rasterung, Text im eigenen Zeichensatz); gemeinsame `Hotspot.tsx`; Hotspots sind `role="button"`, per Tab erreichbar,
+- `ui/Desk.tsx` (`DeskScene`): Schreibtisch als Pixel-Szene, 384×216 Pixel, 32 Farben (`assets/desk/desk.png`, gebaut von `scripts/build-desk.py` aus `docs/00-raw/finalpixel.jpg`). Bild, Klickflächen (`DESK_AREAS`, Bildpixel) und Zustands-Sprites liegen in einem SVG; die Bühne skaliert in ganzen Gerätepixeln, solange das höchstens 15 % Größe kostet (geprüft in `e2e/desk.spec.ts` auf drei Fenstergrößen). Hover/Fokus: Pixel-Umriss + Name in der Zeile unter dem Bild; „Namen“ bzw. Taste N blendet alle Namen ein. Sprites nur, wo der Zustand fürs Spiel zählt: Monitorbild (C64-Farben, Zeilen angedeutet), LEDs, Radio-Skala, klingelnder Hörer, offene Schublade, Disketten; Fenster, Telefon, Päckchen und Zeitschrift bleiben wie im Bild (das Päckchen ist ab Spielbeginn offen). `DeviceArt.tsx` zeigt in der Detailansicht Ausschnitte derselben Szene, die Zeitschrift als eigenes Pixel-Titelbild („Heimcomputer-Journal 11/86“). Gemeinsame `Hotspot.tsx`; Hotspots sind `role="button"`, per Tab erreichbar,
   mit `aria-label`; ihr Aussehen folgt dem Zustand (Hörer, LEDs, Schublade, Päckchen, Disketten, Tageszeit).
 - `ui/C64Panel.tsx`: 40×25-Raster, Größe über Container-Query-Einheiten skaliert; eigene Eingabe mit Fokusrahmen,
   Sondertasten, Tastenmodus inkl. Fallback für mobile Bildschirmtastaturen.

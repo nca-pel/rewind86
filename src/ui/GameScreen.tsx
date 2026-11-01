@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useSettings } from '../app/settings';
 import type { GameUi, Panel } from '../app/useGame';
 import { AdventurePanel } from './AdventurePanel';
 import { C64Panel } from './C64Panel';
@@ -14,7 +13,6 @@ import { Notebook } from './Notebook';
 import { StatusBar } from './StatusBar';
 
 export function GameScreen({ game }: { game: GameUi }) {
-  const { settings } = useSettings();
   const state = game.state!;
   const ending = state.flags.gameOver ? ENDING_BY_ID[String(state.flags.gameOver)] : undefined;
   const [panel, setPanel] = useState<Panel>('desk');
@@ -50,7 +48,7 @@ export function GameScreen({ game }: { game: GameUi }) {
       </nav>
       <main className="main-grid">
         <div className="desk-area">
-          <Desk state={state} onSelect={select} selected={game.detail} pixel={settings.pixelArt} />
+          <Desk state={state} onSelect={select} selected={game.detail} />
           <DetailPanel game={game} />
         </div>
         <div className="c64-area">

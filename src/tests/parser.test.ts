@@ -107,6 +107,7 @@ describe('Parser-Szenarien (GDD §19.1)', () => {
 
   test('UNTERSUCHE PAKET, dann ÖFFNE ES öffnet das Paket (Pronomen)', () => {
     const s = new Session();
+    s.state.objectStates.package.open = false; // Spielstand von vor der Änderung: noch zugeklebt
     s.a('UNTERSUCHE PAKET');
     const out = s.a('ÖFFNE ES');
     expect(s.state.objectStates.package.open).toBe(true);

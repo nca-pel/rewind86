@@ -252,30 +252,120 @@ select {
   min-height: 0;
 }
 
-/* ---------------------------------------------------------------- Schreibtisch */
-.desk-svg {
+/* ---------------------------------------------------------------- Schreibtisch (Pixel-Szene 384×216) */
+.desk-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  max-height: 52dvh;
+}
+.desk-svg {
   display: block;
-  border-radius: 8px;
+  max-width: 100%;
+  height: auto;
   border: 1px solid var(--line);
-  background: #2b1f17;
+  background: #19120e;
+  image-rendering: pixelated;
+}
+.desk-svg image,
+.device-crop image {
+  image-rendering: pixelated;
 }
 .hotspot {
   cursor: pointer;
   outline: none;
 }
-.hotspot:hover,
-.hotspot:focus-visible,
-.hotspot.selected {
-  filter: drop-shadow(0 0 6px var(--focus)) drop-shadow(0 0 2px #fff);
+/* Klickflächen sind unsichtbar; bei Hover/Fokus/Auswahl erscheint ein heller Pixel-Umriss */
+.desk-scene .hs-area {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 1;
+}
+.desk-scene .hotspot:hover .hs-area,
+.desk-scene .hotspot:focus-visible .hs-area {
+  fill: rgba(242, 207, 58, 0.12);
+  stroke: #f2cf3a;
+}
+.desk-scene .hotspot.selected .hs-area {
+  fill: rgba(255, 255, 255, 0.08);
+  stroke: #e6c593;
+  stroke-dasharray: 2 1;
+}
+.desk-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 5px;
+  fill: #f2cf3a;
+  paint-order: stroke;
+  stroke: #19120e;
+  stroke-width: 1.6px;
+}
+.desk-bar {
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.4rem;
+  background: #19120e;
+  border: 1px solid var(--line);
+  border-top: 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  color: #f2cf3a;
+}
+.desk-names {
+  font: inherit;
+  font-size: 0.6rem;
+  padding: 0.25rem 0.5rem;
+}
+.desk-names[aria-pressed='true'] {
+  background: #f2cf3a;
+  color: #19120e;
+}
+/* Animationen: Regen, Laterne, LEDs, Radio-Skala */
+.desk-scene .rain {
+  animation: rain 0.6s steps(3) infinite;
+}
+@keyframes rain {
+  to {
+    transform: translateY(9px);
+  }
+}
+.desk-scene .flicker {
+  animation: flicker 3.2s steps(1) infinite;
+}
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  47% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+.desk-scene .blink {
+  animation: blink 0.4s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.desk-scene .glow {
+  animation: flicker 4s steps(1) infinite;
+}
+.ring-mark {
+  animation: blink 0.5s steps(1) infinite;
 }
 .ring {
   animation: ring 0.5s steps(2) infinite;
 }
 @keyframes ring {
   50% {
-    transform: translateX(3px);
+    transform: translateX(1px);
   }
 }
 .detail-panel {
@@ -794,9 +884,6 @@ select {
   .game[data-panel='c64'] .desk-area {
     display: none;
   }
-  .desk-svg {
-    max-height: 42dvh;
-  }
   .detail-panel {
     position: static;
     margin-top: 0.4rem;
@@ -1009,13 +1096,7 @@ html[data-motion='reduced'] *::after {
   height: auto;
   max-height: 180px;
 }
-.desk-svg.pixel {
+.device-art.pixel-art svg {
+  border-radius: 4px;
   image-rendering: pixelated;
-  shape-rendering: crispEdges;
-  aspect-ratio: 320 / 205;
-}
-.desk-svg.pixel .hotspot:hover,
-.desk-svg.pixel .hotspot:focus-visible,
-.desk-svg.pixel .hotspot.selected {
-  filter: brightness(1.35) drop-shadow(0 0 1px #fff);
 }
