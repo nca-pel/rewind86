@@ -11,12 +11,16 @@ import { SaveList, SettingsForm } from './Menu';
 import { Modal } from './Modal';
 import { Notebook } from './Notebook';
 import { StatusBar } from './StatusBar';
+import { renderC64 } from '../sim/c64';
+import { useCommandInput } from './useCommandInput';
 
 export function GameScreen({ game }: { game: GameUi }) {
   const state = game.state!;
   const ending = state.flags.gameOver ? ENDING_BY_ID[String(state.flags.gameOver)] : undefined;
   const [panel, setPanel] = useState<Panel>('desk');
   const [advMax, setAdvMax] = useState(false);
+  const view = renderC64(state);
+  const input = useCommandInput(game, view);
   const [dev] = useState(devEnabled);
 
   useEffect(() => {
@@ -53,10 +57,15 @@ export function GameScreen({ game }: { game: GameUi }) {
           <DetailPanel game={game} />
         </div>
         <div className="c64-area">
-          <C64Panel game={game} />
+          <C64Panel game={game} view={view} input={input} />
         </div>
         <div className="adv-area">
-          <AdventurePanel game={game} maximized={advMax} onToggleMaximize={() => setAdvMax((v) => !v)} />
+          <AdventurePanel
+            game={game}
+            input={input}
+            maximized={advMax}
+            onToggleMaximize={() => setAdvMax((v) => !v)}
+          />
         </div>
       </main>
 

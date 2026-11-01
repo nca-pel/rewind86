@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, type FormEvent } from 'react';
 import type { GameUi } from '../app/useGame';
 import type { LogEntry } from '../engine/types';
+import type { CommandInput } from './useCommandInput';
 
 function Entry({ e }: { e: LogEntry }) {
   return (
@@ -13,63 +14,35 @@ function Entry({ e }: { e: LogEntry }) {
 
 export function AdventurePanel({
   game,
+  input,
   maximized,
   onToggleMaximize,
 }: {
   game: GameUi;
+  input: CommandInput;
   maximized: boolean;
   onToggleMaximize: () => void;
 }) {
   const state = game.state!;
-  const [value, setValue] = useState('');
-  const [hist, setHist] = useState<string[]>([]);
-  const [histIdx, setHistIdx] = useState(-1);
-  const [focused, setFocused] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const c64 = input.target === 'c64';
 
   useEffect(() => {
     const el = logRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [state.history.length]);
 
-  useEffect(() => {
-    if (game.focusRequest?.target === 'adventure') inputRef.current?.focus({ preventScroll: true });
-  }, [game.focusRequest]);
-
-  const submit = (e: FormEvent) => {
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const text = value.trim();
-    if (!text) return;
-    game.dispatch({ type: 'adventure', text });
-    setHist((h) => [...h.slice(-49), text]);
-    setHistIdx(-1);
-    setValue('');
-  };
-
-  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
-    if (!hist.length) return;
-    e.preventDefault();
-    const next =
-      e.key === 'ArrowUp'
-        ? histIdx < 0
-          ? hist.length - 1
-          : Math.max(0, histIdx - 1)
-        : histIdx < 0
-          ? -1
-          : histIdx + 1;
-    if (next < 0 || next >= hist.length) {
-      setHistIdx(-1);
-      setValue('');
-    } else {
-      setHistIdx(next);
-      setValue(hist[next]);
-    }
+    input.submit();
   };
 
   return (
-    <section className={`adventure-panel${focused ? ' input-focused' : ''}`} aria-label="Adventure">
+    <section
+      className={`adventure-panel${input.focused ? ' input-focused' : ''}${c64 ? ' c64-mode' : ''}`}
+      data-target={input.target}
+      aria-label="Adventure"
+    >
       <div className="panel-title">
         <button
           type="button"
@@ -108,28 +81,51 @@ export function AdventurePanel({
           <Entry key={e.id} e={e} />
         ))}
       </div>
-      <form className="adv-form" onSubmit={submit}>
+      <form className="adv-form" onSubmit={onSubmit}>
         <label className="sr-only" htmlFor="adv-input">
-          Adventure-Befehl
+          {c64 ? 'C64-Eingabe' : 'Adventure-Befehl'}
         </label>
-        <span className="prompt" aria-hidden="true">
-          &gt;
-        </span>
+        <button
+          type="button"
+          className="prompt-toggle"
+          data-testid="input-toggle"
+          aria-pressed={c64}
+          aria-label={
+            c64
+              ? 'Eingabe geht an den C64. Umschalten auf Adventure'
+              : 'Eingabe geht an das Adventure. Umschalten auf C64'
+          }
+          title={
+            c64
+              ? 'Eingabe geht an den C64 – klicken oder Alt+C für Adventure (oder ! vor die Zeile setzen)'
+              : input.powerOn
+                ? 'Eingabe geht an das Adventure – klicken oder Alt+C für C64'
+                : 'Der C64 ist aus'
+          }
+          disabled={!c64 && !input.powerOn}
+          onClick={input.toggleTarget}
+        >
+          {c64 ? 'C64>' : '>'}
+        </button>
         <input
           id="adv-input"
-          ref={inputRef}
+          ref={input.inputRef}
           data-testid="adventure-input"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={onKeyDown}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          value={input.value}
+          onChange={(e) => input.onChange(e.target.value)}
+          onKeyDown={input.onKeyDown}
+          onFocus={() => input.setFocused(true)}
+          onBlur={() => input.setFocused(false)}
+          autoCapitalize={c64 ? 'characters' : 'sentences'}
           autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
           enterKeyHint="send"
-          placeholder="z. B. NIMM HÖRER"
+          placeholder={input.placeholder}
           maxLength={300}
+          aria-describedby="c64-help"
         />
-        <button type="submit">Los</button>
+        <button type="submit">{c64 ? 'Return' : 'Los'}</button>
       </form>
     </section>
   );

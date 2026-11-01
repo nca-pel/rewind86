@@ -31,13 +31,13 @@ const HELP_TEXT = `So spielst du (Beispiele – Groß-/Kleinschreibung und Umlau
 • Geräte: SCHALTE COMPUTER EIN · SCHALTE RADIO EIN · STELLE RADIO AUF BFBS
 • Telefon: NIMM HÖRER · WÄHLE 12345 · RUFE RALF AN · LEGE HÖRER IN DEN KOPPLER · LEGE AUF
 • Gespräche: FRAGE RALF NACH DEM SPIEL · REDE MIT RALF ÜBER DAS TRAINING · THEMEN
-• C64: Eigene Eingabezeile unter dem Monitor (z. B. LOAD"$",8 zeigt das Diskettenverzeichnis). Vom Adventure aus: TIPPE LOAD"$",8 · DRÜCKE LEERTASTE · Alle C64-Befehle: HILFE C64
+• C64: Die Eingabezeile schaltest du mit dem Zeichen davor (> bzw. C64>) auf den C64 um (z. B. LOAD"$",8 zeigt das Diskettenverzeichnis). Vom Adventure aus: TIPPE LOAD"$",8 · DRÜCKE LEERTASTE · Alle C64-Befehle: HILFE C64
 • Notizen: NOTIZEN · NOTIERE <Text> · VERKNÜPFE <A> MIT <B> · DENKE NACH (Hilfe in 3 Stufen)
 • Zeit & Spiel: ZEIT · WARTE (15 Min.) · WARTE 30 · SCHLAFE (ab 21 Uhr) · INVENTAR · SPEICHERN 1 · LADEN 1 · SPIELSTÄNDE`;
 
 /** Ausführliche C64-Hilfe (HILFE C64). Im Schwierigkeitsgrad »Schwer« ohne Speicheradressen. */
 function c64HelpText(hard: boolean): string {
-  return `C64 – die wichtigsten Befehle (in die Eingabezeile unter dem Monitor tippen, jede Zeile mit RETURN):
+  return `C64 – die wichtigsten Befehle (bei Eingabe-Ziel C64> tippen, jede Zeile mit RETURN; ein ! am Zeilenanfang geht an das Adventure):
 Disketten (Laufwerk = Gerät 8)
 • LOAD"$",8 und dann LIST – Inhaltsverzeichnis der Diskette (überschreibt ein geladenes Programm!)
 • LOAD"NAME",8 – Programm laden · LOAD"*",8 – das erste Programm der Diskette laden
@@ -404,7 +404,10 @@ function turnOn(ctx: Ctx, id: string): number {
       ctx.say(
         'Du knipst die Steckerleiste an. Der Monitor brummt, das vertraute Blau erscheint, und die 1541 rattert einmal kurz. READY.',
       );
-      ctx.say('(Der C64 hat eine eigene Eingabezeile direkt unter dem Monitor.)', 'system');
+      ctx.say(
+        '(Die Eingabezeile gehört jetzt dem C64 – erkennbar an C64>. Mit ! vor einer Zeile oder einem Klick auf C64> sprichst du wieder mit dem Adventure.)',
+        'system',
+      );
       ctx.ui.push({ type: 'focus', target: 'c64' });
       return DEFAULT_MINUTES;
     case 'radio':
@@ -691,7 +694,7 @@ function meta(ctx: Ctx, intent: Extract<Intent, { kind: 'meta' }>): number {
     }
     case 'c64hint':
       ctx.say(
-        `Das gibst du am besten direkt am C64 ein (Eingabezeile unter dem Monitor), z. B. LOAD"*",8 und dann RUN. Von hier aus geht auch: TIPPE LOAD"*",8`,
+        `Das gibst du am besten direkt am C64 ein (Eingabe-Ziel C64>), z. B. LOAD"*",8 und dann RUN. Von hier aus geht auch: TIPPE LOAD"*",8`,
         'system',
       );
       ctx.ui.push({ type: 'focus', target: 'c64' });
@@ -970,7 +973,7 @@ function verb(ctx: Ctx, intent: Verb): number {
         case 'monitor':
           if (!s.computer.powerOn) return turnOn(ctx, id);
           ctx.say(
-            'Du rückst die Tastatur zurecht. (Eingaben für den C64 gehören in die C64-Eingabezeile unter dem Monitor.)',
+            'Du rückst die Tastatur zurecht. (Eingaben für den C64 gehen jetzt an C64>. Mit ! vor einer Zeile sprichst du das Adventure an.)',
           );
           ctx.ui.push({ type: 'focus', target: 'c64' });
           return 0;

@@ -737,25 +737,9 @@ html[data-contrast='high'] .modal-head .close::after {
   align-items: center;
 }
 .dial-form {
-  margin-top: 0.6rem;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.25rem;
-}
-.dial-form label {
-  font-family: var(--font-retro);
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  color: var(--win-muted);
-}
-.dial-form,
-.dial-row {
+  flex: 1 1 14rem;
   min-width: 0;
-}
-.dial-row {
-  display: flex;
-  gap: 0.4rem;
-  align-items: stretch;
+  flex-wrap: nowrap;
 }
 .dial-form input {
   flex: 1;
@@ -764,6 +748,13 @@ html[data-contrast='high'] .modal-head .close::after {
   font-family: var(--font-lcd);
   font-size: 1.2rem;
   letter-spacing: 0.1em;
+}
+.dial-form input::placeholder {
+  font-family: var(--font-retro);
+  font-size: 0.55rem;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--win-muted);
 }
 .detail-note {
   font-size: 0.75rem;
@@ -897,6 +888,11 @@ html[data-contrast='high'] .modal-head .close::after {
   font-style: italic;
   color: #3d4038 !important;
 }
+/* Kommentare (z. B. „[Radio, …]“) leicht grau, damit sie sich vom weißen Protokoll der Handlungen absetzen */
+.adventure-panel .log-entry.log-caption {
+  background: #e1ded6;
+  border-color: #b3aa96;
+}
 .log-system {
   color: #2b4a2b !important;
 }
@@ -941,6 +937,30 @@ html[data-contrast='high'] .modal-head .close::after {
 .adv-form button:hover {
   background: #e9dfc6;
 }
+.adv-form .prompt-toggle {
+  flex: none;
+  /* feste Breite für beide Zustände („>“ und „C64>“), sonst springt die Zeile beim Umschalten */
+  width: 3.6rem;
+  padding: 0.35rem 0;
+  font-size: 0.7rem;
+  text-align: center;
+  text-transform: none;
+}
+.adv-form .prompt-toggle[aria-pressed='true'] {
+  background: #352879;
+  color: #b5adf0;
+  border-color: #1a1410 #8a7562 #8a7562 #1a1410;
+}
+.adventure-panel.c64-mode .adv-form input {
+  font-family: var(--font-retro);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  background: #352879;
+  color: #b5adf0;
+}
+.adventure-panel.c64-mode .adv-form input::placeholder {
+  color: #8f86d4;
+}
 .adventure-panel.input-focused {
   outline: 3px solid var(--accent);
 }
@@ -957,7 +977,8 @@ html[data-contrast='high'] .adv-form input {
   border-color: #fff;
   box-shadow: none;
 }
-html[data-contrast='high'] .adventure-panel .log-entry {
+html[data-contrast='high'] .adventure-panel .log-entry,
+html[data-contrast='high'] .adventure-panel .log-entry.log-caption {
   background: #000;
   color: #fff !important;
   border-color: #fff;
@@ -1191,40 +1212,20 @@ html[data-contrast='high'] .monitor-glass {
     inset 0 -3px 0 rgba(0, 0, 0, 0.35),
     0 8px 16px rgba(0, 0, 0, 0.5);
 }
-.c64-input-row {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-}
-.keyboard-deck .prompt {
-  color: #d9cbb2;
-}
-.c64-input {
-  flex: 1;
-  min-width: 0;
-  font-family: var(--font-retro);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  background: #352879;
-  color: #b5adf0;
-  border: 2px solid;
-  border-color: #1a1410 #8a7562 #8a7562 #1a1410;
-  border-radius: 0;
-}
-.c64-input::placeholder {
-  color: #8f86d4;
-}
-.special-keys {
-  display: flex;
-  flex-wrap: wrap;
+.keyboard-deck .keys {
+  display: grid;
   gap: 0.35rem;
-  margin-top: 0.55rem;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) 0.9rem repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    'arrow . . . . clr . f1 f3'
+    'stop  stop . . ret ret . f5 f7'
+    '.  space space space space .  . . .';
 }
-.special-keys button {
+.keys button {
   position: relative;
-  min-width: 2.9rem;
-  min-height: 2.5rem;
-  padding: 0.2rem 0.45rem 0.45rem;
+  min-width: 0;
+  min-height: 2rem;
+  padding: 0.15rem 0.3rem 0.4rem;
   font-family: var(--font-retro);
   font-size: 0.55rem;
   color: #f1e6d2;
@@ -1237,17 +1238,47 @@ html[data-contrast='high'] .monitor-glass {
     0 2px 0 #140e0a;
   transition: transform 60ms;
 }
-.special-keys button:hover {
+.keys button:hover {
   background: linear-gradient(180deg, #6b5a4c 0 72%, #3a2e26 72%);
 }
-.special-keys button:active {
+.keys button:active {
   transform: translateY(2px);
   box-shadow:
     inset 3px 2px 0 -1px #7a675a,
     0 0 0 #140e0a;
 }
+/* Anordnung wie auf dem C64: Pfeil links oben, RUN/STOP und RETURN in der Mitte, Funktionstasten rechts als Block, unten die lange Leertaste */
+.keys button[data-key='ARROW_LEFT'] {
+  grid-area: arrow;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+}
+.keys button[data-key='CLRHOME'] {
+  grid-area: clr;
+}
+.keys button[data-key='RUNSTOP'] {
+  grid-area: stop;
+}
+.keys button[data-key='RETURN'] {
+  grid-area: ret;
+}
+.keys button[data-key='SPACE'] {
+  grid-area: space;
+}
+.keys button[data-key='F1'] {
+  grid-area: f1;
+}
+.keys button[data-key='F3'] {
+  grid-area: f3;
+}
+.keys button[data-key='F5'] {
+  grid-area: f5;
+}
+.keys button[data-key='F7'] {
+  grid-area: f7;
+}
 /* Funktionstasten: hellgraue Kappen in einem eigenen Block */
-.special-keys button[data-key^='F'] {
+.keys button[data-key^='F'] {
   color: #2a2016;
   background: linear-gradient(180deg, #d8d0c0 0 72%, #9e9584 72%);
   box-shadow:
@@ -1255,25 +1286,15 @@ html[data-contrast='high'] .monitor-glass {
     inset -2px 0 0 #9e9584,
     0 2px 0 #140e0a;
 }
-.special-keys button[data-key='F1'] {
-  margin-left: auto;
-}
-.special-keys button[data-key^='F']:hover {
+.keys button[data-key^='F']:hover {
   background: linear-gradient(180deg, #e6dfd1 0 72%, #9e9584 72%);
-}
-.special-keys button[data-key='SPACE'] {
-  flex: 1 1 5rem;
-}
-.special-keys button[data-key='ARROW_LEFT'] {
-  font-family: var(--font-ui);
-  font-size: 1rem;
 }
 html[data-contrast='high'] .keyboard-deck {
   background: #000;
   border: 2px solid #fff;
 }
-html[data-contrast='high'] .special-keys button,
-html[data-contrast='high'] .special-keys button[data-key^='F'] {
+html[data-contrast='high'] .keys button,
+html[data-contrast='high'] .keys button[data-key^='F'] {
   background: #000;
   color: #fff;
   border-color: #fff;
@@ -1478,22 +1499,8 @@ html[data-contrast='high'] .slice-end h2 {
     container-type: size;
   }
   .monitor {
-    width: min(100%, calc((100cqh - 7.9rem) / 0.87));
+    width: min(100%, calc((100cqh - 8.6rem) / 0.87));
     margin: 0 auto;
-  }
-  .special-keys {
-    flex-wrap: nowrap;
-  }
-  .special-keys button {
-    min-width: 0;
-    flex: 1 1 auto;
-    padding-inline: 0.35rem;
-  }
-  .special-keys button[data-key='SPACE'] {
-    flex: 3 1 auto;
-  }
-  .special-keys button[data-key='F1'] {
-    margin-left: 0.6rem;
   }
 }
 
@@ -1611,8 +1618,10 @@ html[data-motion='reduced'] *::after {
 /* ---------------------------------------------------------------- Entwicklerkonsole (?dev=1) */
 .dev-toggle {
   position: fixed;
-  left: 8px;
-  bottom: 8px;
+  /* nur mit ?dev=1 sichtbar; oben mittig, damit die Eingabezeile unten frei bleibt */
+  left: 50%;
+  top: 4px;
+  transform: translateX(-50%);
   z-index: 60;
   font: 700 11px var(--font-ui);
   padding: 4px 8px;

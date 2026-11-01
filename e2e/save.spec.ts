@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { adv, log } from './helpers';
+import { adv, key, log } from './helpers';
 
 test('Autosave übersteht Neuladen, manueller Slot lädt den Zustand wieder', async ({ page }) => {
   await page.goto('/');
@@ -31,12 +31,15 @@ test('Autosave übersteht Neuladen, manueller Slot lädt den Zustand wieder', as
   await expect(page.getByTestId('clock')).toHaveText(clock!);
 });
 
-test('Mobil/Desktop: C64 und Adventure-Eingabe getrennt, kein horizontales Scrollen', async ({ page }) => {
+test('Mobil/Desktop: eine Eingabezeile mit Umschalter Adventure/C64, kein horizontales Scrollen', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.getByTestId('new-game').click();
   await adv(page, 'schalte computer ein');
-  const c64Input = page.getByTestId('c64-input');
-  await expect(c64Input).toBeVisible();
+  // Einschalten legt die gemeinsame Eingabezeile auf den C64
+  await expect(page.locator('.adventure-panel')).toHaveAttribute('data-target', 'c64');
+  await expect(page.getByTestId('input-toggle')).toHaveText('C64>');
   // Eingabe im Adventure erscheint nicht auf dem C64
   await adv(page, 'LIST');
   await expect(page.getByTestId('c64-screen')).not.toContainText('LIST');
@@ -46,4 +49,33 @@ test('Mobil/Desktop: C64 und Adventure-Eingabe getrennt, kein horizontales Scrol
     .getByTestId('c64-screen')
     .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
   expect(fontSize).toBeGreaterThanOrEqual(7);
+});
+
+test('Sondertaste SPACE tippt im Zeilenmodus mehrfach ein Leerzeichen', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('new-game').click();
+  await adv(page, 'schalte computer ein');
+  await key(page, 'SPACE');
+  await key(page, 'SPACE');
+  await page.getByTestId('adventure-input').pressSequentially('X');
+  await expect(page.getByTestId('adventure-input')).toHaveValue('  X');
+});
+
+test('Alt+C wechselt die Eingabezeile zwischen Adventure und C64, Umschalter bleibt gleich breit', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByTestId('new-game').click();
+  const panel = page.locator('.adventure-panel');
+  const toggle = page.getByTestId('input-toggle');
+  await adv(page, 'schalte computer ein');
+  await expect(panel).toHaveAttribute('data-target', 'c64');
+  const wC64 = (await toggle.boundingBox())!;
+  await page.keyboard.press('Alt+KeyC');
+  await expect(panel).toHaveAttribute('data-target', 'adventure');
+  const wAdv = (await toggle.boundingBox())!;
+  expect(wAdv.width).toBe(wC64.width);
+  expect(wAdv.height).toBe(wC64.height);
+  await page.keyboard.press('Alt+KeyC');
+  await expect(panel).toHaveAttribute('data-target', 'c64');
 });

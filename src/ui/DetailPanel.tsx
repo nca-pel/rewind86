@@ -27,7 +27,6 @@ function actionsFor(state: GameState, id: string): Action[] {
           ? { label: 'Ausschalten', cmd: 'SCHALTE COMPUTER AUS' }
           : { label: 'Einschalten', cmd: 'SCHALTE COMPUTER EIN' },
       );
-      if (state.computer.powerOn) a.push({ label: 'Zur C64-Eingabe', cmd: 'BENUTZE COMPUTER' });
       break;
     case 'drive1541': {
       const inDrive = itemsAt(state, 'drive')[0];
@@ -42,7 +41,6 @@ function actionsFor(state: GameState, id: string): Action[] {
       if (t.handset === 'cradle')
         a.push({ label: t.ringing ? 'Abheben!' : 'Hörer abnehmen', cmd: 'NIMM HÖRER' });
       else a.push({ label: 'Auflegen', cmd: 'LEGE AUF' });
-      if (t.handset !== 'coupler') a.push({ label: 'Ralf anrufen', cmd: 'RUFE RALF AN' });
       break;
     case 'coupler':
       if (t.handset !== 'coupler')
@@ -191,30 +189,28 @@ export function DetailPanel({ game }: { game: GameUi }) {
                 {a.label}
               </button>
             ))}
-          </div>
-          {(id === 'phone' || id === 'handset') && state.telecom.handset !== 'coupler' && (
-            <form
-              className="dial-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!number.trim()) return;
-                game.dispatch({ type: 'adventure', text: `WÄHLE ${number.replace(/\D/g, '')}` });
-                setNumber('');
-              }}
-            >
-              <label htmlFor="dial-number">Nummer wählen</label>
-              <div className="dial-row">
+            {(id === 'phone' || id === 'handset') && state.telecom.handset !== 'coupler' && (
+              <form
+                className="dial-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!number.trim()) return;
+                  game.dispatch({ type: 'adventure', text: `WÄHLE ${number.replace(/\D/g, '')}` });
+                  setNumber('');
+                }}
+              >
                 <input
-                  id="dial-number"
                   inputMode="numeric"
                   value={number}
                   onChange={(e) => setNumber(e.target.value.slice(0, 15))}
+                  placeholder="Nummer eingeben"
+                  aria-label="Telefonnummer"
                   autoComplete="off"
                 />
                 <button type="submit">Wählen</button>
-              </div>
-            </form>
-          )}
+              </form>
+            )}
+          </div>
           <p className="detail-note">Jede Schaltfläche entspricht einem Textbefehl (Tooltip).</p>
         </div>
       </div>
