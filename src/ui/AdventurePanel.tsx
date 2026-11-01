@@ -69,6 +69,7 @@ export function AdventurePanel({ game }: { game: GameUi }) {
       <div
         className="log"
         ref={logRef}
+        tabIndex={0}
         role="log"
         aria-live="polite"
         aria-label="Adventure-Protokoll"

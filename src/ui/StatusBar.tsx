@@ -12,17 +12,20 @@ export function StatusBar({ game }: { game: GameUi }) {
   const { settings, update } = useSettings();
   const t = state.telecom;
   const sys = t.connectedSystemId ? MAILBOXES[t.connectedSystemId] : null;
-  const line = sys
-    ? sys.access === 'public'
-      ? `online (${sys.name})`
-      : 'online'
-    : t.ringing
-      ? 'klingelt'
-      : t.handset !== 'cradle'
-        ? 'belegt (Hörer ab)'
-        : houseLineBusy(state)
-          ? 'belegt (Haus)'
-          : 'frei';
+  const line =
+    t.connectedSystemId === 'btx'
+      ? 'online (BTX)'
+      : sys
+        ? sys.access === 'public'
+          ? `online (${sys.name})`
+          : 'online'
+        : t.ringing
+          ? 'klingelt'
+          : t.handset !== 'cradle'
+            ? 'belegt (Hörer ab)'
+            : houseLineBusy(state)
+              ? 'belegt (Haus)'
+              : 'frei';
   const inv = itemsAt(state, 'inventory');
   return (
     <header className="status-bar">

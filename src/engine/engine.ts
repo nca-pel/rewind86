@@ -39,6 +39,7 @@ function applyPending(ctx: Ctx, intent: Intent): Intent {
 const AFTER_END_META = new Set(['load', 'saves', 'help', 'notes', 'time']);
 
 function handleAdventure(ctx: Ctx, raw: string): void {
+  ctx.input = raw.trim();
   let intent = parseAdventure(raw);
   if (ctx.state.flags.gameOver && !(intent.kind === 'meta' && AFTER_END_META.has(intent.meta))) {
     ctx.say('Das Spiel ist zu Ende. Mit LADEN kehrst du zu einem Spielstand zurück.', 'system');

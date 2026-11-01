@@ -10,6 +10,8 @@ import { BasicSyntaxError, canonicalVar, crunchedLength, tokenize, type Token } 
 
 export const MAX_STEPS = 50_000;
 const MAX_STACK = 64;
+/** Fehlerkanal der 1541 ohne Fehler */
+export const DISK_OK = '00, OK,00,00\r';
 /** Größter Betrag im 5-Byte-Fließkommaformat des Originals */
 const MAX_FLOAT = 1.70141183e38;
 const DIRECT = -1;
@@ -46,6 +48,8 @@ export interface BasicHost {
   openFile(device: number, secondary: number, spec: string): { mode: 'r' | 'w'; name: string; data: string };
   /** Beim CLOSE einer Schreibdatei: Inhalt auf die Diskette schreiben */
   writeFile(name: string, data: string): void;
+  /** Befehl für den Kommandokanal 15 (z. B. »S0:NAME«); liefert die Fehlermeldung (»00, OK,00,00«) */
+  diskCommand(cmd: string): string;
   /** true = eine App wurde gestartet, Interpreter stoppt */
   sys(addr: number): 'app' | 'reset' | 'none';
   poke(addr: number, value: number): void;
@@ -594,12 +598,17 @@ export class Interpreter {
   private file(lfn: number, mode: 'r' | 'w'): OpenFile {
     const f = this.run.files?.[String(lfn)];
     if (!f) throw new BasicError('FILE NOT OPEN');
+    if (f.cmd) return f;
     if (f.mode !== mode) throw new BasicError(mode === 'r' ? 'NOT INPUT FILE' : 'NOT OUTPUT FILE');
     return f;
   }
 
   /** Statusvariable ST: 64 = Dateiende erreicht */
   private setStatus(f: OpenFile): void {
+    if (f.cmd) {
+      this.run.vars.ST = 0;
+      return;
+    }
     this.run.vars.ST = f.pos >= f.data.length ? 64 : 0;
   }
 
@@ -622,6 +631,16 @@ export class Interpreter {
     }
     if (this.run.files?.[String(lfn)]) throw new BasicError('FILE OPEN');
     if (Object.keys(this.run.files ?? {}).length >= 10) throw new BasicError('TOO MANY FILES');
+    if (dev === 8 && sec === 15) {
+      // Kommandokanal: Befehl (falls angegeben) ausführen, Fehlerkanal lesen
+      const status = spec ? this.host.diskCommand(spec) : DISK_OK;
+      this.run.files = {
+        ...(this.run.files ?? {}),
+        [String(lfn)]: { mode: 'r', name: '#15', data: status, pos: 0, cmd: true },
+      };
+      this.run.vars.ST = 0;
+      return { k: 'next' };
+    }
     const r = this.host.openFile(dev, sec, spec);
     this.run.files = { ...(this.run.files ?? {}), [String(lfn)]: { ...r, pos: 0 } };
     this.run.vars.ST = 0;
@@ -632,7 +651,15 @@ export class Interpreter {
     const f = this.run.files?.[String(lfn)];
     if (!f) return;
     delete this.run.files![String(lfn)];
-    if (f.mode === 'w') this.host.writeFile(f.name, f.data);
+    if (f.mode === 'w' && !f.cmd) this.host.writeFile(f.name, f.data);
+  }
+
+  /** Kommandokanal: ist die Meldung ausgelesen, liefert die 1541 wieder »00, OK,00,00« */
+  private refreshStatus(f: OpenFile): void {
+    if (f.cmd && f.pos >= f.data.length) {
+      f.data = DISK_OK;
+      f.pos = 0;
+    }
   }
 
   private fileNumber(): number {
@@ -645,6 +672,7 @@ export class Interpreter {
   private execPrintFile(): Signal {
     const f = this.file(this.fileNumber(), 'w');
     let newline = true;
+    let out = '';
     if (this.isOp(',')) this.p++;
     while (!this.atEnd()) {
       if (this.isOp(';') || this.isOp(',')) {
@@ -654,8 +682,15 @@ export class Interpreter {
       }
       newline = true;
       const v = this.expr();
-      f.data += typeof v === 'number' ? printNumber(v) : v;
+      out += typeof v === 'number' ? printNumber(v) : v;
     }
+    if (f.cmd) {
+      // Befehl an die Floppy; die Antwort steht danach im Fehlerkanal
+      f.data = this.host.diskCommand(out);
+      f.pos = 0;
+      return { k: 'next' };
+    }
+    f.data += out;
     if (newline) f.data += '\r';
     if (f.data.length > 20_000) throw new BasicError('DISK FULL');
     return { k: 'next' };
@@ -664,6 +699,7 @@ export class Interpreter {
   /** INPUT#n,A$,…: liest bis Komma oder CHR$(13) */
   private execInputFile(): Signal {
     const f = this.file(this.fileNumber(), 'r');
+    this.refreshStatus(f);
     do {
       this.expectOp(',');
       const name = this.varName();
@@ -689,6 +725,7 @@ export class Interpreter {
   /** GET#n,A$: genau ein Zeichen (am Dateiende "") */
   private execGetFile(): Signal {
     const f = this.file(this.fileNumber(), 'r');
+    this.refreshStatus(f);
     this.expectOp(',');
     const name = this.varName();
     const idx = this.indexArgs();

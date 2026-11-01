@@ -226,9 +226,34 @@ export const FACTS: FactDef[] = [
     text: `Klartext des Rundschreibens von ${C.secretNetwork.senderHandle}: »Operation REWIND beginnt Freitag.« Alle Kennungen sollen sich bereithalten, Testzugänge werden abgeschaltet.`,
   },
   {
+    id: 'btx_club',
+    category: 'kanaele',
+    text: `Der Computerclub hat ein BTX-Leihset der Post (Decoder-Modul + Postmodem) und gibt es am Clubabend an Mitglieder aus. Clubtafel im BTX: *${C.btx.clubBoardPage}#.`,
+  },
+  {
+    id: 'btx_howto',
+    category: 'codes',
+    text: `BTX am C64: Modul in den Schacht (nur bei ausgeschaltetem Computer), einschalten, RETURN wählt ${C.btx.accessNumber}. Seiten per *Nummer# oder Ziffer; Telefon und BTX gleichzeitig geht nicht.`,
+  },
+  {
+    id: 'btx_break_in',
+    category: 'verdacht',
+    text: 'BTX meldet einen Einbruch bei einer Softwarefirma in Gütersloh – ohne Namen. Zufall? Seidel arbeitet in Gütersloh.',
+  },
+  {
+    id: 'btx_club_board',
+    category: 'personen',
+    text: 'Auf der BTX-Clubtafel steht eine Nachricht an »den Gast, der gerne fragt«: Das Wichtigste stehe nie in den Menüs. Wer schreibt so?',
+  },
+  {
     id: 'demo_seen',
     category: 'dinge',
     text: 'INTRUDER by 1001 FIGHTERS – immer noch die beste Demo, die du kennst.',
+  },
+  {
+    id: 'demo_all',
+    category: 'dinge',
+    text: 'INTRUDER hat acht Teile – vom Raster-Logo über Plasma, Würfel und Tunnel bis zur Grußliste. Taste 1–8 springt direkt.',
   },
   {
     id: 'demo_border',

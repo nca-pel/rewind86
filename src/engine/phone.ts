@@ -5,6 +5,7 @@
 import { DIALOGUE, DIALOGUE_FALLBACK, TOPIC_BY_ID } from '../content/dialogue';
 import { MAILBOXES, PHONEBOOK } from '../content/networks';
 import { modkDropCarrier } from '../sim/apps/modk';
+import { btxDropCarrier } from '../sim/apps/btx';
 import { termDropCarrier } from '../sim/apps/term';
 import { GAME_CONFIG } from '../content/config';
 import { isOpen } from './bbs';
@@ -55,6 +56,12 @@ export function pickUp(ctx: Ctx): number {
       ctx.say('Du ziehst den Hörer aus den Gummimuffen. Aus der Muschel pfeift das Modem der Gegenstelle.');
     } else ctx.say('Du ziehst den Hörer aus den Gummimuffen des Kopplers.');
     return 0;
+  }
+  if (t.connectedSystemId === 'btx') {
+    btxDropCarrier(ctx);
+    ctx.say(
+      'Du nimmst den Hörer ab – im selben Moment bricht das Postmodem die Verbindung ab. Auf dem Monitor steht: VERBINDUNG GETRENNT.',
+    );
   }
   t.handset = 'hand';
   if (t.ringing === 'ralf' && ctx.state.flags.ralfDelivered) return answerRalfLater(ctx);

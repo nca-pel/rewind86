@@ -18,7 +18,7 @@ export const MAX_SAVE_BYTES = 2 * 1024 * 1024;
 
 const flagValue = z.union([z.boolean(), z.number(), z.string()]);
 const clock = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
-const location = z.enum(['inventory', 'desk', 'drawer', 'package', 'drive', 'datasette', 'nowhere']);
+const location = z.enum(['inventory', 'desk', 'drawer', 'package', 'drive', 'datasette', 'port', 'nowhere']);
 const puzzleStatus = z.enum(['unknown', 'discovered', 'solving', 'solved', 'bypassed']);
 const color = z.number().int().min(0).max(15);
 const shortStr = z.string().max(2000);
@@ -73,6 +73,7 @@ const basicRun = z.object({
         name: z.string().max(16),
         data: z.string().max(20000),
         pos: z.number().int().min(0),
+        cmd: z.boolean().optional(),
       }),
     )
     .optional(),
@@ -294,6 +295,10 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
       itemLocations: { club_letter: 'nowhere', ...items },
       scheduledEvents: [...events, ...missing],
     };
+  },
+  6: (s) => {
+    const items = (s.itemLocations ?? {}) as Record<string, unknown>;
+    return { ...s, schemaVersion: 7, itemLocations: { btx_kit: 'nowhere', ...items } };
   },
   5: (s) => {
     const items = (s.itemLocations ?? {}) as Record<string, unknown>;

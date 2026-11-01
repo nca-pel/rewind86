@@ -4,6 +4,7 @@ import { fromMinutes, toMinutes } from './clock';
 import { evalCondition } from './conditions';
 import type { Ctx } from './context';
 import { applyEffects } from './effects';
+import { btxDropCarrier } from '../sim/apps/btx';
 import { hangUp } from './phone';
 import { accrueOnlineRisk } from './pressure';
 import { nextOccurrence } from './routine';
@@ -61,6 +62,10 @@ function runAbsence(ctx: Ctx): void {
   if (!a || ctx.inAbsence) return;
   ctx.absence = null;
   const s = ctx.state;
+  if (s.telecom.connectedSystemId === 'btx') {
+    btxDropCarrier(ctx);
+    ctx.say('Du beendest die BTX-Sitzung.');
+  }
   if (s.telecom.handset !== 'cradle') {
     hangUp(ctx, true);
     ctx.say('Du legst den Hörer auf.');

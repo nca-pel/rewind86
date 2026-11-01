@@ -203,6 +203,22 @@ export const GAME_CONFIG = {
     backAt: '21:45',
   },
 
+  /**
+   * BTX (Bildschirmtext, Ausbauplan Punkt 7). Annahme (siehe STORY_OPEN_QUESTIONS.md): Die Bundespost schloss
+   * Teilnehmer nur über das eigene Postmodem an (Akustikkoppler und Heimmodems reichten nicht, V.23 1200/75 Baud).
+   * Jan besitzt keins; der Computerclub hat ein Leih-Set (Decoder-Modul + Postmodem, Vereinskennung) und gibt es
+   * am Clubabend an Mitglieder weiter. Zugangsnummer und alle Seitennummern sind fiktiv. needs_research: Tarife.
+   */
+  btx: {
+    /** Zugangsnummer des Postmodems (fiktiv) */
+    accessNumber: '01910',
+    /** Seitengebühr pro Abruf (ohne Übersicht), vereinfachte Spielökonomie */
+    pageFeeDm: 0.02,
+    /** Anbieter »Wiedenbrücker Kurier« und Clubtafel (fiktive Seitennummern) */
+    overviewPage: '123000',
+    clubBoardPage: '123770',
+  },
+
   /** Entschieden: Ingrid (halbtags Arzthelferin) und Werner Keller (Schichtleiter in einer Möbelfabrik). */
   parents: {
     mother: 'Ingrid',

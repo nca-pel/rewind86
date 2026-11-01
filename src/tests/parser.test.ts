@@ -116,7 +116,7 @@ describe('Parser-Szenarien (GDD §19.1)', () => {
   test('Unerreichbare oder unbekannte Dinge: keine erfundene Aktion', () => {
     const s = new Session();
     const before = structuredClone(s.state.itemLocations);
-    expect(s.a('NIMM DISKETTE 1001')).toMatch(/nichts zu sehen/);
+    expect(s.a('NIMM DISKETTE 1001')).toMatch(/Schublade – und die ist zu/);
     expect(s.a('NIMM DISKETTE 2')).toMatch(/Diskette 2 hast du nicht/);
     expect(s.a('NIMM DEN TOASTER')).toMatch(/kenne ich hier nicht/);
     expect(s.state.itemLocations).toEqual(before);

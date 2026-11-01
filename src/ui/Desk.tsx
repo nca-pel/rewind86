@@ -1,54 +1,20 @@
 /**
  * Illustrierter Schreibtisch als Hub – eigene, austauschbare Platzhalter-Illustration (SVG)
- * in leicht schräger, erhöhter Perspektive. Jeder Hotspot ist per Tastatur und Klick erreichbar;
+ * in leicht schräger, erhöhter Perspektive (realistischer Stil; Pixelstil: DeskPixel.tsx). Jeder Hotspot ist per Tastatur und Klick erreichbar;
  * alle Aktionen gibt es zusätzlich als Textbefehl.
  */
-import type { KeyboardEvent, ReactNode } from 'react';
 import { OBJECT_BY_ID } from '../content/objects';
 import type { GameState } from '../engine/types';
 import { isReachable } from '../engine/resolve';
 import { renderC64 } from '../sim/c64';
+import { DeskPixel } from './DeskPixel';
+import { Hotspot } from './Hotspot';
 import { C64_PALETTE } from './palette';
 
 interface Props {
   state: GameState;
   onSelect: (id: string) => void;
   selected: string | null;
-}
-
-function Hotspot({
-  id,
-  label,
-  onSelect,
-  selected,
-  children,
-}: {
-  id: string;
-  label: string;
-  onSelect: (id: string) => void;
-  selected: boolean;
-  children: ReactNode;
-}) {
-  const key = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onSelect(id);
-    }
-  };
-  return (
-    <g
-      className={`hotspot${selected ? ' selected' : ''}`}
-      role="button"
-      tabIndex={0}
-      aria-label={label}
-      data-hotspot={id}
-      onClick={() => onSelect(id)}
-      onKeyDown={key}
-    >
-      <title>{label}</title>
-      {children}
-    </g>
-  );
 }
 
 function Disk({ x, y, label, rot = 0 }: { x: number; y: number; label: string; rot?: number }) {
@@ -65,7 +31,7 @@ function Disk({ x, y, label, rot = 0 }: { x: number; y: number; label: string; r
   );
 }
 
-export function Desk({ state, onSelect, selected }: Props) {
+function DeskRealistic({ state, onSelect, selected }: Props) {
   const c64 = renderC64(state);
   const loc = state.itemLocations;
   const t = state.telecom;
@@ -108,6 +74,51 @@ export function Desk({ state, onSelect, selected }: Props) {
           <stop offset="0" stopColor="#8d7f6a" />
           <stop offset="1" stopColor="#5f5445" />
         </linearGradient>
+        <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.28" />
+          <stop offset="0.45" stopColor="#fff" stopOpacity="0.05" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="key" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#5a5042" />
+          <stop offset="1" stopColor="#2c261e" />
+        </linearGradient>
+        <linearGradient id="phonebody" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#b9bfc2" />
+          <stop offset="1" stopColor="#7d8386" />
+        </linearGradient>
+        <linearGradient id="sunbeam" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#fff2c8" stopOpacity="0.32" />
+          <stop offset="1" stopColor="#fff2c8" stopOpacity="0" />
+        </linearGradient>
+        <pattern id="paper" width="14" height="260" patternUnits="userSpaceOnUse">
+          <rect width="14" height="260" fill="none" />
+          <rect x="0" width="2" height="260" fill="#000" opacity="0.07" />
+          <circle cx="9" cy="20" r="1.6" fill="#000" opacity="0.1" />
+          <circle cx="9" cy="60" r="1.6" fill="#000" opacity="0.1" />
+          <circle cx="9" cy="100" r="1.6" fill="#000" opacity="0.1" />
+          <circle cx="9" cy="140" r="1.6" fill="#000" opacity="0.1" />
+          <circle cx="9" cy="180" r="1.6" fill="#000" opacity="0.1" />
+          <circle cx="9" cy="220" r="1.6" fill="#000" opacity="0.1" />
+        </pattern>
+        <filter id="soft" x="-20%" y="-50%" width="140%" height="200%">
+          <feGaussianBlur stdDeviation="7" />
+        </filter>
+        <filter id="grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.35" numOctaves="3" seed="7" result="n" />
+          <feColorMatrix
+            in="n"
+            type="matrix"
+            values="0 0 0 0 0.12  0 0 0 0 0.06  0 0 0 0 0.02  0 0 0 2.2 -0.85"
+          />
+        </filter>
+        <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="9" />
+        </filter>
+        <radialGradient id="vignette" cx="0.5" cy="0.45" r="0.75">
+          <stop offset="0.55" stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.45" />
+        </radialGradient>
         <radialGradient id="lamp" cx="0.55" cy="0.25" r="0.75">
           <stop offset="0" stopColor="#ffd89a" stopOpacity="0.35" />
           <stop offset="1" stopColor="#000" stopOpacity="0" />
@@ -116,6 +127,9 @@ export function Desk({ state, onSelect, selected }: Props) {
 
       {/* Wand + Fenster */}
       <rect width="1000" height="260" fill="url(#wall)" />
+      <rect width="1000" height="260" fill="url(#paper)" />
+      <rect y="236" width="1000" height="24" fill="#2a1f16" opacity="0.55" />
+      <rect y="232" width="1000" height="5" fill="#8a7358" opacity="0.7" />
       <Hotspot {...hs('window')}>
         <rect
           x="40"
@@ -171,7 +185,23 @@ export function Desk({ state, onSelect, selected }: Props) {
 
       {/* Schreibtischplatte in Schrägansicht */}
       <polygon points="40,250 960,250 1000,600 0,600" fill="url(#wood)" />
+      <polygon points="40,250 960,250 1000,600 0,600" filter="url(#grain)" opacity="0.5" />
+      <polygon points="40,250 960,250 962,262 38,262" fill="#000" opacity="0.28" />
       <polygon points="0,600 1000,600 1000,640 0,640" fill="#4a2c16" />
+      <polygon points="0,600 1000,600 1000,606 0,606" fill="#9a6a3c" opacity="0.8" />
+      {!dark && <polygon points="60,20 220,20 520,330 160,420" fill="url(#sunbeam)" pointerEvents="none" />}
+      {/* weiche Schatten unter den Geräten */}
+      <g filter="url(#soft)" opacity="0.55" pointerEvents="none">
+        <ellipse cx="155" cy="285" rx="95" ry="14" />
+        <ellipse cx="450" cy="302" rx="170" ry="16" />
+        <ellipse cx="725" cy="310" rx="110" ry="14" />
+        <ellipse cx="450" cy="416" rx="230" ry="16" />
+        <ellipse cx="140" cy="414" rx="95" ry="12" />
+        <ellipse cx="160" cy="515" rx="110" ry="12" />
+        <ellipse cx="915" cy="404" rx="75" ry="10" />
+        <ellipse cx="640" cy="560" rx="80" ry="10" />
+        <ellipse cx="845" cy="545" rx="100" ry="12" />
+      </g>
 
       {/* Radio */}
       <Hotspot {...hs('radio')}>
@@ -219,7 +249,32 @@ export function Desk({ state, onSelect, selected }: Props) {
                 />
               ) : null,
             )}
+        {c64.powerOn && (
+          <rect
+            x="346"
+            y="100"
+            width="208"
+            height="150"
+            fill={screenColor}
+            filter="url(#glow)"
+            opacity="0.45"
+          />
+        )}
+        <rect
+          x="322"
+          y="80"
+          width="256"
+          height="190"
+          rx="10"
+          fill="none"
+          stroke="#000"
+          strokeOpacity="0.45"
+          strokeWidth="5"
+        />
+        <polygon points="346,100 470,100 346,230" fill="url(#glass)" />
+        <rect x="300" y="60" width="300" height="6" rx="3" fill="#fff" opacity="0.35" />
         <rect x="420" y="300" width="60" height="18" fill="#a99d7f" />
+        <circle cx="560" cy="285" r="4" fill={c64.powerOn ? '#3cff5a' : '#35412f'} />
       </Hotspot>
 
       {/* 1541 */}
@@ -260,7 +315,7 @@ export function Desk({ state, onSelect, selected }: Props) {
               width="15"
               height="10"
               rx="2"
-              fill="#3a332a"
+              fill="url(#key)"
             />
           )),
         )}
@@ -270,7 +325,16 @@ export function Desk({ state, onSelect, selected }: Props) {
 
       {/* Telefon */}
       <Hotspot {...hs('phone')}>
-        <rect x="60" y="330" width="160" height="80" rx="14" fill="#9aa0a3" stroke="#555" strokeWidth="2" />
+        <rect
+          x="60"
+          y="330"
+          width="160"
+          height="80"
+          rx="14"
+          fill="url(#phonebody)"
+          stroke="#555"
+          strokeWidth="2"
+        />
         {[0, 1, 2].map((r) =>
           [0, 1, 2].map((c) => (
             <rect
@@ -408,6 +472,11 @@ export function Desk({ state, onSelect, selected }: Props) {
               <Disk x={400} y={536} label="1001" rot={-4} />
             </Hotspot>
           )}
+          {loc.disk_game === 'drawer' && (
+            <Hotspot {...hs('disk_game')}>
+              <Disk x={600} y={537} label="WT-07" rot={3} />
+            </Hotspot>
+          )}
           {loc.disk_archive === 'drawer' && (
             <Hotspot {...hs('disk_archive')}>
               <Disk x={500} y={538} label="ARCHIV" rot={5} />
@@ -417,9 +486,10 @@ export function Desk({ state, onSelect, selected }: Props) {
       )}
 
       <rect width="1000" height="640" fill="url(#lamp)" pointerEvents="none" />
-      <text x="990" y="632" textAnchor="end" fontSize="11" fill="#e7cfa6" opacity="0.7" pointerEvents="none">
-        Platzhalter-Illustration
-      </text>
     </svg>
   );
+}
+
+export function Desk({ pixel, ...props }: Props & { pixel: boolean }) {
+  return pixel ? <DeskPixel {...props} /> : <DeskRealistic {...props} />;
 }

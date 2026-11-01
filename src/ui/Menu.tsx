@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useSettings, type Settings } from '../app/settings';
-import { deleteSlot, downloadSave, listSlots, writeSlot, type Slot } from '../app/storage';
+import { deleteSlot, downloadSave, listSlots, storageKind, writeSlot, type Slot } from '../app/storage';
 import { audio } from '../audio/audio';
 import { formatShort } from '../engine/clock';
 import { parseSave } from '../engine/save';
@@ -28,6 +28,17 @@ export function SaveList({
   };
   return (
     <div className="save-list">
+      <p className="detail-note" data-testid="storage-kind">
+        Speicherort:{' '}
+        {
+          {
+            indexeddb: 'IndexedDB im Browser',
+            localstorage: 'localStorage im Browser',
+            none: 'nur Arbeitsspeicher',
+          }[storageKind()]
+        }
+        . Die Daten verlassen dein Gerät nie.
+      </p>
       <table>
         <thead>
           <tr>
@@ -172,6 +183,23 @@ export function SettingsForm() {
           onChange={(e) => set({ highContrast: e.target.checked })}
         />{' '}
         Hoher Kontrast
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={settings.pixelArt}
+          onChange={(e) => set({ pixelArt: e.target.checked })}
+          data-testid="pixel-art"
+        />{' '}
+        Pixelgrafik im Stil von 1986 (aus = realistisch gezeichneter Schreibtisch)
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={settings.logMisses}
+          onChange={(e) => set({ logMisses: e.target.checked })}
+        />{' '}
+        Nicht verstandene Eingaben lokal merken (hilft beim Verbessern; bleibt im Browser)
       </label>
       <p className="muted">
         Alle Geräusche haben eine Textentsprechung im Protokoll – das Spiel ist ohne Ton vollständig lösbar.

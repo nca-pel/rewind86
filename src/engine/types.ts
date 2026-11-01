@@ -21,7 +21,15 @@ export type AbsenceKind = 'school' | 'sleep' | 'meal' | 'club';
 export type GameMode = 'title' | 'desk' | 'conversation';
 
 /** Orte, an denen sich bewegliche Gegenstände befinden können. */
-export type ItemLocation = 'inventory' | 'desk' | 'drawer' | 'package' | 'drive' | 'datasette' | 'nowhere';
+export type ItemLocation =
+  | 'inventory'
+  | 'desk'
+  | 'drawer'
+  | 'package'
+  | 'drive'
+  | 'datasette'
+  | 'port'
+  | 'nowhere';
 
 export type C64Color = number; // 0..15, C64-Palettenindex
 
@@ -77,6 +85,8 @@ export interface OpenFile {
   /** Lesen: ganzer Dateiinhalt; Schreiben: bisher geschriebene Zeichen */
   data: string;
   pos: number;
+  /** Kommandokanal 15 der 1541: PRINT# sendet Befehle, INPUT# liest die Fehlermeldung */
+  cmd?: boolean;
 }
 
 /** Bildschirm des C64: Bildschirm-RAM, Farb-RAM, VIC-Register, Cursor (siehe src/c64/video.ts) */
@@ -302,7 +312,11 @@ export type AudioCueId =
   | 'door'
   | 'hangup';
 
+/** Warum eine Adventure-Eingabe nicht verstanden wurde (lokales Playtest-Protokoll, Ausbauplan Punkt 8) */
+export type ParseMissReason = 'unknownVerb' | 'bare' | 'unknownWord' | 'unreachable';
+
 export type UiEffect =
+  | { type: 'parseMiss'; input: string; reason: ParseMissReason; detail?: string }
   | { type: 'focus'; target: 'c64' | 'adventure' }
   | { type: 'openDetail'; id: string }
   | { type: 'closeDetail' }

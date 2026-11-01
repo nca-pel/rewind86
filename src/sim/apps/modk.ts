@@ -184,7 +184,7 @@ export const modkApp: AppDef<ModkState> = {
           const inDrive = Object.entries(ctx.state.itemLocations).find(([, l]) => l === 'drive')?.[0];
           if (inDrive === 'disk_key') {
             // TODO-STORY: Verhalten mit echter Schlüsseldiskette offen (GDD §7.5)
-            app.note = 'SCHLUESSEL ERKANNT (TODO-STORY)';
+            app.note = 'SCHLUESSELDISKETTE ERKANNT - AUSBAU FOLGT';
             return {};
           }
           app.screen = 'nokey';

@@ -4,7 +4,7 @@ import { FULL_KEY, K01_CIPHERTEXT, decrypt, encrypt, normalizePlain, readable } 
 import { milestoneState } from '../engine/dev';
 import { step } from '../engine/engine';
 import { createSaveFile, migrate, parseSave } from '../engine/save';
-import { createInitialState } from '../engine/state';
+import { SCHEMA_VERSION, createInitialState } from '../engine/state';
 import { visibleMessages } from '../sim/apps/modk';
 import { Session } from './helpers';
 
@@ -264,7 +264,7 @@ describe('Spielstände (Schema 6)', () => {
     old.disks.game.files[0].basic = LOADER_LINES.filter((l) => !l.startsWith('70 '));
     old.scheduledEvents = old.scheduledEvents.filter((e) => e.id !== 'ev_ralf_cassette');
     const m = migrate(old) as typeof old;
-    expect(m.schemaVersion).toBe(6);
+    expect(m.schemaVersion).toBe(SCHEMA_VERSION);
     expect(m.itemLocations.cassette).toBe('nowhere');
     expect(m.disks.game.files[0].basic).toEqual(LOADER_LINES);
     expect(m.scheduledEvents.some((e) => e.id === 'ev_ralf_cassette')).toBe(true);

@@ -5,7 +5,7 @@ import type { Condition, GameState } from './types';
 
 /** Leitung durch Jan belegt: Hörer ist abgenommen (in der Hand oder im Koppler). */
 export function janUsesLine(state: GameState): boolean {
-  return state.telecom.handset !== 'cradle';
+  return state.telecom.handset !== 'cradle' || state.telecom.connectedSystemId === 'btx';
 }
 
 export function houseLineBusy(state: GameState): boolean {

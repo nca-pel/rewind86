@@ -35,10 +35,15 @@ function monitorText(state: GameState): string {
 export function dynamicDescription(state: GameState, id: string): string {
   const t = state.telecom;
   switch (id) {
-    case 'c64':
-      return state.computer.powerOn
-        ? 'Er ist eingeschaltet; die rote Betriebs-LED leuchtet.'
-        : 'Er ist ausgeschaltet. (SCHALTE COMPUTER EIN – Monitor und 1541 hängen an derselben Steckerleiste.)';
+    case 'c64': {
+      const slot = state.itemLocations.btx_kit === 'port' ? ' Im Modulschacht steckt das BTX-Modul.' : '';
+      return (
+        (state.computer.powerOn
+          ? 'Er ist eingeschaltet; die rote Betriebs-LED leuchtet.'
+          : 'Er ist ausgeschaltet. (SCHALTE COMPUTER EIN – Monitor und 1541 hängen an derselben Steckerleiste.)') +
+        slot
+      );
+    }
     case 'monitor':
       return monitorText(state);
     case 'drive1541': {

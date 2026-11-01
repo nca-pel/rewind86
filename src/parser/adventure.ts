@@ -59,7 +59,45 @@ function parseWait(tokens: string[]): number {
   return Math.max(1, Math.min(minutes, 12 * 60));
 }
 
+/** Fragesätze und Redewendungen, die auf bekannte Befehle abgebildet werden (Playtest-Auswertung, Punkt 8) */
+function parsePhrase(tokens: string[], raw: string): Intent | null {
+  const [w0, w1] = tokens;
+  const has = (...ws: string[]) => ws.some((w) => tokens.includes(w));
+  // "Wo bin ich?" → umsehen
+  if (w0 === 'wo' && (w1 === 'bin' || w1 === 'sind')) return { kind: 'meta', meta: 'look' };
+  // "Was soll/kann ich tun?", "Was nun?" → Denkhilfe
+  if (w0 === 'was' && has('tun', 'nun', 'jetzt', 'machen')) return { kind: 'meta', meta: 'think' };
+  // "Was ist/liegt in der Schublade?" → untersuchen; "Was steht auf dem Etikett?" → lesen
+  if (
+    w0 === 'was' &&
+    ['ist', 'liegt', 'befindet', 'steckt', 'sind'].includes(w1 ?? '') &&
+    has('in', 'im', 'auf')
+  ) {
+    const at = tokens.findIndex((t) => t === 'in' || t === 'im' || t === 'auf');
+    const target = tokens.slice(at + 1);
+    if (target.length) return parseAdventure(['untersuche', ...target].join(' '));
+  }
+  if (w0 === 'was' && ['steht', 'stand'].includes(w1 ?? '') && has('auf', 'in', 'im')) {
+    const at = tokens.findIndex((t) => t === 'auf' || t === 'in' || t === 'im');
+    const target = tokens.slice(at + 1);
+    if (target.length) return parseAdventure(['lies', ...target].join(' '));
+  }
+  // "Leg dich hin" → schlafen
+  if (['leg', 'lege'].includes(w0) && w1 === 'dich') return { kind: 'meta', meta: 'sleep' };
+  // "Zeige mir die Dateien/das Verzeichnis" → Verzeichnis am C64
+  if (
+    ['zeige', 'zeig', 'liste', 'lies'].includes(w0) &&
+    has('dateien', 'verzeichnis', 'inhaltsverzeichnis', 'directory', 'katalog') &&
+    !has('zeitschrift', 'heft')
+  )
+    return { kind: 'type', text: 'ZEIGE DATEIEN' };
+  void raw;
+  return null;
+}
+
 function parseMeta(tokens: string[], raw: string): Intent | null {
+  const phrase = parsePhrase(tokens, raw);
+  if (phrase) return phrase;
   const [w0, w1] = tokens;
   const rest = tokens.slice(1);
   if (raw.trim() === '?' || ['hilfe', 'help', 'befehle', 'kommandos'].includes(w0))

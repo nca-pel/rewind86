@@ -9,6 +9,7 @@ import { STATIONS } from '../content/radio';
 import { describe, itemsAt } from '../engine/describe';
 import type { GameState } from '../engine/types';
 import { COMMAND_NAME } from './commandNames';
+import { DeviceArt } from './DeviceArt';
 
 type Action = { label: string; cmd: string };
 
@@ -118,6 +119,7 @@ export function DetailPanel({ game }: { game: GameUi }) {
           ✕
         </button>
       </div>
+      <DeviceArt state={state} id={id} label={o.short} />
       <p className="detail-text">{describe(state, id)}</p>
       <div className="detail-actions">
         {acts.map((a) => (

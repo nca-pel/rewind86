@@ -225,6 +225,38 @@ export const PUZZLES: PuzzleDef[] = [
       },
     ],
   },
+  {
+    id: 'P17',
+    title: 'BTX: Clubtafel finden',
+    strand: 'BTX',
+    order: 17,
+    historicalStatus: 'fictional',
+    stages: [
+      {
+        when: { notFact: 'btx_club' },
+        hints: [
+          'Der Computerclub verschickt Post. Lies sie genau.',
+          'Im Rundbrief des Computerclubs steht mehr als nur der Termin.',
+          'LIES RUNDBRIEF (er kommt am Samstag mit der Post). Dort steht die Seitennummer der Clubtafel.',
+        ],
+      },
+      {
+        when: { notItemAt: 'btx_kit', loc: 'port' },
+        hints: [
+          'Für BTX brauchst du Ausrüstung, die du nicht besitzt.',
+          'Der Club verleiht am Clubabend ein BTX-Set an Mitglieder. Es kommt in den Modulschacht des C64.',
+          'GEHE ZUM CLUB (Donnerstag, 18:30–19:30), dann SCHALTE COMPUTER AUS, STECKE BTX-SET IN DEN C64, SCHALTE COMPUTER EIN.',
+        ],
+      },
+      {
+        hints: [
+          'Der Decoder meldet sich von allein. Seiten rufst du mit Sternchen und Raute auf.',
+          'Verbinden mit RETURN; dann *Nummer# eingeben (die Nummer steht im Rundbrief).',
+          'Taste *, dann die Seitennummer der Clubtafel, dann Taste #. Das Telefon muss aufgelegt sein.',
+        ],
+      },
+    ],
+  },
 ];
 
 export const PUZZLE_BY_ID: Record<string, PuzzleDef> = Object.fromEntries(PUZZLES.map((p) => [p.id, p]));

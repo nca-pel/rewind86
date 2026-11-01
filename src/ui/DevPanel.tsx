@@ -3,6 +3,7 @@
  * laden, Ereignis-/Rätselgraph prüfen. Nicht modal – das Spiel bleibt daneben bedienbar.
  */
 import { useMemo, useState, type FormEvent } from 'react';
+import { clearLog, formatLog, readLog } from '../app/playtestLog';
 import type { GameUi } from '../app/useGame';
 import { FACTS } from '../content/facts';
 import { formatShort } from '../engine/clock';
@@ -20,9 +21,9 @@ import {
 import { step } from '../engine/engine';
 import { stageOf, threshold, thresholdNames } from '../engine/pressure';
 
-const TABS = ['Zustand', 'Ereignisse', 'Graph', 'Meilensteine', 'Log'] as const;
+const TABS = ['Zustand', 'Ereignisse', 'Graph', 'Meilensteine', 'Parser', 'Log'] as const;
 type Tab = (typeof TABS)[number];
-const LOCATIONS = ['inventory', 'desk', 'drawer', 'package', 'drive', 'nowhere'];
+const LOCATIONS = ['inventory', 'desk', 'drawer', 'package', 'drive', 'datasette', 'port', 'nowhere'];
 const PUZZLE_STATES = ['unknown', 'discovered', 'solving', 'solved', 'bypassed'];
 
 /** Entwicklermodus über ?dev=1 (bleibt für die Sitzung aktiv) */
@@ -35,6 +36,45 @@ export function devEnabled(): boolean {
   } catch {
     return false;
   }
+}
+
+/** Lokales Playtest-Protokoll: vom Parser nicht verstandene Eingaben (siehe app/playtestLog.ts) */
+function ParserLog() {
+  const [log, setLog] = useState(() => readLog());
+  const text = formatLog(log);
+  return (
+    <>
+      <h4>Nicht verstandene Eingaben ({log.length})</h4>
+      <p className="muted">
+        Bleibt im Browser. Häufigste zuerst – Kandidaten für neue Verben, Substantive oder Redewendungen.
+      </p>
+      <div className="dev-actions">
+        <button type="button" onClick={() => setLog(readLog())}>
+          Aktualisieren
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            void navigator.clipboard?.writeText(text);
+          }}
+        >
+          Kopieren
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            clearLog();
+            setLog([]);
+          }}
+        >
+          Leeren
+        </button>
+      </div>
+      <pre className="dev-out dev-log" data-testid="parser-log">
+        {text || '(leer)'}
+      </pre>
+    </>
+  );
 }
 
 export function DevPanel({ game }: { game: GameUi }) {
@@ -313,6 +353,8 @@ export function DevPanel({ game }: { game: GameUi }) {
             </ul>
           </>
         )}
+
+        {tab === 'Parser' && <ParserLog />}
 
         {tab === 'Log' && (
           <>

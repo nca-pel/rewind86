@@ -8,6 +8,10 @@ export interface Settings {
   crt: boolean;
   textSize: 's' | 'm' | 'l';
   highContrast: boolean;
+  /** nicht verstandene Eingaben lokal protokollieren (verlässt den Browser nicht) */
+  logMisses: boolean;
+  /** Schreibtisch: true = Pixelgrafik im Stil von 1986, false = realistisch gezeichnet */
+  pixelArt: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -17,6 +21,8 @@ export const DEFAULT_SETTINGS: Settings = {
   crt: true,
   textSize: 'm',
   highContrast: false,
+  logMisses: true,
+  pixelArt: true,
 };
 
 const KEY = 'rewind1986.settings';

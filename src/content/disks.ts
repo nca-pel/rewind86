@@ -43,7 +43,7 @@ export const INITIAL_DISKS: Record<string, VirtualDisk> = {
         name: 'DATEN.07',
         type: 'SEQ',
         blocks: 23,
-        textContent: 'TODO-STORY: Inhalt verschlüsselt, Bedeutung offen.',
+        textContent: 'DATEN VERSCHLUESSELT - ZUGRIFF NUR MIT SCHLUESSELDISKETTE.',
       },
     ],
   },

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { audio } from '../audio/audio';
+import { DEMO_TRACK, audio, type MusicTrack } from '../audio/audio';
+import { FERNHANDEL_BPM, fernhandelStep } from '../audio/fernhandelSong';
 import { step } from '../engine/engine';
 import { createInitialState } from '../engine/state';
 import type { Command, GameState, UiEffect } from '../engine/types';
+import { recordMiss } from './playtestLog';
 import { isSlot, readSlot, writeSlot } from './storage';
 
 export type Panel = 'desk' | 'c64' | 'notes';
@@ -32,6 +34,8 @@ export interface GameUi {
   undoGameOver: () => void;
   demoMusic: boolean;
 }
+
+const FERNHANDEL_TRACK: MusicTrack = { bpm: FERNHANDEL_BPM, at: fernhandelStep };
 
 export function useGame(): GameUi {
   const [state, setState] = useState<GameState | null>(null);
@@ -113,6 +117,9 @@ export function useGame(): GameUi {
             if (ref.current) autosave(ref.current);
             showToast(`Automatisch gespeichert: ${e.reason}`);
             break;
+          case 'parseMiss':
+            recordMiss(e, ref.current?.gameClock ?? '');
+            break;
           case 'demoMusic':
             setDemoMusic(e.on);
             break;
@@ -167,10 +174,19 @@ export function useGame(): GameUi {
     setDemoMusic(false);
   }, [commit]);
 
+  // Musik folgt dem Zustand: INTRUDER-Demo bzw. laufendes FERNHANDEL; sonst Stille
+  const app = state?.computer.powerOn ? state.computer.app : null;
+  const musicTrack =
+    app?.id === 'intruder'
+      ? 'demo'
+      : app?.id === 'wt07' && (app as unknown as { phase: string }).phase === 'play'
+        ? 'fernhandel'
+        : null;
   useEffect(() => {
-    if (demoMusic) audio.startMusic();
+    if (musicTrack === 'demo') audio.startMusic(DEMO_TRACK);
+    else if (musicTrack === 'fernhandel') audio.startMusic(FERNHANDEL_TRACK);
     else audio.stopMusic();
-  }, [demoMusic]);
+  }, [musicTrack, demoMusic]);
 
   useEffect(() => {
     const save = () => {

@@ -4,6 +4,15 @@
  * Jedes inhaltlich relevante Geräusch hat eine Textentsprechung im Adventure-Protokoll.
  */
 import type { AudioCueId } from '../engine/types';
+import { BPM, songStep, type SongStep } from './demoSong';
+
+/** Musikstück: Tempo und Noten je Sechzehntel (siehe demoSong.ts, fernhandelSong.ts) */
+export interface MusicTrack {
+  bpm: number;
+  at(step: number): SongStep;
+}
+
+export const DEMO_TRACK: MusicTrack = { bpm: BPM, at: songStep };
 
 type Group = 'effects' | 'device' | 'music';
 
@@ -24,6 +33,7 @@ class AudioEngine {
   private master: GainNode | null = null;
   private groups: Partial<Record<Group, GainNode>> = {};
   private musicTimer: number | null = null;
+  private track: MusicTrack | null = null;
   enabled = true;
   volume = 0.6;
 
@@ -149,20 +159,107 @@ class AudioEngine {
     }
   }
 
-  /** Eigene, SID-inspirierte Endlosschleife für die INTRUDER-Demo (Pulswelle, Arpeggio, Bass, Hi-Hat). */
-  startMusic(): void {
+  /** Kick: kurzer Sinus mit fallender Tonhöhe */
+  private kick(start: number): void {
+    const ctx = this.ctx!;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(160, start);
+    osc.frequency.exponentialRampToValueAtTime(45, start + 0.12);
+    g.gain.setValueAtTime(0.28, start);
+    g.gain.exponentialRampToValueAtTime(0.001, start + 0.16);
+    osc.connect(g).connect(this.groups.music!);
+    osc.start(start);
+    osc.stop(start + 0.18);
+  }
+
+  private distortion: Float32Array | null = null;
+
+  /** E-Gitarre nachgeahmt: Sägezähne, Übersteuerung (Waveshaper), Tiefpass; mute = Palm Mute */
+  private guitar(
+    notes: number[],
+    freqOf: (n: number) => number,
+    start: number,
+    dur: number,
+    mute: boolean,
+  ): void {
+    const ctx = this.ctx!;
+    if (!this.distortion) {
+      const curve = new Float32Array(1024);
+      for (let i = 0; i < curve.length; i++) {
+        const x = (i / (curve.length - 1)) * 2 - 1;
+        curve[i] = Math.tanh(x * 6);
+      }
+      this.distortion = curve;
+    }
+    const shaper = ctx.createWaveShaper();
+    shaper.curve = this.distortion;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = mute ? 900 : 2600;
+    lp.Q.value = 1.2;
+    const g = ctx.createGain();
+    const len = mute ? Math.min(dur, 0.09) : dur;
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(0.05, start + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.001, start + len);
+    shaper.connect(lp).connect(g).connect(this.groups.music!);
+    for (const n of notes) {
+      for (const cents of [-7, 7]) {
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.value = freqOf(n);
+        osc.detune.value = cents;
+        osc.connect(shaper);
+        osc.start(start);
+        osc.stop(start + len + 0.02);
+      }
+    }
+  }
+
+  /** Solo-Gitarre: eine Stimme, optional von unten angebogen, Vibrato bei langen Tönen */
+  private soloNote(freq: number, start: number, dur: number, bend: boolean): void {
+    const ctx = this.ctx!;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    if (bend) {
+      osc.frequency.setValueAtTime(freq * Math.pow(2, -2 / 12), start);
+      osc.frequency.linearRampToValueAtTime(freq, start + 0.07);
+    } else osc.frequency.value = freq;
+    const lfo = ctx.createOscillator();
+    const depth = ctx.createGain();
+    lfo.frequency.value = 5.5;
+    depth.gain.setValueAtTime(0, start);
+    depth.gain.linearRampToValueAtTime(dur > 0.2 ? 18 : 0, start + 0.18);
+    lfo.connect(depth).connect(osc.detune);
+    const shaper = ctx.createWaveShaper();
+    shaper.curve = this.distortion;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 3600;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(0.06, start + 0.01);
+    g.gain.setValueAtTime(0.06, start + Math.max(0.02, dur - 0.05));
+    g.gain.linearRampToValueAtTime(0, start + dur);
+    osc.connect(shaper).connect(lp).connect(g).connect(this.groups.music!);
+    osc.start(start);
+    lfo.start(start);
+    osc.stop(start + dur + 0.02);
+    lfo.stop(start + dur + 0.02);
+  }
+
+  /** Eigene, SID-inspirierte Komposition für die INTRUDER-Demo (siehe demoSong.ts), Wiederholung nach 88 Takten. */
+  startMusic(track: MusicTrack = DEMO_TRACK): void {
     const ctx = this.ready();
-    if (!ctx || this.musicTimer !== null) return;
-    const bpm = 132;
-    const step = 60 / bpm / 4;
-    // Akkordfolge Am – F – C – G als Arpeggio; eigene Komposition
-    const chords = [
-      [57, 60, 64],
-      [53, 57, 60],
-      [48, 52, 55],
-      [55, 59, 62],
-    ];
-    const bass = [45, 41, 36, 43];
+    if (!ctx) return;
+    if (this.musicTimer !== null) {
+      if (this.track === track) return;
+      this.stopMusic();
+    }
+    this.track = track;
+    const step = 60 / track.bpm / 4;
     const midi = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
     let pos = 0;
     let next = ctx.currentTime + 0.05;
@@ -170,11 +267,19 @@ class AudioEngine {
       const c = this.ready();
       if (!c) return;
       while (next < c.currentTime + 0.2) {
-        const bar = Math.floor(pos / 16) % 4;
-        const chord = chords[bar];
-        this.tone('music', midi(chord[pos % 3] + 12), next, step * 0.9, 'square', 0.05);
-        if (pos % 4 === 0) this.tone('music', midi(bass[bar]), next, step * 3.5, 'triangle', 0.12);
-        if (pos % 2 === 1) this.noise('music', next, 0.02, 0.03);
+        const e = track.at(pos);
+        if (e.lead) this.tone('music', midi(e.lead), next, step * (e.hold ? 14 : 1.8), 'square', 0.05);
+        if (e.arp) this.tone('music', midi(e.arp), next, step * 0.9, 'square', 0.03);
+        if (e.bass) this.tone('music', midi(e.bass.note), next, step * e.bass.steps, 'triangle', 0.12);
+        if (e.pad) for (const n of e.pad) this.tone('music', midi(n), next, step * 15.5, 'triangle', 0.035);
+        if (e.guitar) this.guitar(e.guitar.notes, midi, next, step * e.guitar.steps, e.guitar.mute);
+        if (e.solo) this.soloNote(midi(e.solo.note), next, step * e.solo.steps * 0.95, e.solo.bend);
+        if (e.crash) this.noise('music', next, 0.6, 0.05);
+        if (e.kick) this.kick(next);
+        if (e.snare) this.noise('music', next, 0.09, 0.07);
+        if (e.hat) this.noise('music', next, 0.02, 0.03);
+        if (e.openHat) this.noise('music', next, 0.07, 0.025);
+        if (e.riser) this.noise('music', next, 0.05, 0.02 + e.riser * 0.1);
         next += step;
         pos++;
       }
@@ -186,6 +291,7 @@ class AudioEngine {
   stopMusic(): void {
     if (this.musicTimer !== null) window.clearInterval(this.musicTimer);
     this.musicTimer = null;
+    this.track = null;
   }
 }
 

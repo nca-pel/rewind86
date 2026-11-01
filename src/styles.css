@@ -901,3 +901,27 @@ html[data-motion='reduced'] *::after {
 .dev-warn {
   color: var(--danger);
 }
+.device-art {
+  margin: 0.4rem 0;
+  text-align: center;
+}
+.device-art svg {
+  max-width: 260px;
+  max-height: 140px;
+  width: 100%;
+  height: auto;
+}
+.device-art figcaption {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+.desk-svg.pixel {
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+  aspect-ratio: 320 / 205;
+}
+.desk-svg.pixel .hotspot:hover,
+.desk-svg.pixel .hotspot:focus-visible,
+.desk-svg.pixel .hotspot.selected {
+  filter: brightness(1.35) drop-shadow(0 0 1px #fff);
+}

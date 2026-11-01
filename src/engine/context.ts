@@ -1,4 +1,4 @@
-import type { AbsenceKind, AudioCueId, GameState, LogEntry, UiEffect } from './types';
+import type { AbsenceKind, AudioCueId, GameState, LogEntry, ParseMissReason, UiEffect } from './types';
 
 export interface PendingAbsence {
   kind: AbsenceKind;
@@ -23,7 +23,16 @@ export class Ctx {
   /** Läuft gerade ein Zeitblock? (keine verschachtelten Blöcke) */
   inAbsence = false;
 
+  /** Aktuell verarbeitete Adventure-Eingabe (für das Playtest-Protokoll) */
+  input = '';
+
   constructor(public state: GameState) {}
+
+  /** Nicht verstandene Eingabe fürs lokale Playtest-Protokoll vormerken (nur UI-Effekt, ändert keinen Spielzustand) */
+  miss(reason: ParseMissReason, detail?: string): void {
+    if (this.input)
+      this.ui.push({ type: 'parseMiss', input: this.input, reason, ...(detail ? { detail } : {}) });
+  }
 
   say(text: string, kind: LogEntry['kind'] = 'story', speaker?: string): void {
     const entry: LogEntry = { id: this.state.nextLogId++, kind, text };

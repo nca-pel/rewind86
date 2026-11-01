@@ -9,13 +9,21 @@ import { discoverFact } from '../engine/effects';
 import { bootProfile, bootScreen } from '../engine/state';
 import type { C64Key, GameState, ProgramLine, VirtualDisk, VirtualFile } from '../engine/types';
 import { archiveApp } from './apps/archive';
+import { btxApp, btxDropCarrier } from './apps/btx';
 import { diskInDrive } from './drive';
 import { intruderApp } from './apps/intruder';
 import { termApp } from './apps/term';
 import { modkApp } from './apps/modk';
 import type { AppDef, AppResult, Rendered } from './apps/types';
 import { wt07App } from './apps/wt07';
-import { BasicError, Interpreter, newRun, type BasicHost, type RunStatus } from './basic/interpreter';
+import {
+  BasicError,
+  DISK_OK,
+  Interpreter,
+  newRun,
+  type BasicHost,
+  type RunStatus,
+} from './basic/interpreter';
 import { printLine, toPetsciiText } from './screen';
 import { TEXT_COLS } from '../c64/geometry';
 import { stringToPetscii, textToScreen } from '../c64/petscii';
@@ -38,6 +46,7 @@ export const APPS: Record<string, AppDef<any>> = {
   archive: archiveApp,
   intruder: intruderApp,
   term: termApp,
+  btx: btxApp,
 };
 
 export { diskInDrive };
@@ -240,6 +249,64 @@ class Machine implements BasicHost {
     this.minutes += 1;
   }
 
+  /**
+   * Kommandokanal 15: S (scratch), R (rename), I (initialize), V (validate). Antwort wie der Fehlerkanal der
+   * 1541: »nr,TEXT,spur,sektor«, bei erfolgreichem Löschen mit der Dateizahl in der Spur.
+   */
+  diskCommand(cmd: string): string {
+    const msg = (nr: number, text: string, track = 0): string =>
+      `${String(nr).padStart(2, '0')},${text},${String(track).padStart(2, '0')},00\r`;
+    this.ctx.cue('drive');
+    const text = toPetsciiText(cmd).replace(/\r/g, '').trim();
+    if (!text) return DISK_OK;
+    const disk = diskInDrive(this.ctx.state);
+    if (!disk) {
+      this.note('Die rote LED der 1541 blinkt: keine Diskette im Laufwerk.');
+      return msg(74, 'DRIVE NOT READY');
+    }
+    const kind = text[0];
+    const arg = text.replace(/^[A-Z]*\d*:?/, '');
+    if (kind === 'I' || kind === 'V') {
+      this.minutes += 1;
+      return DISK_OK;
+    }
+    if (kind !== 'S' && kind !== 'R') return msg(31, 'SYNTAX ERROR');
+    if (disk.writeProtected) {
+      this.note('Die rote LED der 1541 blinkt: Die Diskette ist schreibgeschützt.');
+      return msg(26, 'WRITE PROTECT ON');
+    }
+    const visible = visibleFiles(this.ctx.state, disk);
+    if (kind === 'R') {
+      const [to, from] = arg.split('=').map((x) => x.trim().slice(0, 16));
+      if (!to || !from) return msg(34, 'SYNTAX ERROR');
+      const file = visible.find((f) => f.name === from);
+      if (!file) return msg(62, 'FILE NOT FOUND');
+      if (visible.some((f) => f.name === to)) return msg(63, 'FILE EXISTS');
+      if (file.appId) return msg(26, 'WRITE PROTECT ON');
+      file.name = to;
+      this.minutes += 1;
+      return DISK_OK;
+    }
+    // Scratch: mehrere Namen mit Komma, Platzhalter * am Ende
+    const names = arg
+      .split(',')
+      .map((x) => x.trim().slice(0, 16))
+      .filter(Boolean);
+    if (names.length === 0) return msg(34, 'SYNTAX ERROR');
+    const hit = new Set<VirtualFile>();
+    for (const n of names) {
+      for (const f of visible) {
+        if (f.name === n || (n.endsWith('*') && f.name.startsWith(n.slice(0, -1)))) hit.add(f);
+      }
+    }
+    const locked = [...hit].filter((f) => f.appId || f.type === 'DEL');
+    if (locked.length > 0) return msg(26, 'WRITE PROTECT ON');
+    if (hit.size === 0) return msg(62, 'FILE NOT FOUND');
+    disk.files = disk.files.filter((f) => !hit.has(f));
+    this.minutes += 1;
+    return msg(1, ' FILES SCRATCHED', hit.size);
+  }
+
   save(name: string, device: number): void {
     if (device !== 8) {
       this.write('PRESS RECORD & PLAY ON TAPE');
@@ -303,6 +370,7 @@ export function startApp(ctx: Ctx, id: string): number {
 
 export function exitApp(ctx: Ctx): void {
   const comp = ctx.state.computer;
+  if (comp.app?.id === 'btx') btxDropCarrier(ctx, 'ENDE');
   comp.app = null;
   const p = bootProfile();
   comp.screen = createVideo({ border: p.border, background: p.background, text: p.text });
@@ -412,6 +480,8 @@ function powerOnReset(ctx: Ctx): void {
   comp.app = null;
   comp.loaded = null;
   comp.memory = {};
+  // Steckmodule starten von allein (BTX-Decoder im Modulschacht)
+  if (ctx.state.itemLocations.btx_kit === 'port') startApp(ctx, 'btx');
 }
 
 export function powerOn(ctx: Ctx): void {
@@ -430,6 +500,7 @@ export function powerOff(ctx: Ctx): void {
   comp.program = [];
   comp.loaded = null;
   comp.screen = createVideo();
+  btxDropCarrier(ctx, 'AUS');
   ctx.state.telecom.connectedSystemId = null;
   ctx.state.telecom.currentUserHandle = null;
 }

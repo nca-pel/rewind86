@@ -196,11 +196,12 @@ describe('INTRUDER-Demo (GDD §12, §19.4)', () => {
     expect(s.log.some((l) => l.text.includes('Brotkasten'))).toBe(true);
     expect(s.ui).toContainEqual({ type: 'demoMusic', on: true });
     const screens = new Set<number>();
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 8; i++) {
       screens.add((s.state.computer.app as unknown as { screen: number }).screen);
       s.key('SPACE');
     }
-    expect(screens.size).toBeGreaterThanOrEqual(2);
+    expect(screens.size).toBe(8);
+    expect(s.has('demo_all')).toBe(true);
     expect(s.has('demo_border')).toBe(true);
     // Textuelle Laufschrift als Untertitel
     expect(s.log.some((l) => l.kind === 'caption' && l.text.includes('Laufschrift'))).toBe(true);

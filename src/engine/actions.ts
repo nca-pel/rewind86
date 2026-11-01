@@ -75,14 +75,20 @@ function obj(ctx: Ctx, intent: Verb, index: number, opts: ResolveOptions = {}): 
       ctx.say('Worauf beziehst du dich? Nenne den Gegenstand bitte direkt.');
       return null;
     case 'unknown':
+      ctx.miss('unknownWord', r.word);
       ctx.say(`Das Wort »${r.word}« kenne ich hier nicht. (HILFE zeigt Beispiele.)`);
       return null;
     case 'unreachable': {
       const o = OBJECT_BY_ID[r.id];
+      ctx.miss('unreachable', r.id);
       if (r.id === 'disk_key') ctx.say('Eine Diskette 2 hast du nicht – genau das ist ja das Problem.');
       else if (o.npc) ctx.say(`${capitalize(o.name)} ist nicht hier.`);
       else if (ctx.state.itemLocations[r.id] === 'nowhere')
         ctx.say(`${capitalize(o.name)} hast du (noch) nicht.`);
+      else if (ctx.state.itemLocations[o.partOf ?? r.id] === 'package')
+        ctx.say(`${capitalize(o.name)} steckt noch im geschlossenen Päckchen. (ÖFFNE PÄCKCHEN)`);
+      else if (ctx.state.itemLocations[o.partOf ?? r.id] === 'drawer')
+        ctx.say(`${capitalize(o.name)} liegt in der Schublade – und die ist zu. (ÖFFNE SCHUBLADE)`);
       else ctx.say(`Davon ist hier gerade nichts zu sehen.`);
       return null;
     }
@@ -168,6 +174,7 @@ function take(ctx: Ctx, id: string): number {
     return 0;
   }
   if (loc === 'drive') return eject(ctx, id);
+  if (loc === 'port') return kitOutOfPort(ctx);
   s.itemLocations[id] = 'inventory';
   const from =
     loc === 'drawer'
@@ -223,7 +230,50 @@ function cassetteInto(ctx: Ctx, tgt: string): number {
   return DEFAULT_MINUTES;
 }
 
+/** BTX-Set in den Modulschacht stecken bzw. herausziehen – nur bei ausgeschaltetem C64 */
+function kitIntoPort(ctx: Ctx): number {
+  const s = ctx.state;
+  if (s.itemLocations.btx_kit === 'port') {
+    ctx.say('Das BTX-Modul steckt schon im Modulschacht.');
+    return 0;
+  }
+  if (s.computer.powerOn) {
+    ctx.say(
+      'Ein Steckmodul bei laufendem Computer einzustecken, ist der sicherste Weg, den C64 oder das Modul zu beschädigen. Schalte ihn vorher aus.',
+    );
+    return 0;
+  }
+  s.itemLocations.btx_kit = 'port';
+  ctx.say(
+    'Du steckst das Modul vorsichtig in den Modulschacht hinten am C64 und das Postmodem in die Telefondose. Beim nächsten Einschalten meldet sich der Decoder von selbst.',
+  );
+  discoverFact(ctx, 'btx_howto');
+  return DEFAULT_MINUTES;
+}
+
+function kitOutOfPort(ctx: Ctx): number {
+  const s = ctx.state;
+  if (s.itemLocations.btx_kit !== 'port') {
+    ctx.say('Im Modulschacht steckt nichts.');
+    return 0;
+  }
+  if (s.computer.powerOn) {
+    ctx.say('Nicht bei laufendem Computer! Schalte ihn erst aus.');
+    return 0;
+  }
+  s.itemLocations.btx_kit = 'inventory';
+  ctx.say('Du ziehst das BTX-Modul aus dem Modulschacht.');
+  return DEFAULT_MINUTES;
+}
+
 function insertInto(ctx: Ctx, id: string, target: string | null): number {
+  if (id === 'btx_kit' && (target === null || target === 'c64' || target === 'drive1541')) {
+    if (target === 'drive1541') {
+      ctx.say('In die 1541 passen nur Disketten.');
+      return 0;
+    }
+    return kitIntoPort(ctx);
+  }
   if (id === 'handset' || id === 'phone') {
     if (target === null || target === 'coupler') return handsetIntoCoupler(ctx);
     if (target === 'phone') return hangUp(ctx);
@@ -656,12 +706,15 @@ function goToClub(ctx: Ctx): number {
     return 0;
   }
   // TODO-STORY: Inhalte des Clubabends (Begegnungen, GHOST-Indizien) folgen mit Akt 2.
+  s.flags.clubAttended = true;
+  // Ausleihe des BTX-Sets (Annahme: Mitglieder dürfen es probieren, siehe config.btx)
+  if (s.itemLocations.btx_kit === 'nowhere') s.itemLocations.btx_kit = 'inventory';
   requestAbsence(
     ctx,
     'club',
     `${c.eveningDate}T${c.backAt}`,
     'Du schnappst dir deine Diskettenbox und radelst durch den Nieselregen zum Jugendzentrum. Drinnen riecht es nach Kaffee und warmen Netzteilen. Ein paar Leute tauschen Disketten, an einem Tisch wird eine Datasette justiert, und jemand schwärmt vom neuen Amiga, den sich keiner leisten kann.',
-    'Kurz vor zehn bist du wieder zu Hause, die Jacke klamm vom Regen, den Kopf voller neuer Ideen.',
+    'Kurz vor zehn bist du wieder zu Hause, die Jacke klamm vom Regen, den Kopf voller neuer Ideen – und mit dem BTX-Leihset des Clubs unter dem Arm, das du dir für ein paar Tage ausleihen durftest.',
   );
   advanceTime(ctx, 0);
   return 0;
@@ -682,6 +735,7 @@ export function runIntent(ctx: Ctx, intent: Intent): number {
       );
       return 0;
     case 'unknownVerb':
+      ctx.miss('unknownVerb', intent.word);
       ctx.say(
         `Das Verb »${intent.word}« verstehe ich nicht eindeutig.${intent.suggestion ? ` Meintest du: ${intent.suggestion}?` : ''}`,
       );
@@ -692,11 +746,18 @@ export function runIntent(ctx: Ctx, intent: Intent): number {
         return talkAbout(ctx, s.conversation.npc, topic, intent.words.join(' '));
       }
       const r = resolveObject(s, intent.words);
-      if (r.status === 'ok') ctx.say(`Was möchtest du mit ${OBJECT_BY_ID[r.id].dat} machen?`);
-      else
+      if (
+        intent.words.length === 1 &&
+        ['ja', 'nein', 'ok', 'okay', 'genau', 'stimmt', 'vielleicht'].includes(intent.words[0])
+      )
+        ctx.say('Niemand hat dich gerade etwas gefragt. Was möchtest du tun? (HILFE zeigt Beispiele.)');
+      else if (r.status === 'ok') ctx.say(`Was möchtest du mit ${OBJECT_BY_ID[r.id].dat} machen?`);
+      else {
+        ctx.miss('bare', intent.words.join(' '));
         ctx.say(
-          `Ich verstehe »${intent.words.join(' ')}« nicht. Versuch es mit einem Verb, z. B. UNTERSUCHE ${intent.words[0]?.toUpperCase() ?? 'TISCH'}. (HILFE zeigt Beispiele.)`,
+          `Ich verstehe »${intent.words.join(' ')}« nicht. Beginne mit einem Verb, z. B. UNTERSUCHE DISKETTE oder NIMM HÖRER. (HILFE zeigt Beispiele.)`,
         );
+      }
       return 0;
     }
     case 'dial':
@@ -808,6 +869,7 @@ function verb(ctx: Ctx, intent: Verb): number {
       if (!id) return 0;
       if (id === 'handset') return pickUp(ctx);
       if (id === 'drive1541') return eject(ctx);
+      if (id === 'btx_kit') return kitOutOfPort(ctx);
       if (id === 'cassette' || id === 'datasette') {
         if (s.itemLocations.cassette !== 'datasette') {
           ctx.say('In der Datasette steckt keine Kassette.');
