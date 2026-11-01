@@ -11,7 +11,15 @@ function Entry({ e }: { e: LogEntry }) {
   );
 }
 
-export function AdventurePanel({ game }: { game: GameUi }) {
+export function AdventurePanel({
+  game,
+  maximized,
+  onToggleMaximize,
+}: {
+  game: GameUi;
+  maximized: boolean;
+  onToggleMaximize: () => void;
+}) {
   const state = game.state!;
   const [value, setValue] = useState('');
   const [hist, setHist] = useState<string[]>([]);
@@ -63,6 +71,27 @@ export function AdventurePanel({ game }: { game: GameUi }) {
   return (
     <section className={`adventure-panel${focused ? ' input-focused' : ''}`} aria-label="Adventure">
       <div className="panel-title">
+        <button
+          type="button"
+          className="win-btn"
+          onClick={onToggleMaximize}
+          aria-pressed={maximized}
+          aria-label={maximized ? 'Adventure verkleinern' : 'Adventure maximieren'}
+          title={maximized ? 'Verkleinern (Schreibtisch einblenden)' : 'Maximieren (Schreibtisch ausblenden)'}
+          data-testid="adventure-maximize"
+        >
+          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" shapeRendering="crispEdges">
+            {maximized ? (
+              <path
+                d="M4 1h2v5H1V4h3zM6 1h2v3h3v2H6zM1 6h5v5H4V8H1zM6 6h5v2H8v3H6z"
+                fill="currentColor"
+                fillRule="evenodd"
+              />
+            ) : (
+              <path d="M1 1h4v2H3v2H1zM7 1h4v4H9V3H7zM1 7h2v2h2v2H1zM9 7h2v4H7V9h2z" fill="currentColor" />
+            )}
+          </svg>
+        </button>
         <span className="badge adv-badge">ADVENTURE</span>
         <span className="panel-hint">Was tust du? (HILFE für Beispiele)</span>
       </div>

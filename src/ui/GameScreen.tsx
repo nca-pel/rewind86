@@ -16,6 +16,7 @@ export function GameScreen({ game }: { game: GameUi }) {
   const state = game.state!;
   const ending = state.flags.gameOver ? ENDING_BY_ID[String(state.flags.gameOver)] : undefined;
   const [panel, setPanel] = useState<Panel>('desk');
+  const [advMax, setAdvMax] = useState(false);
   const [dev] = useState(devEnabled);
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export function GameScreen({ game }: { game: GameUi }) {
   };
 
   return (
-    <div className="game" data-panel={panel}>
+    <div className="game" data-panel={panel} data-adv-max={advMax || undefined}>
       <StatusBar game={game} />
       <nav className="mobile-tabs" aria-label="Ansicht wählen">
         <button type="button" aria-pressed={panel === 'desk'} onClick={() => setPanel('desk')}>
@@ -55,7 +56,7 @@ export function GameScreen({ game }: { game: GameUi }) {
           <C64Panel game={game} />
         </div>
         <div className="adv-area">
-          <AdventurePanel game={game} />
+          <AdventurePanel game={game} maximized={advMax} onToggleMaximize={() => setAdvMax((v) => !v)} />
         </div>
       </main>
 

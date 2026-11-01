@@ -435,6 +435,40 @@ html[data-contrast='high'] .status-values dd {
   min-height: 0;
 }
 
+/* Adventure maximiert: linke Spalte komplett, Schreibtisch ausgeblendet */
+.game[data-adv-max] .desk-area {
+  display: none;
+}
+.game[data-adv-max] .main-grid {
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: 'adv c64';
+}
+.adventure-panel .win-btn {
+  --btn: var(--win);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  min-height: 0;
+  padding: 0;
+  background: var(--win);
+  color: #0d0a07;
+  border: 2px solid #0d0a07;
+  border-radius: 0;
+  box-shadow: inset 2px 2px 0 var(--win-hi);
+  cursor: pointer;
+}
+.adventure-panel .win-btn svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+.adventure-panel .win-btn:active {
+  background: #0d0a07;
+  color: var(--win);
+}
+
 /* ---------------------------------------------------------------- Schreibtisch (Pixel-Szene 384×216) */
 .desk-stage {
   display: flex;
@@ -752,6 +786,8 @@ html[data-contrast='high'] .modal-head .close::after {
     6px 6px 0 rgba(0, 0, 0, 0.45);
 }
 .adventure-panel .panel-title {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   margin: 0;
   padding: 0.3rem 0.5rem;
   gap: 0.5rem;
@@ -769,8 +805,18 @@ html[data-contrast='high'] .modal-head .close::after {
 .adventure-panel .adv-badge {
   font-size: 0.7rem;
 }
+.adventure-panel .win-btn {
+  justify-self: start;
+}
+.adventure-panel .adv-badge {
+  justify-self: center;
+}
 .adventure-panel .panel-hint {
-  margin-left: auto;
+  justify-self: end;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.8rem;
   color: var(--win-muted);
 }
@@ -869,6 +915,7 @@ html[data-contrast='high'] .adventure-panel,
 html[data-contrast='high'] .adventure-panel .panel-title,
 html[data-contrast='high'] .adventure-panel .adv-badge,
 html[data-contrast='high'] .adventure-panel .panel-hint,
+html[data-contrast='high'] .adventure-panel .win-btn,
 html[data-contrast='high'] .adventure-panel .log,
 html[data-contrast='high'] .adv-form,
 html[data-contrast='high'] .adv-form input {
@@ -1396,6 +1443,10 @@ html[data-contrast='high'] .slice-end h2 {
 /* Desktop: Monitor so breit, dass Monitor (Höhe ≈ 0,87 × Breite) und Tastenleiste ohne Scrollen in die Spalte passen.
    Die Tastenleiste bleibt volle Breite und bricht nicht um, damit ihre Höhe fest bleibt. */
 @media (min-width: 900px) {
+  /* Ohne Mobil-Tabs hat .game nur zwei Zeilen; sonst hinge die Höhe des Spielfelds an der Schreibtisch-Spalte */
+  .game[data-adv-max] {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
   .c64-area {
     container-type: size;
   }
@@ -1457,6 +1508,9 @@ html[data-contrast='high'] .slice-end h2 {
     font-size: 0.55rem;
     text-transform: uppercase;
   }
+  .adventure-panel .panel-hint {
+    display: none;
+  }
   .adventure-panel .log {
     padding: 0.35rem;
   }
@@ -1479,6 +1533,12 @@ html[data-contrast='high'] .slice-end h2 {
   .game[data-panel='desk'] .c64-area,
   .game[data-panel='c64'] .desk-area {
     display: none;
+  }
+  .game[data-adv-max] .c64-area {
+    display: none;
+  }
+  .game[data-adv-max] .main-grid {
+    grid-template-areas: 'adv';
   }
   .detail-panel {
     position: static;
