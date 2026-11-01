@@ -46,7 +46,7 @@ const NEWS: Record<string, string[]> = {
     'AM BAHNHOF RHEDA',
   ],
   '1986-11-16': [
-    'TOTENSONNTAG: KRANZNIEDERLEGUNG AM',
+    'VOLKSTRAUERTAG: KRANZNIEDERLEGUNG AM',
     'EHRENMAL, RUHIGES WOCHENENDE',
     'BUSNETZ ERHAELT ZWEI NEUE LINIEN',
   ],
@@ -136,7 +136,15 @@ export const BTX_PAGES: BtxPage[] = [
     id: B.overviewPage,
     title: 'WIEDENBRUECKER KURIER',
     free: true,
-    links: { '1': '123100', '2': '123200', '3': '123300', '4': '123400', '5': '123600', '9': '123900' },
+    links: {
+      '1': '123100',
+      '2': '123200',
+      '3': '123300',
+      '4': '123400',
+      '5': '123600',
+      '6': '123500',
+      '9': '123900',
+    },
     parts: () => [
       [
         'FUER DIE TEILNEHMER DES COMPUTERCLUBS',
@@ -146,6 +154,7 @@ export const BTX_PAGES: BtxPage[] = [
         ' 3  FERNSEHPROGRAMM',
         ' 4  KLEINANZEIGEN',
         ' 5  COMPUTER-ECKE',
+        ' 6  KINO',
         ' 9  WAS IST BTX?',
         '',
         'WAHL: ZIFFER, ODER *SEITENNUMMER#',
@@ -176,6 +185,26 @@ export const BTX_PAGES: BtxPage[] = [
     ],
   },
   {
+    // Reale Filmtitel, nur genannt (Entscheidung 01.11.2026). »Der Name der Rose«: dt. Kinostart 16.10.1986.
+    // Kino und Spielzeiten sind fiktiv. Rätselbezug: Die Spätvorstellung am Freitag ist Seidels Alibi (seidel_alibi).
+    id: '123500',
+    title: 'KINO',
+    links: {},
+    parts: () => [
+      [
+        'LICHTSPIELE (FIKTIV) - DIESE WOCHE',
+        '',
+        'DER NAME DER ROSE',
+        '  TAEGL. 20.00, FR/SA AUCH 22.45',
+        '  (SPAETVORST., ENDE GEGEN 1 UHR)',
+        'ZURUECK IN DIE ZUKUNFT',
+        '  SO 15.00 (JUGENDVORSTELLUNG)',
+        '',
+        'MI (BUSS- UND BETTAG) KEINE VORST.',
+      ],
+    ],
+  },
+  {
     id: '123600',
     title: 'COMPUTER-ECKE',
     links: {},
@@ -202,8 +231,9 @@ export const BTX_PAGES: BtxPage[] = [
         'IHREN DECODER UEBER DAS TELEFONNETZ',
         'MIT RECHNERN DER ANBIETER.',
         '',
-        'KOSTEN: TELEFON-EINHEITEN, DAZU',
-        'GEBUEHR PRO SEITE (NICHT ALLE).',
+        'KOSTEN: 8 DM IM MONAT, DAZU TELEFON-',
+        'EINHEITEN UND JE NACH ANBIETER EINE',
+        'GEBUEHR PRO SEITE (1 PF BIS 9,99 DM).',
         'WAEHREND SIE ONLINE SIND, IST DAS',
         'TELEFON BELEGT.',
       ],

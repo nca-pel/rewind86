@@ -118,6 +118,10 @@ describe('BTX (Ausbauplan Punkt 7)', () => {
     (night.state.computer.app as unknown as { screen: string }).screen = 'page';
     expect(typeKeys(night, '*123100#')).toContain('SOFTWAREFIRMA');
     expect(night.has('btx_break_in')).toBe(true);
+    // Kinoseite: Spätvorstellung am Freitag (Seidels Alibi)
+    const kino = typeKeys(night, '*123500#');
+    expect(kino).toContain('DER NAME DER ROSE');
+    expect(kino).toContain('22.45');
   });
 
   test('Telefon abheben beendet die Verbindung; Clubtafel löst P17, Inhalt erst nach dem Clubabend', () => {

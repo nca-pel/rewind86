@@ -22,9 +22,12 @@ export const GAME_CONFIG = {
   /** Spielökonomie – vereinfachte, NICHT historisch verifizierte Tarife (GDD §8.6). */
   economy: {
     startMoneyDm: 23.5,
-    /** Preis einer Gebühreneinheit. needs_research */
+    /** Preis einer Gebühreneinheit: 0,23 DM (mehrfach belegt, plausible). */
     dmPerUnit: 0.23,
-    /** Minuten pro Einheit im Ortsnetz. needs_research */
+    /**
+     * Minuten pro Einheit im Ortsnetz: 8-Minuten-Takt seit 1980 (werktags 8–18 Uhr belegt). Außerhalb galt ein
+     * längerer Takt (Quellen uneins: 12 oder 16 Minuten); das Spiel rechnet vereinfacht immer mit 8 (zu Jans Nachteil).
+     */
     localMinutesPerUnit: 8,
   },
 
@@ -127,9 +130,17 @@ export const GAME_CONFIG = {
     nodeName: 'KNOTEN WEST',
     /** Vorprovisionierte Testkennung (GDD §8.4, Gestaltungsvorschlag). */
     testHandle: 'K-17',
-    /** Absender der Rundschreiben – zugleich der Agent, den Operation REWIND ausschleusen soll. */
+    /**
+     * Absender der Rundschreiben – zugleich der Agent, den Operation REWIND ausschleusen soll.
+     * Entschieden (01.11.2026): K-01 ist ein Führungsoffizier der HV A, der das Netz seit Jahren unter
+     * falschem Namen im Westen führt. Mit der Software soll er über die Transitstrecke (A 2) zurück in die DDR.
+     * Im Spiel bleibt er ein Schatten; nur die Enden und ein Gerücht im DATENKELLER sagen, wer er ist.
+     */
     senderHandle: 'K-01',
-    /** Fiktive Ortsnetznummer der geheimen Mailbox (wird nie real gewählt). */
+    /**
+     * Fiktive Ortsnetznummer der geheimen Mailbox (wird nie real gewählt). Alle Nummern im Spiel sind fünfstellige
+     * Ortsnummern ohne Vorwahl; das Spiel nennt nie eine Vorwahl (Prüfung GDD §20.4, siehe STORY_DECISIONS.md).
+     */
     phoneNumber: '41973',
   },
 
@@ -209,11 +220,12 @@ export const GAME_CONFIG = {
    * BTX (Bildschirmtext, Ausbauplan Punkt 7). Annahme (siehe STORY_OPEN_QUESTIONS.md): Die Bundespost schloss
    * Teilnehmer nur über das eigene Postmodem an (Akustikkoppler und Heimmodems reichten nicht, V.23 1200/75 Baud).
    * Jan besitzt keins; der Computerclub hat ein Leih-Set (Decoder-Modul + Postmodem, Vereinskennung) und gibt es
-   * am Clubabend an Mitglieder weiter. Zugangsnummer und alle Seitennummern sind fiktiv. needs_research: Tarife.
+   * am Clubabend an Mitglieder weiter. Recherche (01.11.2026): Grundgebühr 8 DM/Monat, Seitenpreise 1 Pf bis
+   * 9,99 DM, Verbindung zum Ortstarif; das Postmodem wählte die Btx-Zugangsnummer 190. Seitennummern sind fiktiv.
    */
   btx: {
-    /** Zugangsnummer des Postmodems (fiktiv) */
-    accessNumber: '01910',
+    /** Btx-Zugangsnummer im Ortsnetz, im Postmodem fest hinterlegt (historisch) */
+    accessNumber: '190',
     /** Seitengebühr pro Abruf (ohne Übersicht), vereinfachte Spielökonomie */
     pageFeeDm: 0.02,
     /** Anbieter »Wiedenbrücker Kurier« und Clubtafel (fiktive Seitennummern) */
@@ -253,6 +265,7 @@ export const GAME_CONFIG = {
   finale: {
     closesAt: '1986-11-21T23:30',
     evidence: [
+      'seidel_alibi',
       'wt07_trace',
       'key_leak',
       'key_complete',

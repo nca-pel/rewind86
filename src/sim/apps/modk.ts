@@ -135,7 +135,7 @@ function readWithKey(ctx: Ctx, app: ModkState): void {
   if (app.key === FULL_KEY) {
     if (s.knownFacts.includes('k01_decrypted')) return;
     ctx.say(
-      'Die Buchstaben ordnen sich. Zwischen den X stehen Wörter – echte Wörter. »OPERATION REWIND BEGINNT FREITAG.« Freitag, das ist in ein paar Tagen.',
+      'Die Buchstaben ordnen sich. Zwischen den X stehen Wörter – echte Wörter. »OPERATION REWIND BEGINNT FREITAG.« Freitag, das ist in ein paar Tagen. REWIND, zurückspulen. Klingt nach ›Zurück in die Zukunft‹, nur dass hier keiner lacht.',
       'thought',
     );
     discoverFact(ctx, 'k01_decrypted');

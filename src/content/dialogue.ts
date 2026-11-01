@@ -96,10 +96,11 @@ const RALF_LATER: DialogueEntry[] = [
     topic: 'ghost',
     when: { all: [LATER, { fact: 'ghost_offer' }, { notFlag: 'toldRalf' }] },
     speaker: 'RALF',
-    text: '»Der Brandt aus deinem Club? Der mit der Thermoskanne?« Ralf schweigt einen Moment. »Freitag … da packt mein Alter seit Tagen seine Sachen für irgendwas zusammen. Er hat gesagt, am Freitag wäre alles vorbei. Ich weiß nicht, was. Aber ich sag’s keinem, großes Ehrenwort. Und du – pass auf dich auf.«',
+    text: '»Der Brandt aus deinem Club? Der mit der Thermoskanne?« Ralf schweigt einen Moment. »Freitag … da packt mein Alter seit Tagen seine Sachen für irgendwas zusammen. Er hat gesagt, am Freitag wäre alles vorbei. Meiner Mutter erzählt er, er geht Freitag mit Kollegen in die Spätvorstellung, ›Der Name der Rose‹. Der? Ins Kino? Der war seit Jahren nicht im Kino. Ich weiß nicht, was das soll. Aber ich sag’s keinem, großes Ehrenwort. Und du – pass auf dich auf.«',
     effects: [
       { type: 'setFlag', id: 'toldRalf', value: true },
       { type: 'discoverFact', id: 'ralf_told_ghost' },
+      { type: 'discoverFact', id: 'seidel_alibi' },
       { type: 'changeRelationship', id: 'ralfTrust', delta: 12 },
       { type: 'changeRelationship', id: 'seidelSuspicion', delta: 6 },
     ],

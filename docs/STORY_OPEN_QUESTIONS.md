@@ -4,18 +4,18 @@ Die 14 offenen Punkte aus GDD §22 wurden im Storydesign-Workshop am 31.10.2026 
 [`STORY_DECISIONS.md`](STORY_DECISIONS.md). Hier steht nur noch, was **innerhalb** dieser Entscheidungen offen ist
 und erst beim Schreiben der jeweiligen Akte konkretisiert wird.
 
-| Thema               | Entschieden                                     | Noch offen (wird mit dem Akt ausgearbeitet)                                                                       |
-| ------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| GHOST               | Herr Brandt, Absicht bewusst zweideutig         | – (keine Auflösung geplant)                                                                                       |
-| Operation REWIND    | Finale Fr. 21.11., Übergabe 23:30, sieben Enden | Wer K-01 ist (bleibt im Spiel namenlos)                                                                           |
-| Diskette 2          | Nur in den Enden; Vollbetrieb nur per Konsole   | –                                                                                                                 |
-| FERNHANDEL          | Wirtschaftssimulation, Taste `←` bleibt         | Intro-Grafik (Spielteil ist jetzt als kleine Handelssimulation spielbar)                                          |
-| Computerclub        | Clubabend Do 20.11. als erzählte Szene (Brandt) | –                                                                                                                 |
-| Systemnachrichten   | Seidel steht hinter SYSTEM (nie ausgesprochen)  | –                                                                                                                 |
-| Filme               | 3–4 Anspielungen mit Rätselbezug                | Welche Filme, welche Rätsel; Rechteprüfung                                                                        |
-| BTX                 | Leih-Set vom Club, Clubtafel (P17)              | Historische Prüfung (Postmodem, Tarife, Seitenformate); mehr Angebote/Hinweise; ob BTX früher verfügbar sein soll |
-| Datasette           | Prüfband 3 mit Schlüsselteil 3                  | Weitere Kassetten, Speichern auf Band                                                                             |
-| Historische Prüfung | –                                               | Ob ein Anschluss 1986 über die Bundespost ermittelbar war (`needs_research`); Tarife; fiktive Nummern (GDD §20.4) |
+| Thema               | Entschieden                                                                   | Noch offen (wird mit dem Akt ausgearbeitet)                              |
+| ------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| GHOST               | Herr Brandt, Absicht bewusst zweideutig                                       | – (keine Auflösung geplant)                                              |
+| Operation REWIND    | Finale Fr. 21.11., Übergabe 23:30, sieben Enden; K-01 = HV-A-Führungsoffizier | –                                                                        |
+| Diskette 2          | Nur in den Enden; Vollbetrieb nur per Konsole                                 | –                                                                        |
+| FERNHANDEL          | Wirtschaftssimulation, Taste `←` bleibt                                       | Intro-Grafik (Spielteil ist jetzt als kleine Handelssimulation spielbar) |
+| Computerclub        | Clubabend Do 20.11. als erzählte Szene (Brandt)                               | –                                                                        |
+| Systemnachrichten   | Seidel steht hinter SYSTEM (nie ausgesprochen)                                | –                                                                        |
+| Filme               | Reale Titel, nur genannt (3 Anspielungen)                                     | Juristische Bestätigung vor Veröffentlichung                             |
+| BTX                 | Leih-Set, Clubtafel (P17), Tarife recherchiert                                | CEPT-Mosaikgrafik; ob BTX früher verfügbar sein soll                     |
+| Datasette           | Prüfband 3 mit Schlüsselteil 3                                                | Weitere Kassetten, Speichern auf Band                                    |
+| Historische Prüfung | Tarife, Btx, Radio, Nummern (01.11.2026)                                      | Ob ein Anschluss 1986 ermittelbar war (als plausibel angenommen)         |
 
 ## Weitere im Ausschnitt getroffene Annahmen (bitte prüfen)
 
@@ -32,11 +32,11 @@ Diese Punkte waren für einen spielbaren Ausschnitt nötig. Sie sind bewusst kle
   18:30 telefonieren (Varianten je nach Leitungszustand). „Tante Gisela“ und „Oma“ sind beiläufige Erwähnungen.
 - **Ralf** ruft um 16:00 an, ist ca. 12 Minuten nach dem Auflegen an der Tür; Rückrufe bei Ralf führen im Ausschnitt
   ins Leere (Training).
-- **Tarife:** 0,23 DM pro Einheit, 8 Minuten pro Ortseinheit – vereinfachte Spielökonomie, `needs_research`.
-- **Fiktive Telefonnummern** `47112` (Ralf) und `41973` (Mailbox). Vor einer Veröffentlichung prüfen, ob ein realer
-  Anschein entstehen könnte (GDD §20.4).
+- **Tarife:** 0,23 DM pro Einheit, 8 Minuten pro Ortseinheit – recherchiert (siehe `QA_UND_RECHTE.md`).
+- **Fiktive Telefonnummern** `47112` (Ralf) und `41973` (Mailbox): fünfstellige Ortsnummern ohne Vorwahl, geprüft
+  (siehe `STORY_DECISIONS.md`, „Recherche“).
 - **Radiosender:** fiktive Popwelle und Infowelle, dazu BFBS (real, als Umfeld plausibel). Der Starttag steht jetzt
-  fest (14.11.1986); echte Nachrichtenmeldungen nur nach historischer Prüfung.
+  fest (14.11.1986); die Infowelle bringt an einzelnen Tagen recherchierte echte Meldungen.
 - **Heimcomputer-Journal** ist eine fiktive Zeitschrift.
 - **Reguläre Mailboxen** `BIT-SCHUPPEN GT` (Sysop ANDI, 18–24 Uhr, Tel. `23586`) und `DATENKELLER` (Sysop MOLE,
   22–6 Uhr, Tel. `38104`). Storyrolle entschieden (Club-Mailbox mit GHOST-Spuren bzw. Gerüchte), Inhalte dafür folgen

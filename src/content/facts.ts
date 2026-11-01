@@ -171,6 +171,16 @@ export const FACTS: FactDef[] = [
     text: 'Im DATENKELLER heißt es: Im BIT-SCHUPPEN schreibt einer, der angeblich nur zuhört – und wirklich alles mitbekommt.',
   },
   {
+    id: 'dk_k01_rumor',
+    category: 'kanaele',
+    text: 'Im DATENKELLER heißt es: Wer das geheime Netz führt, sitzt nicht hier, sondern gehört nach »drüben«. Und einer wolle bald nach Hause.',
+  },
+  {
+    id: 'seidel_alibi',
+    category: 'verdacht',
+    text: 'Seidel hat Ralfs Mutter erzählt, er gehe Freitag mit Kollegen in die Spätvorstellung von »Der Name der Rose«. Laut BTX-Kinoseite läuft die von 22:45 bis gegen eins. Genau die Zeit der Übergabe.',
+  },
+  {
     id: 'seidel_rastplatz',
     category: 'verdacht',
     text: 'Seidel hat sich verplappert: Heute Nacht um halb zwölf, Raststätte bei Gütersloh – »dann ist alles erledigt«.',

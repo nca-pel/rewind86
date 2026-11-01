@@ -2,16 +2,16 @@
 
 ## Rechte und Herkunft der Inhalte
 
-| Bereich                      | Stand                                                                                                                                                       |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ROM-Dateien, Fremdressourcen | Keine. Zeichensatz, Töne, Musik, Grafiken, Texte und BASIC-Interpreter sind eigene Arbeiten (`src/c64/charset.ts` wurde aus Regeln neu gezeichnet).         |
-| Musik und Klänge             | Eigene Synthese zur Laufzeit (`src/audio/*`); keine Samples, keine Übernahme von SID-Stücken.                                                               |
-| Grafik                       | Eigene Zeichnungen: Pixel-Schreibtisch (`DeskPixel.tsx`), realistischer Schreibtisch (`Desk.tsx`), Gerätebilder (`DeviceArt.tsx`), Demo-Zeichner.           |
-| Schrift                      | Press Start 2P (SIL Open Font License) über `@fontsource`; Lizenz liegt im Paket.                                                                           |
-| Markennamen                  | Einschaltmeldung und Gerätebezeichnungen nur im Bootprofil `authentic` (`src/c64/boot.ts`); Profil `neutral` ohne Marken (`VITE_C64_BOOT_PROFILE=neutral`). |
-| Personen, Firmen, Gruppen    | Fiktiv (Demo-Gruppen, Mailboxen, Computerclub, Heimcomputer-Journal, Filmplakat „SPACE RIDERS“). Reale Orte nur als Umfeld.                                 |
-| Telefonnummern, BTX-Nummern  | Fiktiv; es werden keine echten Nummern gewählt (Hinweis auf dem Titelbild).                                                                                 |
-| Filmanspielungen             | Im Ausschnitt keine; bei Ausbau Rechte prüfen.                                                                                                              |
+| Bereich                      | Stand                                                                                                                                                                                           |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ROM-Dateien, Fremdressourcen | Keine. Zeichensatz, Töne, Musik, Grafiken, Texte und BASIC-Interpreter sind eigene Arbeiten (`src/c64/charset.ts` wurde aus Regeln neu gezeichnet).                                             |
+| Musik und Klänge             | Eigene Synthese zur Laufzeit (`src/audio/*`); keine Samples, keine Übernahme von SID-Stücken.                                                                                                   |
+| Grafik                       | Eigene Zeichnungen: Pixel-Schreibtisch (`DeskPixel.tsx`), realistischer Schreibtisch (`Desk.tsx`), Gerätebilder (`DeviceArt.tsx`), Demo-Zeichner.                                               |
+| Schrift                      | Press Start 2P (SIL Open Font License) über `@fontsource`; Lizenz liegt im Paket.                                                                                                               |
+| Markennamen                  | Einschaltmeldung und Gerätebezeichnungen nur im Bootprofil `authentic` (`src/c64/boot.ts`); Profil `neutral` ohne Marken (`VITE_C64_BOOT_PROFILE=neutral`).                                     |
+| Personen, Firmen, Gruppen    | Fiktiv (Demo-Gruppen, Mailboxen, Computerclub, Heimcomputer-Journal, Filmplakat „SPACE RIDERS“). Reale Orte nur als Umfeld.                                                                     |
+| Telefonnummern, BTX-Nummern  | Fiktive fünfstellige Ortsnummern, nie mit Vorwahl genannt; Btx-Zugang `190` ist historisch (Dienst 2001 eingestellt). Es wird nichts real gewählt.                                              |
+| Filmanspielungen             | Reale Titel, nur genannt (keine Zitate, Bilder, Musik): „WarGames“, „Der Name der Rose“, „Zurück in die Zukunft“. Titelnennung gilt als unkritisch; vor Veröffentlichung juristisch bestätigen. |
 
 **Vor einer Veröffentlichung:** Entscheidung über das Bootprofil (`authentic` oder `neutral`), Rechtsprüfung der Markennennung und der
 Ortsnamen, Prüfung, ob fiktive Nummern/Kennungen unbeabsichtigt real wirken.
@@ -20,10 +20,19 @@ Ortsnamen, Prüfung, ob fiktive Nummern/Kennungen unbeabsichtigt real wirken.
 
 Nicht belegt, bewusst als Spielökonomie bzw. Annahme gekennzeichnet:
 
-- Telefongebühren (0,23 DM je Einheit, 8 Minuten je Ortseinheit), Zeitzonen der Fernzone.
-- BTX: Zugangsformat, Seitengebühr (0,02 DM), Tarife des Postmodems, Seitenlayout (CEPT-Mosaik wird nicht dargestellt, nur Text).
-- Ob ein Anschluss 1986 über die Bundespost ermittelbar war (Grundlage der Entdeckungslogik).
-- Radioprogramm, Nachrichten der Tage (nur erfundene Meldungen; echte nur nach Prüfung).
+Recherchiert am 01.11.2026 (Quellen in `STORY_DECISIONS.md`, Abschnitt „Recherche“):
+
+- **Telefongebühren:** 0,23 DM je Einheit und 8-Minuten-Takt im Ortsnetz seit 1980 sind mehrfach belegt (`plausible`).
+  Der Takt außerhalb der Hauptzeit (12 oder 16 Minuten) ist strittig; das Spiel rechnet vereinfacht immer mit 8.
+- **BTX:** Grundgebühr 8 DM/Monat, Seitenpreise 1 Pf bis 9,99 DM, 1200/75 Baud, Zugangsnummer 190 – umgesetzt.
+  Offen: CEPT-Mosaik (nur Text dargestellt).
+- **Radio:** Die Infowelle bringt an 14., 17., 18., 19. und 21.11. Meldungen, die für den Tag belegt oder sehr
+  plausibel sind (Reagan/Iran, Kronzeugenregelung, Mord an Georges Besse erst ab 21 Uhr, Buß- und Bettag); sonst Regionales.
+- **Feiertage:** 16.11.1986 Volkstrauertag (vorher fälschlich Totensonntag), 19.11. Buß- und Bettag.
+
+Weiter offen:
+
+- Ob ein Anschluss 1986 über die Bundespost ermittelbar war (Grundlage der Entdeckungslogik; als plausibel angenommen).
 - Technische Details der 1541, Datasette und des Kommandokanals sind vereinfacht, aber im Verhalten an das Original angelehnt.
 
 ## Barrierefreiheit

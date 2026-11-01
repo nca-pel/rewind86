@@ -23,7 +23,7 @@ export const ENDINGS: EndingDef[] = [
   {
     id: 'end_exposed',
     title: 'Enttarnt',
-    text: 'Die 110. Eine Stimme, gelangweilt. Dann hörst du dich reden: Rohdaten, Schlüssel in drei Teilen, der Klartext »OPERATION REWIND BEGINNT FREITAG«, die Testkennung auf Ralfs Kopie. Die Stimme wird still. »Bleiben Sie, wo Sie sind.« 23:05. Zwei Wagen ohne Blaulicht vor dem Haus, deine Mutter mit der Kaffeekanne, dein Vater mit offenem Mund. 23:30. Auf einer Autobahnraststätte bei Gütersloh wartet jemand vergeblich auf einen Mann, der nicht kommt. In Seidels Arbeitszimmer geht der Schrank auf. Ganz oben: eine Diskette, auf dem Etikett nur zwei Fragezeichen. Am Montag steht ein Absatz in der Zeitung, ohne deinen Namen. Ralf grüßt dich auf dem Flur nicht mehr. Aber er ist bei seiner Mutter geblieben, und das ist vielleicht das Wichtigste.',
+    text: 'Die 110. Eine Stimme, gelangweilt. Dann hörst du dich reden: Rohdaten, Schlüssel in drei Teilen, der Klartext »OPERATION REWIND BEGINNT FREITAG«, die Testkennung auf Ralfs Kopie. Die Stimme wird still. »Bleiben Sie, wo Sie sind.« 23:05. Zwei Wagen ohne Blaulicht vor dem Haus, deine Mutter mit der Kaffeekanne, dein Vater mit offenem Mund. 23:30. Auf einer Autobahnraststätte bei Gütersloh wartet jemand vergeblich auf einen Mann, der nicht kommt. Später erfährst du, wer: K-01, ein Offizier aus Ost-Berlin, der seit Jahren unter falschem Namen im Westen lebt. Er sollte heute Nacht nach Hause. Mit Seidels Software im Gepäck. In Seidels Arbeitszimmer geht der Schrank auf. Ganz oben: eine Diskette, auf dem Etikett nur zwei Fragezeichen. Am Montag steht ein Absatz in der Zeitung, ohne deinen Namen. Ralf grüßt dich auf dem Flur nicht mehr. Aber er ist bei seiner Mutter geblieben, und das ist vielleicht das Wichtigste.',
   },
   {
     id: 'end_dismissed',
@@ -53,7 +53,7 @@ export const ENDINGS: EndingDef[] = [
   {
     id: 'end_abort',
     title: 'Abbruch',
-    text: 'Die Warnung ist raus, unter der Kennung eines Fremden: TREFFPUNKT VERRATEN. ABBRUCH. 300 Baud, eine Ewigkeit, dann das GESENDET. Zehn Minuten später ist die Leitung tot. 23:30. An der Raststätte steht ein Wagen mit laufendem Motor. Niemand steigt ein. 23:45. Der Wagen fährt ohne Beifahrer zurück nach Osten. Die Software bleibt, wo sie ist, K-01 bleibt, wo er ist, und niemand erfährt je, wer die Warnung geschickt hat. Am Samstag ist das Netz tot. Seidel fährt Ralf zum Fußball, als wäre nichts gewesen. Nur sein Blick bleibt einmal zu lang an deinem Fenster hängen.',
+    text: 'Die Warnung ist raus, unter der Kennung eines Fremden: TREFFPUNKT VERRATEN. ABBRUCH. 300 Baud, eine Ewigkeit, dann das GESENDET. Zehn Minuten später ist die Leitung tot. 23:30. An der Raststätte steht ein Wagen mit laufendem Motor. Niemand steigt ein. 23:45. Der Wagen fährt ohne Beifahrer zurück nach Osten. Die Software bleibt, wo sie ist. K-01, der Mann aus Ost-Berlin, der das Netz geführt hat, muss bleiben, wo er ist, in seinem falschen Leben im Westen, und niemand erfährt je, wer die Warnung geschickt hat. Am Samstag ist das Netz tot. Seidel fährt Ralf zum Fußball, als wäre nichts gewesen. Nur sein Blick bleibt einmal zu lang an deinem Fenster hängen.',
   },
 ];
 

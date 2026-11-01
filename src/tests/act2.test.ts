@@ -122,6 +122,10 @@ describe('Akt 2: Clubabend und GHOST', () => {
     expect(first).toMatch(/Brandt/);
     expect(s.state.flags.toldRalf).toBe(true);
     expect(s.has('ralf_told_ghost')).toBe(true);
+    // Seidels Kino-Alibi (»Der Name der Rose«, Spätvorstellung) zählt als Beweis
+    expect(first).toMatch(/Der Name der Rose/);
+    expect(s.has('seidel_alibi')).toBe(true);
+    expect(GAME_CONFIG.finale.evidence).toContain('seidel_alibi');
     expect(s.a('frage ralf nach ghost')).toMatch(/alles gesagt/);
   });
 

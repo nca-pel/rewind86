@@ -379,7 +379,8 @@ function close(ctx: Ctx, id: string): number {
 function radioProgram(ctx: Ctx): void {
   const st = STATIONS.find((x) => x.id === ctx.state.objectStates.radio.station)!;
   const hour = parseInt(ctx.state.gameClock.slice(11, 13), 10);
-  const p = st.program.find((x) => hour >= x.fromHour && hour <= x.toHour);
+  const date = ctx.state.gameClock.slice(0, 10);
+  const p = st.program.find((x) => hour >= x.fromHour && hour <= x.toHour && (!x.date || x.date === date));
   ctx.say(`[Radio, ${st.label}] ${p?.text ?? 'Rauschen.'}`, 'caption');
 }
 
@@ -715,7 +716,7 @@ function goToClub(ctx: Ctx): number {
   const hadGhostWord = s.knownFacts.includes('ghost_word');
   const scene = [
     'Du schnappst dir deine Diskettenbox und radelst durch den Nieselregen zum Jugendzentrum. Drinnen riecht es nach Kaffee und warmen Netzteilen. Ein paar Leute tauschen Disketten, an einem Tisch wird eine Datasette justiert, und jemand schwärmt vom neuen Amiga, den sich keiner leisten kann.',
-    `${G.civilName}, der Betreuer des Clubs, Strickjacke, Brille, eine Thermoskanne in der Hand, winkt dich heran. »Jan! Fürwahr, du hast es doch noch geschafft. Setz dich. Schwarzer Kaffee? Nein? Dann eben nicht.« Er stellt dir das BTX-Leihset des Clubs hin: Postmodem, Decoder-Modul, Vereinskennung. »Nimm’s ruhig ein paar Tage mit und schau dir an, was die Post da aufgebaut hat. Weiter so.«`,
+    `${G.civilName}, der Betreuer des Clubs, Strickjacke, Brille, eine Thermoskanne in der Hand, winkt dich heran. »Jan! Fürwahr, du hast es doch noch geschafft. Setz dich. Schwarzer Kaffee? Nein? Dann eben nicht.« Er stellt dir das BTX-Leihset des Clubs hin: Postmodem, Decoder-Modul, Vereinskennung. »Nimm’s ruhig ein paar Tage mit und schau dir an, was die Post da aufgebaut hat. Aber keine Dummheiten. Wer zu oft ›WarGames‹ geguckt hat, wählt sich irgendwann in die falschen Leitungen. Weiter so.«`,
   ];
   const notes: GameEffect[] = [{ type: 'discoverFact', id: 'brandt_word' }];
   if (hadGhostWord) {

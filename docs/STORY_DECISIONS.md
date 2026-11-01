@@ -155,3 +155,39 @@ einmal, je +4 Verdacht, `SECRET_SENDS` in `content/networks.ts`):
 | Anonymer Anruf    | Es ist **Seidel**, der prüft, ob Jans Leitung belegt ist. Wer den Anruf erlebt hat, erkennt im Finale bei Seidels Anruf das Atmen wieder.                                                                                                                                                                                                                                                |
 | Systemnachrichten | Hinter **SYSTEM** („PROTOKOLLIERUNG“, „LETZTE WARNUNG“, Antworten auf Anfragen) steht Seidel als Betreuer der Infrastruktur. Das Spiel sagt es nie ausdrücklich.                                                                                                                                                                                                                         |
 | GHOSTs Absicht    | Bleibt **bewusst zweideutig**. Indizien in beide Richtungen: Er warnt Jan und senkt Seidels Verdacht (Helfer), weiß aber auffallend viel über das Netz und lässt im Ende „Der Mentor räumt auf“ die Hintermänner namenlos (Mitwisser oder Dienst). Keine Auflösung geplant.                                                                                                              |
+
+## K-01, Filme und Recherche (01.11.2026)
+
+**K-01 = Führungsoffizier der HV A.** Er führt das Netz seit Jahren unter falschem Namen im Westen. Operation REWIND
+soll ihn mit Seidels Fernmeldesoftware über die Transitstrecke (A 2, Raststätte bei Gütersloh) zurück in die DDR
+bringen – „zurückspulen“. Im Spiel bleibt er ein Schatten: ein Gerücht im DATENKELLER ab Di 18.11. 22:00
+(„gehört nach drüben … will bald nach Hause“, Fakt `dk_k01_rumor`), Klartext in den Enden „Enttarnt“ und „Abbruch“.
+
+**Filme: reale Titel, nur genannt** (keine Zitate, Bilder oder Musik; GDD §13.1):
+
+| Film                                       | Stelle                                             | Rätselbezug                                                                                |
+| ------------------------------------------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| „WarGames – Kriegsspiele“ (1983)           | Brandt am Clubabend; GHOSTs Beitrag „NACHTSCHICHT“ | Zweites Wiedererkennungs-Indiz GHOST = Brandt (sozialer Kontakt)                           |
+| „Der Name der Rose“ (dt. Start 16.10.1986) | BTX-Kinoseite `*123500#`; Ralf (Thema GHOST)       | Seidels Kino-Alibi deckt 22:45–1:00, genau die Übergabe → Beweisfakt `seidel_alibi` (Zeit) |
+| „Zurück in die Zukunft“ (1985)             | Jans Gedanke beim Klartext; Jugendvorstellung So   | Deutung des Namens REWIND (Stimmung, kein Pflichträtsel)                                   |
+
+**Recherche** (Stand 01.11.2026):
+
+- Rufnummern: Die Bundesnetzagentur führt „Drama Numbers“ nur für Berlin, Frankfurt, Hamburg, Köln und München; keine
+  Teilnehmernummer beginnt mit 0. Das Spiel nennt nie eine Vorwahl, die Nummern sind fünfstellige Ortsnummern von 1986
+  und werden nicht real gewählt – bewusst so belassen.
+  Quelle: [Bundesnetzagentur – Drama Numbers](https://bundesnetzagentur.de/DE/Fachthemen/Telekommunikation/Nummerierung/DramaNumbers/artikel.html)
+- Telefon: 23 Pf je Einheit, 8-Minuten-Takt im Ortsnetz ab 1980. Quellen:
+  [BT-Drs. 8/308](https://dserver.bundestag.de/btd/08/003/0800308.pdf),
+  [telekom-einst.at](http://telekom-einst.at/geschichteseiten/gs-1950-99/1980-00-01-8-Minuten-Zeittakt.pdf).
+- Btx: Seitenpreise 1 Pf–9,99 DM ([teltarif](https://www.teltarif.de/btx-bildschirmtext-rueckblick/news/49412.html)),
+  8 DM Grundgebühr ([museum-digital OWL](https://owl.museum-digital.de/pdf/object/3759.pdf)), Wahlnummer 190
+  ([osmocom bbs-revival](https://lists.osmocom.org/pipermail/bbs-revival/2019-October/000016.html)),
+  1200/75 Baud ([Wikipedia](https://en.wikipedia.org/wiki/Bildschirmtext)).
+- Nachrichten: Reagan/Iran 13.11. ([Wikipedia: November 1986](https://de.wikipedia.org/wiki/November_1986)),
+  Anhörung Kronzeugenregelung 14.11. ([chroniknet](https://chroniknet.de/was-war-am/14.11.1986)), Mord an Georges Besse
+  17.11. gegen 20:30 ([Wikipedia](https://en.wikipedia.org/wiki/Georges_Besse)), Verheugen SPD-Sprecher 17.11.
+  ([chroniknet](https://chroniknet.de/was-war-am/10.11.1986)). Nicht übernommen, weil nur einfach belegt: Anschlag auf
+  IBM Heidelberg (16.11.) und FDP-Parteitag Mannheim (21.11.).
+- Kinostart „Der Name der Rose“ 16.10.1986 ([filmstarts](https://www.filmstarts.de/kritiken/2402.html),
+  [moviejones](https://www.moviejones.de/filme/8856/name-der-rose.html)).
