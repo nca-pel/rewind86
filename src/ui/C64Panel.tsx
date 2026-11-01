@@ -8,6 +8,7 @@ import { reducedMotion, useSettings } from '../app/settings';
 import type { C64Key } from '../engine/types';
 import { renderC64 } from '../sim/c64';
 import { DemoCanvas } from './DemoCanvas';
+import { MonitorVideo } from './MonitorVideo';
 import { bootProfile } from '../engine/state';
 import { C64Display } from './C64Display';
 
@@ -139,6 +140,7 @@ export function C64Panel({ game }: { game: GameUi }) {
           machineName={profile.machineName}
         >
           {r.demoScreen !== undefined && <DemoCanvas screen={r.demoScreen} reduced={reduced} />}
+          {r.youtube && <MonitorVideo id={r.youtube} crt={settings.crt && !reduced} />}
         </C64Display>
       </div>
       <label className="c64-input-row">

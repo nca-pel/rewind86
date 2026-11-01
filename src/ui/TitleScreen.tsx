@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { readSlot } from '../app/storage';
 import type { GameState } from '../engine/types';
 import { formatShort } from '../engine/clock';
+import { Credits } from './Credits';
 import { SaveList, SettingsForm } from './Menu';
 import { Modal } from './Modal';
 
@@ -16,7 +17,7 @@ export function TitleScreen({
   toast: string | null;
   showToast: (t: string) => void;
 }) {
-  const [dialog, setDialog] = useState<null | 'load' | 'settings'>(null);
+  const [dialog, setDialog] = useState<null | 'load' | 'settings' | 'credits'>(null);
   const auto = readSlot('auto');
   const autoFile = auto && auto.ok ? auto.file : null;
   return (
@@ -48,6 +49,9 @@ export function TitleScreen({
           <button type="button" onClick={() => setDialog('settings')}>
             Einstellungen
           </button>
+          <button type="button" onClick={() => setDialog('credits')} data-testid="open-credits">
+            Credits
+          </button>
         </div>
         <p className="disclaimer">
           Vertikaler Ausschnitt (ca. 15–30 Minuten). Fiktive Handlung: Alle Geheimdienstaktivitäten betreffen
@@ -63,6 +67,11 @@ export function TitleScreen({
       {dialog === 'settings' && (
         <Modal title="Einstellungen" onClose={() => setDialog(null)}>
           <SettingsForm />
+        </Modal>
+      )}
+      {dialog === 'credits' && (
+        <Modal title="Credits" onClose={() => setDialog(null)}>
+          <Credits />
         </Modal>
       )}
       <div className="toast" role="status" aria-live="polite">

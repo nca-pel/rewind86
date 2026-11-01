@@ -13,6 +13,14 @@
 | Telefonnummern, BTX-Nummern  | Fiktive fünfstellige Ortsnummern, nie mit Vorwahl genannt; Btx-Zugang `190` ist historisch (Dienst 2001 eingestellt). Es wird nichts real gewählt.                                              |
 | Filmanspielungen             | Reale Titel, nur genannt (keine Zitate, Bilder, Musik): „WarGames“, „Der Name der Rose“, „Zurück in die Zukunft“. Titelnennung gilt als unkritisch; vor Veröffentlichung juristisch bestätigen. |
 
+**Easter-Egg-Video:** `LOAD"ABANDON",8,1` bettet ein YouTube-Video ein (`youtube-nocookie.com`, nur beim Aufruf
+geladen, keine sonstigen externen Inhalte). Das Video wird nicht kopiert, nur eingebettet; die Rechte liegen bei den
+Urhebern bzw. YouTube. Vor einer Veröffentlichung im Datenschutzhinweis erwähnen (Verbindung zu YouTube/Google).
+
+**Credits und Disclaimer:** Über „Credits“ (Titelbildschirm und Spielmenü) erreichbar, `src/ui/Credits.tsx`:
+Game-Designer Peter Elbracht; Coder, FX-Artist, Gfx-Artist Claude Code; dazu der Hinweis zu Filmtiteln, Produktnamen
+und Marken (historische Einordnung, Rechte bei den Inhabern, keine Verbindung). E2E-Test: `e2e/credits.spec.ts`.
+
 **Vor einer Veröffentlichung:** Entscheidung über das Bootprofil (`authentic` oder `neutral`), Rechtsprüfung der Markennennung und der
 Ortsnamen, Prüfung, ob fiktive Nummern/Kennungen unbeabsichtigt real wirken.
 

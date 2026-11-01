@@ -11,6 +11,8 @@ export interface Rendered {
   flash?: boolean;
   /** Index eines Demo-Screens, der per Canvas gezeichnet wird */
   demoScreen?: number;
+  /** YouTube-Video-ID, das die Oberfläche in den Monitor einblendet (Easter-Egg) */
+  youtube?: string;
   /** Zeilenweise Textfarben (Index → C64-Farbe) */
   lineColors?: Record<number, number>;
   /** Optional: kompletter Bildschirm (Bildschirmcodes, Farben je Zelle) statt Textzeilen */

@@ -138,6 +138,29 @@ select {
   color: var(--muted);
 }
 
+/* ---------------------------------------------------------------- Credits */
+.credits-list {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+}
+.credits-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, auto) 1fr;
+  gap: 1rem;
+}
+.credits-row dt {
+  color: var(--muted);
+}
+.credits-row dd {
+  margin: 0;
+  font-weight: bold;
+}
+.credits-disclaimer {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 /* ---------------------------------------------------------------- Spiel-Layout */
 .game {
   height: 100dvh;
@@ -472,6 +495,56 @@ select {
   white-space: pre;
   font-family: ui-monospace, monospace;
   font-size: 0.75rem;
+}
+/* Easter-Egg: Video in der Bildröhre. Rand wie beim C64 (schwarz), Bild leicht weich und farbstark,
+   darüber Scanlines und ein schwaches Flimmern; die Wölbung (::after des Displays) liegt obenauf. */
+.monitor-video {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  overflow: hidden;
+}
+/* Das 4:3-Video steckt bei YouTube in einem 16:9-Rahmen mit Seitenbalken: Rahmen auf Röhrenhöhe skalieren,
+   mittig setzen und die Balken abschneiden – so füllt das Bild die Röhre wie auf einem echten Monitor. */
+.monitor-video iframe {
+  position: absolute;
+  top: 3%;
+  height: 94%;
+  width: auto;
+  aspect-ratio: 16 / 9;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 0;
+}
+.monitor-video.crt-on iframe {
+  filter: saturate(1.25) contrast(1.12) brightness(1.05) blur(0.35px);
+}
+.monitor-video-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.32) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(
+      to right,
+      rgba(255, 0, 0, 0.04) 0 1px,
+      rgba(0, 255, 0, 0.03) 1px 2px,
+      rgba(0, 0, 255, 0.04) 2px 3px
+    );
+  mix-blend-mode: multiply;
+  animation: crt-flicker 0.12s steps(2) infinite;
+}
+@keyframes crt-flicker {
+  0% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .monitor-video-scanlines {
+    animation: none;
+  }
 }
 .demo-canvas {
   position: absolute;

@@ -5,6 +5,7 @@ import { AdventurePanel } from './AdventurePanel';
 import { C64Panel } from './C64Panel';
 import { COMMAND_NAME } from './commandNames';
 import { Desk } from './Desk';
+import { Credits } from './Credits';
 import { DetailPanel } from './DetailPanel';
 import { ENDING_BY_ID } from '../content/endings';
 import { DevPanel, devEnabled } from './DevPanel';
@@ -19,6 +20,7 @@ export function GameScreen({ game }: { game: GameUi }) {
   const ending = state.flags.gameOver ? ENDING_BY_ID[String(state.flags.gameOver)] : undefined;
   const [panel, setPanel] = useState<Panel>('desk');
   const [dev] = useState(devEnabled);
+  const [creditsOpen, setCreditsOpen] = useState(false);
 
   useEffect(() => {
     if (game.focusRequest?.target === 'c64') setPanel('c64');
@@ -77,9 +79,26 @@ export function GameScreen({ game }: { game: GameUi }) {
           <h3>Einstellungen</h3>
           <SettingsForm />
           <h3>Spiel</h3>
-          <button type="button" onClick={game.toTitle}>
-            Zurück zum Titelbildschirm
-          </button>
+          <div className="io-row">
+            <button
+              type="button"
+              onClick={() => {
+                game.setMenuOpen(false);
+                setCreditsOpen(true);
+              }}
+              data-testid="open-credits"
+            >
+              Credits
+            </button>
+            <button type="button" onClick={game.toTitle}>
+              Zurück zum Titelbildschirm
+            </button>
+          </div>
+        </Modal>
+      )}
+      {creditsOpen && (
+        <Modal title="Credits" onClose={() => setCreditsOpen(false)}>
+          <Credits />
         </Modal>
       )}
       {game.sliceEnd && (

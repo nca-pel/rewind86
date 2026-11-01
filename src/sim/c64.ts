@@ -11,6 +11,7 @@ import type { C64Key, GameState, ProgramLine, VirtualDisk, VirtualFile } from '.
 import { archiveApp } from './apps/archive';
 import { btxApp, btxDropCarrier } from './apps/btx';
 import { diskInDrive } from './drive';
+import { ABANDON_FILE, abandonApp } from './apps/abandon';
 import { intruderApp } from './apps/intruder';
 import { termApp } from './apps/term';
 import { modkApp } from './apps/modk';
@@ -47,7 +48,11 @@ export const APPS: Record<string, AppDef<any>> = {
   intruder: intruderApp,
   term: termApp,
   btx: btxApp,
+  abandon: abandonApp,
 };
+
+/** Easter-Egg: genau LOAD"ABANDON",8,1 (Leerzeichen egal) – funktioniert auch ohne Diskette */
+const ABANDON_LOAD = new RegExp(`^LOAD\\s*"${ABANDON_FILE}"\\s*,\\s*8\\s*,\\s*1$`);
 
 export { diskInDrive };
 
@@ -552,6 +557,13 @@ export function c64Line(ctx: Ctx, rawText: string): number {
   const cmd = text.trim();
   if (cmd === '') return 0;
 
+  if (ABANDON_LOAD.test(cmd)) {
+    printLine(comp.screen, `SEARCHING FOR ${ABANDON_FILE}`);
+    printLine(comp.screen, 'LOADING');
+    ctx.cue('drive');
+    return startApp(ctx, 'abandon');
+  }
+
   if (SIMPLE_DIR.test(cmd)) {
     ctx.say(
       '(Vereinfachter Befehl → LOAD"$",8. Achtung: Das überschreibt das BASIC-Programm im Speicher.)',
@@ -643,6 +655,7 @@ export interface C64View {
   inputMode: Rendered['inputMode'];
   flash?: boolean;
   demoScreen?: number;
+  youtube?: string;
   tickMs: number | null;
 }
 
@@ -664,6 +677,7 @@ export function renderC64(state: GameState): C64View {
       inputMode,
       flash: r.flash,
       demoScreen: r.demoScreen,
+      youtube: r.youtube,
       tickMs: def.tickMs,
     };
   }
