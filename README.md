@@ -7,9 +7,6 @@ verstecktes Kommunikationsmodul.
 **Stand:** technisch belastbare Grundlage plus **spielbarer vertikaler Ausschnitt (ca. 15–30 Minuten)**. Das
 8–12-Stunden-Vollspiel ist _nicht_ implementiert; der Ausschnitt endet mit „Fortsetzung folgt“.
 
-Verbindliche Spezifikation: [`docs/00-raw/REWIND_1986_GDD.md`](docs/00-raw/REWIND_1986_GDD.md), Auftrag:
-[`docs/00-raw/idee.md`](docs/00-raw/idee.md).
-
 ## C64-Bildschirm und Startmeldung
 
 Der C64-Bildschirm ist eine eigene Simulation (`src/c64/`): PAL-Geometrie, berechnete Farbpalette, eigener
@@ -140,7 +137,7 @@ LEGE AUF                 WARTE / WARTE 30           LEGE DISKETTE INS LAUFWERK
 SCHALTE COMPUTER EIN     STELLE RADIO AUF BFBS      LIES ZEICHENTABELLE
 WÄHLE 12345              RUFE RALF AN               LEGE HÖRER IN DEN KOPPLER
 TIPPE LOAD"$",8          DRÜCKE LEERTASTE           DRÜCKE PFEILTASTE
-NOTIZEN / NOTIERE …      VERKNÜPFE M.S. MIT SEIDEL  DENKE NACH (3 Hilfestufen)
+NOTIZEN / NOTIERE …      VERKNÜPFE RALF MIT FUSSBALL  DENKE NACH (3 Hilfestufen)
 INVENTAR  ZEIT  THEMEN   SPEICHERN 1 / LADEN 1      HILFE
 ```
 
