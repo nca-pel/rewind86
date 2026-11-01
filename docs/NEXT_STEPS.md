@@ -24,7 +24,7 @@
   konfigurierbarer `hintLink`.
 - Illustrierter Schreibtisch (SVG-Platzhalter) mit zustandsabhängigen Hotspots, Detailansichten, Inventarleiste,
   Statusleiste (Zeit, Geld, Telefonkosten, Leitung).
-- Speichern: Autosave, 3 Slots, Export/Import als validiertes JSON (zod, Größenlimit, Migration), Fortsetzen nach Reload.
+- Speichern: Autosave, 3 Slots (validiert per zod, Migration), Fortsetzen nach Reload.
 - Entwicklerkonsole (`?dev=1`): Zustand ansehen/setzen, Zeitsprung, Meilenstein-Spielstände aus echten
   Spielbefehlen, Ereignis-/Rätselgraph mit Prüfung auf tote Enden, Debug-Log.
 - Eigenständige C64-Bildschirmsimulation (`src/c64/`): PAL-Geometrie, berechnete Palette, eigener Zeichensatz,

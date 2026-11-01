@@ -1,9 +1,8 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useSettings, type Settings } from '../app/settings';
-import { deleteSlot, downloadSave, listSlots, storageKind, writeSlot, type Slot } from '../app/storage';
+import { deleteSlot, listSlots, storageKind, writeSlot, type Slot } from '../app/storage';
 import { audio } from '../audio/audio';
 import { formatShort } from '../engine/clock';
-import { parseSave } from '../engine/save';
 import type { GameState } from '../engine/types';
 
 export function SaveList({
@@ -18,14 +17,7 @@ export function SaveList({
   allowSave: boolean;
 }) {
   const [, force] = useState(0);
-  const fileRef = useRef<HTMLInputElement>(null);
   const slots = listSlots();
-  const importFile = async (f: File) => {
-    if (f.size > 2 * 1024 * 1024) return onError('Die Datei ist zu groß (max. 2 MB).');
-    const r = parseSave(await f.text());
-    if (!r.ok) return onError(`Import fehlgeschlagen: ${r.error}`);
-    onLoad(r.file.state, 'Spielstand importiert.');
-  };
   return (
     <div className="save-list">
       <p className="detail-note" data-testid="storage-kind">
@@ -96,29 +88,6 @@ export function SaveList({
           ))}
         </tbody>
       </table>
-      <div className="io-row">
-        {current && (
-          <button type="button" onClick={() => downloadSave(current)} data-testid="export">
-            Exportieren (JSON)
-          </button>
-        )}
-        <button type="button" onClick={() => fileRef.current?.click()}>
-          Importieren …
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          className="sr-only"
-          data-testid="import-file"
-          aria-label="Spielstand-Datei importieren"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void importFile(f);
-            e.target.value = '';
-          }}
-        />
-      </div>
     </div>
   );
 }

@@ -1392,12 +1392,6 @@ html[data-contrast='high'] .notebook {
   gap: 0.3rem;
   flex-wrap: wrap;
 }
-.io-row {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.6rem;
-  flex-wrap: wrap;
-}
 .settings {
   display: grid;
   gap: 0.5rem;

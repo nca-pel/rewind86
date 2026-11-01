@@ -167,8 +167,7 @@ Textgröße, hoher Kontrast. Alle Geräusche haben Texteinblendungen – das Spi
 
 ### Spielstände
 
-Autosave nach jedem Befehl und bei Meilensteinen (Slot „Auto“), drei manuelle Slots, Export/Import als JSON
-(validiert, max. 2 MB). Alles liegt lokal im Browser (IndexedDB; alte `localStorage`-Stände werden beim Start übernommen).
+Autosave nach jedem Befehl und bei Meilensteinen (Slot „Auto“), drei manuelle Slots. Alles liegt lokal im Browser (IndexedDB; alte `localStorage`-Stände werden beim Start übernommen).
 
 ## Lösungsweg des Ausschnitts (Spoiler)
 

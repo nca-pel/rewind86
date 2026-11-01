@@ -1,8 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { adv, log } from './helpers';
 
-test('Autosave übersteht Neuladen, Export/Import stellt den Zustand wieder her', async ({ page }) => {
+test('Autosave übersteht Neuladen, manueller Slot lädt den Zustand wieder', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
@@ -20,31 +19,10 @@ test('Autosave übersteht Neuladen, Export/Import stellt den Zustand wieder her'
   await expect(page.locator('.inventory')).toContainText('Ralfs Spielediskette');
   await expect(log(page)).toContainText('Testnotiz 42');
 
-  // Manuell speichern + Export
+  // Manuell speichern
   await page.getByRole('button', { name: 'Menü' }).click();
   await page.getByTestId('save-1').click();
-  const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('export').click()]);
-  const file = readFileSync((await download.path())!, 'utf8');
-  expect(JSON.parse(file).format).toBe('rewind1986-save');
-
-  // Zustand verändern, dann importieren
-  await page.getByRole('button', { name: 'Zurück zum Titelbildschirm' }).click();
-  await page.getByTestId('new-game').click();
-  await expect(page.locator('.inventory')).toContainText('leer');
-  await page.getByRole('button', { name: 'Menü' }).click();
-  await page
-    .getByTestId('import-file')
-    .setInputFiles({ name: 'save.json', mimeType: 'application/json', buffer: Buffer.from(file) });
-  await expect(page.getByTestId('clock')).toHaveText(clock!);
-  await expect(page.locator('.inventory')).toContainText('Ralfs Spielediskette');
-
-  // Ungültiger Import wird abgelehnt
-  await page.getByRole('button', { name: 'Menü' }).click();
-  await page
-    .getByTestId('import-file')
-    .setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{"x":1}') });
-  await expect(page.getByTestId('toast')).toContainText('Import fehlgeschlagen');
-  await expect(page.getByTestId('clock')).toHaveText(clock!);
+  await page.keyboard.press('Escape');
 
   // Laden per Parser
   await page.keyboard.press('Escape');

@@ -154,16 +154,3 @@ export function listSlots(): Array<{ slot: Slot; file: SaveFile | null; error?: 
 export function deleteSlot(slot: Slot): void {
   persist(slot, null);
 }
-
-export function downloadSave(state: GameState): void {
-  const file = createSaveFile(state, 'Export', new Date().toISOString());
-  const blob = new Blob([JSON.stringify(file, null, 1)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `rewind1986-${state.gameClock.replace(/[:T]/g, '-')}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
