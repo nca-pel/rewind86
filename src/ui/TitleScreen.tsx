@@ -54,9 +54,8 @@ export function TitleScreen({
           </button>
         </div>
         <p className="disclaimer">
-          Vertikaler Ausschnitt (ca. 15–30 Minuten). Fiktive Handlung: Alle Geheimdienstaktivitäten betreffen
-          erfundene Personen und Netzwerke. Reale Firmen und Orte dienen nur als historisches Umfeld. Es
-          werden keine echten Telefonnummern gewählt.
+          Fiktive Handlung: Alle Geheimdienstaktivitäten betreffen erfundene Personen und Netzwerke. Reale
+          Firmen und Orte dienen nur als historisches Umfeld. Es werden keine echten Telefonnummern gewählt.
         </p>
       </div>
       {dialog === 'load' && (

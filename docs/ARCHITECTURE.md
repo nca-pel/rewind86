@@ -177,7 +177,7 @@ max. 10 000 Elemente, Strings max. 255 Zeichen. `POKE`/`PEEK` wirken nur auf ein
 - PRG-Dateien mit `appId` sind „Maschinenprogramme“ mit BASIC-Stub (`10 SYS2064`); `RUN` bzw. `SYS 2061/2064`
   startet die App. `LOAD` innerhalb eines Programms mit `,1` lädt nach, ohne das BASIC-Programm zu ersetzen, und
   startet es mit erhaltenen Variablen neu (klassisches Ladeprogramm-Muster, siehe `LADER`).
-- `SYS 64738` (Reset-Einsprung des Originals) und `SYS 16384` = Reset.
+- `SYS 64738` (Reset-Einsprung des Originals) = Reset.
 - Datasette (Gerät 1, Standard bei `LOAD` ohne Gerätenummer): zunächst abgestöpselt (`PRESS PLAY ON TAPE`, Abbruch).
   `LEGE KASSETTE IN DATASETTE` steckt sie an (`flags.datasetteConnected`, Ort `datasette`); dann lädt `LOAD` das
   Prüfband (`CASSETTE_PROGRAM` in `content/disks.ts`). Ein falscher Name spult das Band erfolglos durch.

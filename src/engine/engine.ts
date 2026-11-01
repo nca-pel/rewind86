@@ -20,7 +20,7 @@ function introText(state: GameState): string {
 
 Herbst 1986. Draußen nieselt es seit Mittag, drinnen ist es warm. Auf deinem Schreibtisch stehen dein Commodore 64 mit Monitor, die 1541, das Telefon mit dem Akustikkoppler und ein Radio. Daneben ein Päckchen, das heute mit der Post kam. Aus dem Wohnzimmer dringen gedämpfte Fernsehstimmen.
 
-Du bist Jan Keller, 17 – und das Wochenende fängt gerade erst an.`;
+Du bist Jan Keller, 16 – und das Wochenende fängt gerade erst an.`;
 }
 
 /** Offene Mehrdeutigkeitsrückfrage mit der neuen Eingabe beantworten, falls möglich. */

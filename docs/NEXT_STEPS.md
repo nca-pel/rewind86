@@ -54,7 +54,7 @@
 - `npm test`: 235 Vitest-Tests in 22 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
   Prolog-Durchlauf, Demo, Archiv, Content-Integrität, Entwicklerkonsole/Meilensteine, Mailbox-System, Verdacht,
   Tagesablauf, Schlüssel-Strang, BTX).
-- `npm run test:e2e`: 15 Playwright-Szenarien × 2 Geräteprofile (Desktop Chrome, Pixel 7) = 30 Tests, darunter die Credits, das Easter-Egg, der
+- `npm run test:e2e`: 16 Playwright-Szenarien × 2 Geräteprofile (Desktop Chrome, Pixel 7) = 32 Tests, darunter die Credits, das Easter-Egg, die Detailansicht, der
   komplette Prolog über die echte UI bis „Fortsetzung folgt“, die Entwicklerkonsole, eine reguläre Mailbox, das
   Spielende, die unsichtbare REM-Zeile, BTX und das Parser-Protokoll.
 - `npm run lint`, `npm run build` fehlerfrei.

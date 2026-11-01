@@ -183,8 +183,12 @@ describe('Disketten und Laufwerk (GDD §19.2)', () => {
     expect(s.a('nimm diskette aus dem laufwerk')).toContain('Im Laufwerk steckt keine Diskette.');
   });
 
-  test('SYS16384 und SYS 64738 setzen den Rechner zurück', () => {
-    for (const cmd of ['SYS16384', 'SYS 64738']) {
+  test('SYS 64738 setzt den Rechner zurück, SYS16384 nicht (kein Reset beim Original)', () => {
+    const t = poweredOn('disk_archive');
+    t.c('10 PRINT "X"');
+    t.c('SYS16384');
+    expect(t.state.computer.program).toHaveLength(1);
+    for (const cmd of ['SYS64738', 'SYS 64738']) {
       const s = poweredOn('disk_archive');
       s.c('10 PRINT "X"');
       s.c('POKE 53280,2');

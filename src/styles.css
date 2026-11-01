@@ -283,7 +283,8 @@ select {
   left: 0.5rem;
   right: 0.5rem;
   bottom: 0.5rem;
-  max-height: 60%;
+  max-height: calc(100% - 1rem);
+  transform-origin: 0 0;
   overflow: auto;
   background: rgba(18, 12, 9, 0.95);
   border: 1px solid var(--accent);
@@ -301,7 +302,7 @@ select {
   color: var(--accent);
 }
 .detail-text {
-  margin: 0.4rem 0;
+  margin: 0 0 0.5rem;
   white-space: pre-wrap;
 }
 .detail-actions,
@@ -314,8 +315,15 @@ select {
 .dial-form {
   margin-top: 0.5rem;
 }
+.dial-form label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
 .dial-form input {
-  width: 8rem;
+  width: 6.5rem;
+  min-width: 0;
 }
 .detail-note {
   font-size: 0.75rem;
@@ -792,7 +800,14 @@ select {
   .detail-panel {
     position: static;
     margin-top: 0.4rem;
-    max-height: 30dvh;
+    max-height: 48dvh;
+  }
+  .device-art {
+    flex-basis: 84px;
+  }
+  /* Tooltips gibt es auf Touch-Geräten nicht – der Hinweis kostet hier nur Platz */
+  .detail-panel .detail-note {
+    display: none;
   }
   .c64-area {
     max-height: 62dvh;
@@ -974,19 +989,25 @@ html[data-motion='reduced'] *::after {
 .dev-warn {
   color: var(--danger);
 }
+/* Detailansicht: Zeichnung links, Text und Aktionen rechts – nutzt die Breite statt den Text nach unten zu schieben */
+.detail-body {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+.detail-main {
+  flex: 1;
+  min-width: 0;
+}
 .device-art {
-  margin: 0.4rem 0;
-  text-align: center;
+  flex: 0 0 clamp(90px, 28%, 220px);
+  margin: 0.2rem 0 0;
 }
 .device-art svg {
-  max-width: 260px;
-  max-height: 140px;
+  display: block;
   width: 100%;
   height: auto;
-}
-.device-art figcaption {
-  font-size: 0.7rem;
-  opacity: 0.6;
+  max-height: 180px;
 }
 .desk-svg.pixel {
   image-rendering: pixelated;

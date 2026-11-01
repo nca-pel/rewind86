@@ -42,7 +42,7 @@ describe('Prolog (GDD §19.4, §18.1)', () => {
     expect(door).toMatch(/allein/);
     expect(s.state.itemLocations.disk_game).toBe('inventory');
     // Ralf bleibt nicht zum Untersuchen
-    expect(s.a('frage ralf nach dem spiel')).toMatch(/längst weg/);
+    expect(s.a('frage ralf nach dem spiel')).toMatch(/nicht hier/);
     expect(s.state.flags.ralfPresent).toBe(false);
   });
 

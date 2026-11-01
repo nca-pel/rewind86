@@ -2,7 +2,8 @@
  * Detailansicht eines Gegenstands. Alle Schaltflächen senden den gleichwertigen Textbefehl an den
  * Adventure-Parser – Klick und Text führen zum selben Ergebnis.
  */
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { reducedMotion, useSettings } from '../app/settings';
 import type { GameUi } from '../app/useGame';
 import { OBJECT_BY_ID } from '../content/objects';
 import { STATIONS } from '../content/radio';
@@ -62,8 +63,10 @@ function actionsFor(state: GameState, id: string): Action[] {
           ? { label: 'Schließen', cmd: 'SCHLIESSE SCHUBLADE' }
           : { label: 'Öffnen', cmd: 'ÖFFNE SCHUBLADE' },
       );
-      for (const d of itemsAt(state, 'drawer'))
-        a.push({ label: `${OBJECT_BY_ID[d].short} nehmen`, cmd: `NIMM ${cmdName(d)}` });
+      // Inhalt erst zeigen, wenn die Schublade offen ist
+      if (state.objectStates.drawer.open)
+        for (const d of itemsAt(state, 'drawer'))
+          a.push({ label: `${OBJECT_BY_ID[d].short} nehmen`, cmd: `NIMM ${cmdName(d)}` });
       break;
     case 'package':
       if (!state.objectStates.package.open) a.push({ label: 'Öffnen', cmd: 'ÖFFNE PÄCKCHEN' });
@@ -99,63 +102,122 @@ function cmdName(id: string): string {
   return COMMAND_NAME[id] ?? OBJECT_BY_ID[id].short.toUpperCase();
 }
 
+const ZOOM_IN_MS = 280;
+const ZOOM_OUT_MS = 230;
+
+/**
+ * Transformation, die das Panel genau auf den Gegenstand im Schreibtischbild legt (Ausgangs- bzw. Endpunkt
+ * des Zooms). null, wenn der Gegenstand gerade nicht sichtbar ist (z. B. mobil im C64-Tab).
+ */
+function zoomFrom(panel: HTMLElement, id: string): string | null {
+  const spot = document.querySelector(`[data-hotspot="${id}"]`);
+  if (!spot) return null;
+  const s = spot.getBoundingClientRect();
+  const p = panel.getBoundingClientRect();
+  if (!s.width || !s.height || !p.width || !p.height) return null;
+  return `translate(${s.left - p.left}px, ${s.top - p.top}px) scale(${s.width / p.width}, ${s.height / p.height})`;
+}
+
 export function DetailPanel({ game }: { game: GameUi }) {
   const state = game.state!;
   const id = game.detail;
+  const { settings } = useSettings();
+  const reduced = reducedMotion(settings);
   const [number, setNumber] = useState('');
+  const ref = useRef<HTMLElement>(null);
+  const closing = useRef(false);
+
+  // Aufzoomen aus dem angeklickten Gegenstand (vor dem ersten Zeichnen, damit nichts aufblitzt)
+  useLayoutEffect(() => {
+    const el = ref.current;
+    closing.current = false;
+    if (!el || !id || reduced || typeof el.animate !== 'function') return;
+    const from = zoomFrom(el, id);
+    if (!from) return;
+    el.animate(
+      [
+        { transform: from, opacity: 0.4 },
+        { transform: 'none', opacity: 1 },
+      ],
+      { duration: ZOOM_IN_MS, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+    );
+  }, [id, reduced]);
+
   if (!id || !OBJECT_BY_ID[id]) return null;
   const o = OBJECT_BY_ID[id];
   const acts = actionsFor(state, id);
+
+  // Schließen über ✕: zurück in den Gegenstand zoomen, dann ausblenden
+  const close = () => {
+    const el = ref.current;
+    if (closing.current) return;
+    const to = el && !reduced && typeof el.animate === 'function' ? zoomFrom(el, id) : null;
+    if (!el || !to) return game.setDetail(null);
+    closing.current = true;
+    const anim = el.animate(
+      [
+        { transform: 'none', opacity: 1 },
+        { transform: to, opacity: 0.2 },
+      ],
+      { duration: ZOOM_OUT_MS, easing: 'cubic-bezier(0.6, 0, 0.8, 0.4)', fill: 'forwards' },
+    );
+    anim.onfinish = () => game.setDetail(null);
+  };
+
   return (
-    <aside className="detail-panel" aria-label={`Detailansicht: ${o.short}`} data-testid="detail-panel">
+    <aside
+      ref={ref}
+      className="detail-panel"
+      aria-label={`Detailansicht: ${o.short}`}
+      data-testid="detail-panel"
+    >
       <div className="detail-head">
         <h2>{o.short}</h2>
-        <button
-          type="button"
-          className="close"
-          aria-label="Detailansicht schließen"
-          onClick={() => game.setDetail(null)}
-        >
+        <button type="button" className="close" aria-label="Detailansicht schließen" onClick={close}>
           ✕
         </button>
       </div>
-      <DeviceArt state={state} id={id} label={o.short} />
-      <p className="detail-text">{describe(state, id)}</p>
-      <div className="detail-actions">
-        {acts.map((a) => (
-          <button
-            key={a.cmd}
-            type="button"
-            onClick={() => game.dispatch({ type: 'adventure', text: a.cmd })}
-            title={`Textbefehl: ${a.cmd}`}
-          >
-            {a.label}
-          </button>
-        ))}
+      <div className="detail-body">
+        <DeviceArt state={state} id={id} label={o.short} />
+        <div className="detail-main">
+          <p className="detail-text">{describe(state, id)}</p>
+          <div className="detail-actions">
+            {acts.map((a) => (
+              <button
+                key={a.cmd}
+                type="button"
+                onClick={() => game.dispatch({ type: 'adventure', text: a.cmd })}
+                title={`Textbefehl: ${a.cmd}`}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+          {(id === 'phone' || id === 'handset') && state.telecom.handset !== 'coupler' && (
+            <form
+              className="dial-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!number.trim()) return;
+                game.dispatch({ type: 'adventure', text: `WÄHLE ${number.replace(/\D/g, '')}` });
+                setNumber('');
+              }}
+            >
+              <label>
+                Nummer wählen{' '}
+                <input
+                  inputMode="numeric"
+                  value={number}
+                  onChange={(e) => setNumber(e.target.value.slice(0, 15))}
+                  aria-label="Telefonnummer"
+                />
+              </label>
+              <button type="submit">Wählen</button>
+            </form>
+          )}
+          <p className="detail-note">Jede Schaltfläche entspricht einem Textbefehl (Tooltip).</p>
+        </div>
       </div>
-      {(id === 'phone' || id === 'handset') && state.telecom.handset !== 'coupler' && (
-        <form
-          className="dial-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!number.trim()) return;
-            game.dispatch({ type: 'adventure', text: `WÄHLE ${number.replace(/\D/g, '')}` });
-            setNumber('');
-          }}
-        >
-          <label>
-            Nummer wählen{' '}
-            <input
-              inputMode="numeric"
-              value={number}
-              onChange={(e) => setNumber(e.target.value.slice(0, 15))}
-              aria-label="Telefonnummer"
-            />
-          </label>
-          <button type="submit">Wählen</button>
-        </form>
-      )}
-      <p className="detail-note">Jede Schaltfläche entspricht einem Textbefehl (Tooltip).</p>
     </aside>
   );
 }

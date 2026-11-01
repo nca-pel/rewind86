@@ -338,8 +338,8 @@ class Machine implements BasicHost {
   }
 
   sys(addr: number): 'app' | 'reset' | 'none' {
-    // 64738 = Reset-Einsprung des Betriebssystems; 16384 als bequemer Reset im Spiel
-    if (addr === 64738 || addr === 16384) return 'reset';
+    // 64738 = Reset-Einsprung des Betriebssystems (wie beim Original)
+    if (addr === 64738) return 'reset';
     if ((addr === 2061 || addr === 2064) && this.comp.loaded?.appId) return 'app';
     this.note('Ein SYS ins Blaue. Zum Glück passiert nichts.');
     return 'none';

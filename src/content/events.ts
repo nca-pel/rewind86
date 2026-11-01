@@ -595,14 +595,14 @@ export const EVENTS: EventDef[] = [
         effects: [
           ...cassetteArrives(),
           ...ralfAtDoor(
-            '»Du wolltest doch alles, was mit dem Spiel zu tun hat. Seidel hat sein Arbeitszimmer ausgemistet, da stand ein Karton für den Sperrmüll. Die hier lag ganz unten. Steht WT-07 drauf – wie auf der Diskette.«',
+            '»Du wolltest doch alles, was mit dem Spiel zu tun hat. Mein Alter hat sein Arbeitszimmer ausgemistet, da stand ein Karton für den Sperrmüll. Die hier lag ganz unten. Steht WT-07 drauf – wie auf der Diskette.«',
           ),
           ...cassetteGiven(),
           {
             type: 'say',
             kind: 'dialog',
             speaker: 'RALF',
-            text: '»Und Jan – sei vorsichtig mit dem Modul-Kram, ja? Seidel ist komisch drauf in letzter Zeit.« Dann ist er wieder weg.',
+            text: '»Und Jan – sei vorsichtig mit dem Modul-Kram, ja? Mein Alter ist komisch drauf in letzter Zeit.« Dann ist er wieder weg.',
           },
           { type: 'audio', cue: 'door' },
         ],
@@ -611,7 +611,7 @@ export const EVENTS: EventDef[] = [
         effects: [
           ...cassetteArrives(),
           ...ralfAtDoor(
-            '»Seidel hat sein Arbeitszimmer ausgemistet. Im Karton für den Sperrmüll lag die hier – steht WT-07 drauf, wie auf der Diskette. Vielleicht ist da noch was vom Spiel drauf. Du hast doch noch deine alte Datasette.«',
+            '»Mein Alter hat sein Arbeitszimmer ausgemistet. Im Karton für den Sperrmüll lag die hier – steht WT-07 drauf, wie auf der Diskette. Vielleicht ist da noch was vom Spiel drauf. Du hast doch noch deine alte Datasette.«',
           ),
           ...cassetteGiven(),
           {
@@ -816,7 +816,7 @@ export const EVENTS: EventDef[] = [
             type: 'say',
             kind: 'dialog',
             speaker: 'MUTTER',
-            text: '(von unten) »Jan? Das war Herr Seidel, Ralfs Vater. Er wollte dich sprechen. Er klang … komisch. Ich hab gesagt, du schläfst schon.«',
+            text: '(von unten) »Jan? Das war Herr Seidel, Ralfs Stiefvater. Er wollte dich sprechen. Er klang … komisch. Ich hab gesagt, du schläfst schon.«',
           },
           { type: 'discoverFact', id: 'seidel_called' },
         ],

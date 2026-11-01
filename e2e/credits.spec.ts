@@ -3,9 +3,8 @@ import { expect, test } from '@playwright/test';
 const DISCLAIMER_START = 'REWIND 1986 ist ein fiktionales Computerspiel.';
 const DISCLAIMER_END = 'soweit nicht ausdrücklich anders angegeben.';
 
-test('Credits mit Disclaimer: vom Titelbildschirm und aus dem Spielmenü', async ({ page }) => {
+test('Credits mit Disclaimern nur auf dem Titelbildschirm, nicht im Spielmenü', async ({ page }) => {
   await page.goto('/');
-  // Titelbildschirm
   await page.getByTestId('open-credits').click();
   const credits = page.getByTestId('credits');
   await expect(credits).toContainText('Game-Designer');
@@ -14,13 +13,13 @@ test('Credits mit Disclaimer: vom Titelbildschirm und aus dem Spielmenü', async
   await expect(credits).toContainText('Claude Code');
   await expect(page.getByTestId('legal-disclaimer')).toContainText(DISCLAIMER_START);
   await expect(page.getByTestId('legal-disclaimer')).toContainText(DISCLAIMER_END);
+  await expect(page.getByTestId('youtube-disclaimer')).toContainText('youtube-nocookie.com');
   await page.keyboard.press('Escape');
   await expect(credits).toBeHidden();
 
-  // Im Spiel über das Menü
+  // Im Spielmenü gibt es keine Credits
   await page.getByTestId('new-game').click();
   await page.getByRole('button', { name: 'Menü' }).click();
-  await page.getByTestId('open-credits').click();
-  await expect(page.getByTestId('credits')).toContainText('Peter Elbracht');
-  await expect(page.getByTestId('legal-disclaimer')).toContainText(DISCLAIMER_START);
+  await expect(page.getByRole('dialog', { name: 'Menü' })).toBeVisible();
+  await expect(page.getByTestId('open-credits')).toHaveCount(0);
 });

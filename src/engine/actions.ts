@@ -519,7 +519,7 @@ function npcNotHere(ctx: Ctx, npc: string): void {
   if (npc === 'ralf') {
     ctx.say(
       ctx.state.flags.ralfDelivered
-        ? 'Ralf ist längst weg – auf dem Weg zum Fußballtraining.'
+        ? 'Ralf ist nicht hier. Anrufen könntest du ihn aber (RUFE RALF AN).'
         : 'Ralf ist nicht hier. (Telefonieren könntest du mit ihm.)',
     );
   } else if (npc === 'seidel') ctx.say('Seidel ist nicht hier – und das ist auch besser so.');

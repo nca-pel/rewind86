@@ -115,24 +115,30 @@ function art(state: GameState, id: string): { viewBox: string; body: ReactNode }
         viewBox: '0 0 260 200',
         body: (
           <g>
+            {/* Graues Tastentelefon der Post (wie im Beschreibungstext und auf dem Schreibtisch) */}
             <rect
               x="30"
               y="70"
               width="200"
               height="110"
               rx="16"
-              fill="#5d6b5a"
+              fill="#a7a9a4"
               stroke="#222"
               strokeWidth="3"
             />
-            <circle cx="130" cy="140" r="38" fill="#e8e2c8" stroke="#222" strokeWidth="2" />
-            <circle cx="130" cy="140" r="12" fill="#5d6b5a" />
-            {Array.from({ length: 8 }, (_, i) => {
-              const a = (-30 + i * 28) * (Math.PI / 180);
-              return (
-                <circle key={i} cx={130 + Math.cos(a) * 27} cy={140 + Math.sin(a) * 27} r="4" fill="#222" />
-              );
-            })}
+            <rect x="80" y="92" width="100" height="80" rx="6" fill="#8d8f8a" stroke="#555" />
+            {Array.from({ length: 12 }, (_, i) => (
+              <rect
+                key={i}
+                x={90 + (i % 3) * 28}
+                y={98 + Math.floor(i / 3) * 18}
+                width="22"
+                height="13"
+                rx="2"
+                fill="#ecebe6"
+                stroke="#444"
+              />
+            ))}
             {t.handset === 'cradle' ? (
               <g transform={t.ringing ? 'rotate(-3 130 60)' : undefined}>
                 <rect
@@ -141,7 +147,7 @@ function art(state: GameState, id: string): { viewBox: string; body: ReactNode }
                   width="170"
                   height="24"
                   rx="12"
-                  fill="#3f4b3c"
+                  fill="#7c7e79"
                   stroke="#222"
                   strokeWidth="2"
                 />
@@ -155,7 +161,7 @@ function art(state: GameState, id: string): { viewBox: string; body: ReactNode }
                   width="90"
                   height="22"
                   rx="11"
-                  fill="#3f4b3c"
+                  fill="#7c7e79"
                   stroke="#222"
                   strokeWidth="2"
                   transform="rotate(-25 50 24)"
@@ -184,7 +190,7 @@ function art(state: GameState, id: string): { viewBox: string; body: ReactNode }
               width="60"
               height="16"
               rx="8"
-              fill="#3f4b3c"
+              fill="#7c7e79"
               opacity={t.handset === 'coupler' ? 1 : 0.15}
             />
             <Led x={50} y={110} on={t.connectedSystemId !== null} color="#3d3" />
@@ -289,11 +295,10 @@ export function DeviceArt({ state, id, label }: { state: GameState; id: string; 
   const a = art(state, id);
   if (!a) return null;
   return (
-    <figure className="device-art">
+    <figure className="device-art" title="Platzhalter-Illustration">
       <svg viewBox={a.viewBox} role="img" aria-label={`Zeichnung: ${label}`}>
         {a.body}
       </svg>
-      <figcaption>Platzhalter-Illustration</figcaption>
     </figure>
   );
 }
