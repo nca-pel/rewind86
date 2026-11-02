@@ -995,6 +995,7 @@ export const EVENTS: EventDef[] = [
     id: 'ev_sun_lunch',
     at: '1986-11-16T12:30',
     variants: [
+      { when: { flag: 'away' }, effects: [] },
       {
         effects: [
           {
@@ -1015,11 +1016,10 @@ export const EVENTS: EventDef[] = [
     interrupts: true,
     variants: [
       {
-        when: { fact: 'key_part_2' },
+        when: { any: [{ rel: 'ralfTrust', below: 'trusting' }, { timeAfter: '1986-11-16T15:30' }] },
         effects: [],
       },
       {
-        effects: [
         when: { any: [{ lineBusy: true }, { ringing: true }, { flag: 'away' }] },
         effects: [{ type: 'scheduleEvent', id: 'ev_sun_ralf_call', inMinutes: 10 }],
       },
@@ -1035,6 +1035,7 @@ export const EVENTS: EventDef[] = [
       { when: { any: [{ flag: 'ralfVisit' }, { not: { date: '1986-11-16' } }] }, effects: [] },
       {
         when: { any: [{ rel: 'ralfTrust', below: 'trusting' }, { timeAfter: '1986-11-16T17:30' }] },
+        effects: [
           {
             type: 'say',
             text: 'Deine Mutter ruft nach oben: »Jan, Ralf hat angerufen. Er schafft es heute nicht mehr, es ist zu spät geworden.«',
@@ -1093,7 +1094,6 @@ export const EVENTS: EventDef[] = [
     repeatable: true,
     interrupts: true,
     variants: [
-      {
       { when: { timeAfter: '1986-11-18T21:30' }, effects: [] },
       {
         when: { any: [{ lineBusy: true }, { ringing: true }, { flag: 'away' }] },
@@ -1107,40 +1107,38 @@ export const EVENTS: EventDef[] = [
     at: '1986-11-19T09:30',
     variants: [
       { when: { flag: 'away' }, effects: [] },
+      {
+        effects: [
+          {
+            type: 'say',
+            text: 'Buß- und Bettag. Unten ist es ungewohnt still: Dein Vater sitzt im Wohnzimmer, hört die Radiopredigt und liest dabei die Zeitung vom Anfang bis zum Ende. Deine Mutter backt. Als du die Treppe herunterkommst, drückt sie dir einen Becher Kakao in die Hand: »Heute ist Feiertag, Jan. Heute wird nichts gewählt, ja? Das Telefon braucht Ruhe.«',
+          },
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Ein ganzer freier Tag. Bis Ralf sich meldet, bleibt Zeit, den Schlüssel zu sortieren: ein Teil im Spiel, ein Teil im Netz, und der dritte soll irgendwo auf einem Band liegen.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_fri_storm',
+    at: '1986-11-21T17:30',
+    variants: [
+      { when: { flag: 'away' }, effects: [] },
+      {
         effects: [
           {
             type: 'say',
             kind: 'thought',
-            text: 'Morgen ist Buß- und Bettag, schulfrei. Ein freier Tag ohne Schule – ideal, um dem Schlüssel hinterherzujagen. Ein Teil steckt im Spiel selbst, einer im Netz. Und der dritte? Frag doch mal Ralf, ob er noch etwas vom Spiel gefunden hat.',
+            text: 'Draußen biegen sich die Bäume, ein Dachziegel klappert irgendwo. Die Radiomeldung von heute früh fällt dir ein: Sturm am Abend. Und um acht läuft das ab, was seit Tagen auf dich zukommt. Höchste Zeit, alles zu ordnen: Was weißt du? Wem traust du?',
           },
         ],
       },
     ],
   },
 
-  // ── Computerclub (Kontakt zu GHOST, GDD §3.4) ──────────────────────────────────────────────────
-  {
-    id: 'ev_club_reminder',
-    at: `${GAME_CONFIG.club.eveningDate}T${GAME_CONFIG.club.leaveFrom}`,
-    variants: [
-      {
-        when: { all: [{ fact: 'club_evening' }, { notFlag: 'away' }] },
-        effects: [
-          {
-            type: 'say',
-            kind: 'dialog',
-            speaker: 'MUTTER',
-            text: '(von unten) »Jan, ist heute nicht dein Computerclub? Wenn du hinwillst, musst du langsam los!«',
-          },
-          { type: 'say', kind: 'system', text: '(GEHE ZUM CLUB – bis 19:30 Uhr.)' },
-        ],
-      },
-      { effects: [] },
-    ],
-  },
-];
-
-export const EVENT_BY_ID: Record<string, EventDef> = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
   // ── Freitagabend (14.11.): Zeit zwischen Mailbox und Schlafen füllen, ohne den Plot zu bewegen ───
   {
     id: 'ev_fri_listing',
@@ -1188,6 +1186,8 @@ export const EVENT_BY_ID: Record<string, EventDef> = Object.fromEntries(EVENTS.m
         ],
       },
     ],
+  },
+
   // ── Alltag mit Ziel: kleine Gedanken an den toten Tagen Sa–Di (Wegweiser, keine Lösungen) ─────────
   {
     id: 'ev_sun_thought',
@@ -1262,5 +1262,3 @@ export const EVENT_BY_ID: Record<string, EventDef> = Object.fromEntries(EVENTS.m
 ];
 
 export const EVENT_BY_ID: Record<string, EventDef> = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
-  },
-

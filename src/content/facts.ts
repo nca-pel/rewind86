@@ -303,6 +303,16 @@ export const FACTS: FactDef[] = [
       'Lesertipp: Farbcodes in REM-Zeilen können Text beim LIST unsichtbar machen (Schrift = Hintergrundfarbe). Wie man die Farben umstellt, verraten viele Lader schon in ihren ersten Zeilen.',
   },
   {
+    id: 'listing_read',
+    category: 'codes',
+    text: 'Das Heimcomputer-Journal druckt als Listing des Monats den CODE-KNACKER ab: ein Ratespiel mit vier Ziffern, das man Zeile für Zeile am C64 eintippt.',
+  },
+  {
+    id: 'knacker_won',
+    category: 'codes',
+    text: 'CODE-KNACKER geknackt. Ausschließen statt raten: Wer aus »RICHTIG« und »ZIFFERN DABEI« Schritt für Schritt Ziffern ausscheidet, findet auch einen unbekannten Code.',
+  },
+  {
     id: 'empty_rem',
     category: 'codes',
     text: 'Im LADER steht in Zeile 70 ein REM, hinter dem scheinbar nichts kommt.',
@@ -332,16 +342,6 @@ export const FACTS: FactDef[] = [
     hardText: `Schlüsselfragment: ${C.keyStrand.parts[2]} (vom Prüfband). An welche Stelle es gehört, steht nicht dabei.`,
   },
   {
-  {
-    id: 'listing_read',
-    category: 'codes',
-    text: 'Das Heimcomputer-Journal druckt als Listing des Monats den CODE-KNACKER ab: ein Ratespiel mit vier Ziffern, das man Zeile für Zeile am C64 eintippt.',
-  },
-  {
-    id: 'knacker_won',
-    category: 'codes',
-    text: 'CODE-KNACKER geknackt. Ausschließen statt raten: Wer aus »RICHTIG« und »ZIFFERN DABEI« Schritt für Schritt Ziffern ausscheidet, findet auch einen unbekannten Code.',
-  },
     id: 'cassette',
     category: 'dinge',
     text: 'Ralf hat dir eine Kassette aus Seidels Sperrmüllkarton gebracht: »WT-07 PRÜFBAND 3«. Ein Datenband für die Datasette.',

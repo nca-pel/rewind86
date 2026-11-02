@@ -158,7 +158,8 @@ function answerRalfLater(ctx: Ctx): number {
   for (const ev of s.scheduledEvents)
     if ((ev.id === 'ev_ring_reminder' || ev.id === 'ev_ralf_ring_end') && ev.status === 'pending')
       ev.status = 'cancelled';
-  if (s.flags.ralfCallReason === 'saturday') s.flags.ralfSaturdayDone = true;
+  const reason = String(s.flags.ralfCallReason ?? '');
+  if (reason === 'saturday') s.flags.ralfSaturdayDone = true;
   startRalfTalk(ctx);
   ctx.say('Du nimmst den Hörer ab.');
   if (RALF_NEWS[reason]) ralfNews(ctx, reason);
@@ -173,7 +174,6 @@ function answerRalfLater(ctx: Ctx): number {
   return 1;
 }
 
-function startRalfTalk(ctx: Ctx): void {
 /** Neuigkeiten aus Ralfs Wochenplan (Anrufe am Samstagabend, Sonntag, Dienstagabend) */
 const RALF_NEWS: Record<string, { line: string; fact?: string }> = {
   match: {
@@ -195,6 +195,7 @@ function ralfNews(ctx: Ctx, reason: string): void {
   if (n.fact) discoverFact(ctx, n.fact);
 }
 
+function startRalfTalk(ctx: Ctx): void {
   const s = ctx.state;
   s.conversation = { npc: 'ralf', turns: 0 };
   s.mode = 'conversation';
@@ -222,8 +223,8 @@ function dialRalf(ctx: Ctx, number: string): number {
     } else ctx.say('»Bei Seidel?« – Ralfs Mutter. »Ach, der Jan. Ich hol ihn.«');
     startRalfTalk(ctx);
     if (s.flags.ralfMissedCall) {
-      s.flags.ralfMissedCall = false;
       const missed = s.flags.ralfMissedCall;
+      s.flags.ralfMissedCall = false;
       if (typeof missed === 'string' && RALF_NEWS[missed]) {
         ctx.say('»Ah, da bist du ja. Ich hatte dich vorhin angeklingelt.«', 'dialog', 'RALF');
         ralfNews(ctx, missed);
@@ -400,9 +401,9 @@ export function handsetIntoCoupler(ctx: Ctx): number {
 /** Gespräch mit einer Person über ein Thema. */
 const SEIDEL_MAX_TURNS = 3;
 const CLUB_MAX_TURNS = 6;
-const CLUB_TURN_MINUTES = 15;
 const VISIT_MAX_TURNS = 6;
 const VISIT_TURN_MINUTES = 15;
+const CLUB_TURN_MINUTES = 15;
 
 export function talkAbout(ctx: Ctx, npc: string, topic: string | null, rawTopic: string): number {
   const s = ctx.state;
@@ -422,7 +423,6 @@ export function talkAbout(ctx: Ctx, npc: string, topic: string | null, rawTopic:
     ctx.say(entry.text, 'dialog', entry.speaker);
     applyEffects(ctx, entry.effects);
   }
-  if (s.conversation && npc === 'brandt') {
   if (s.conversation && npc === 'ralf' && s.flags.ralfVisit) {
     s.conversation.turns++;
     const late = s.gameClock.slice(11, 16) >= '18:00';
@@ -432,6 +432,7 @@ export function talkAbout(ctx: Ctx, npc: string, topic: string | null, rawTopic:
     }
     return VISIT_TURN_MINUTES;
   }
+  if (s.conversation && npc === 'brandt') {
     s.conversation.turns++;
     const late = s.gameClock.slice(11, 16) >= '20:30';
     if (s.conversation.turns >= CLUB_MAX_TURNS || late) {
