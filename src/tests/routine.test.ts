@@ -165,7 +165,11 @@ describe('Tagesablauf im Spiel (Ausbauplan Punkt 5)', () => {
     expect(s.a('warte 15')).toMatch(/Computerclub/);
     const out = s.a('gehe zum club');
     expect(out).toMatch(/Jugendzentrum/);
-    expect(s.state.gameClock).toBe('1986-11-20T21:45');
+    expect(s.state.gameClock).toBe('1986-11-20T19:00');
+    expect(s.state.flags.atClub).toBe(true);
+    s.a('verabschiede dich');
+    expect(s.state.flags.atClub).toBeUndefined();
+    expect(s.state.gameClock).toBe('1986-11-20T19:20');
   });
 
   test('Meilenstein »Samstagmorgen« aus echten Spielbefehlen', () => {

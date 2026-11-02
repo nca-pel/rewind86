@@ -256,7 +256,9 @@ Zeitblöcke**. Kalender und Zeiten stehen in `GAME_CONFIG.calendar`, Geld in `GA
   seiner Heimkehr zurück (`ev_ralf_callback`). Ab 19:30 geht Seidel ans Telefon (bei Verdacht ≥ `noticeable` mit
   Zögern). Samstag 13:00 (nach der Schule) ruft Ralf von selbst an. Spätere Gespräche: `RALF_LATER` in `content/dialogue.ts`.
 - **Post** Mo–Sa 10:30 (Samstag: Rundbrief des Computerclubs → Fakt `club_evening`). **Clubabend** Do 20.11.:
-  `GEHE ZUM CLUB` zwischen 18:30 und 19:30.
+  `GEHE ZUM CLUB` zwischen 18:30 und 19:30: Anfahrt als Zeitblock, dann ein Gespräch mit Herrn Brandt (`flags.atClub`,
+  `conversation.npc = 'brandt'`, Dialoge `BRANDT` in `content/dialogue.ts`). Jede Frage kostet 15 Minuten; `VERABSCHIEDE DICH`
+  oder die sechste Frage beenden den Abend (`leaveClub` in `routine.ts`, 20 Minuten Heimweg).
 - **Geld:** Samstag nach der Schule 10 DM Taschengeld; Sonntag beim Abendbrot liest der Vater den Gebührenzähler ab
   (`costsAtLastReading`): 3 DM frei, den Rest zahlt Jan, fehlendes Geld wird vom nächsten Taschengeld abgezogen.
 - **Entwicklerkonsole:** `zeit 1986-11-17T10:00` springt zu einem Datum; Zeitblöcke laufen dabei mit ab.

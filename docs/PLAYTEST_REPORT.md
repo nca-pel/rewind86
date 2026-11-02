@@ -96,6 +96,6 @@ zusätzliche Ermittlungsschritte vor dem Finale (z. B. Ralf zeigt Seidels Arbeit
 ## 5. Umgesetzte Folgemaßnahmen
 
 - Leerlauf Sa–Di: neue Gedanken So 17:30, Mo 14:15 (nur ohne Schlüsselteil 2) und Di 19:30 als Wegweiser; neue Beiträge im BIT-SCHUPPEN (ZAPPO »KNOTEN WEST??« ab So 10:00, ANDI-Antwort ab Mo 18:00) und im DATENKELLER (MOLE »TESTZUGAENGE« ab So 22:00).
-- Clubabend: Die Szene reagiert jetzt auf den Wissensstand (DATENKELLER-Gerücht, entschlüsseltes Rundschreiben). Ein vollständig spielbarer Dialog mit Brandt ist weiterhin offen, weil er eine eigene NPC-Gesprächsfigur braucht.
+- Clubabend: spielbares Gespräch mit Herrn Brandt (Themen Club, BTX, Mailboxen, Thermoskanne, WarGames, GHOST, Seidel, Ralf, Spiel). Jede Frage kostet 15 Minuten, nach sechs Fragen oder ab 20:30 endet der Abend; `VERABSCHIEDE DICH` beendet ihn früher. Antworten hängen vom Wissensstand ab; Brandt gibt nie zu, GHOST zu sein.
 - Ersatzschlüssel: wird als Flag `modkKey` gespeichert und beim Start des Moduls wiederhergestellt.
 - Finale: Die Meldung bei `ev_finale_open` weist auf den möglichen Anruf hin.

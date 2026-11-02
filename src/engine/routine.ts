@@ -67,6 +67,26 @@ export function requestAbsence(
   ctx.debug(`absence ${kind} bis ${until}`);
 }
 
+/** Clubabend beenden: Gespräch endet, Jan radelt nach Hause (Zeitblock von 20 Minuten). */
+export function leaveClub(ctx: Ctx, reason: string): void {
+  const st = ctx.state;
+  if (!st.flags.atClub) return;
+  st.conversation = null;
+  st.mode = 'desk';
+  delete st.flags.atClub;
+  delete st.flags.away;
+  const hadGhostWord = st.knownFacts.includes('brandt_is_ghost');
+  requestAbsence(
+    ctx,
+    'club',
+    addMinutes(st.gameClock, 20),
+    `${reason} Du holst dein Fahrrad und radelst durch den Nieselregen nach Hause.`,
+    hadGhostWord
+      ? 'Zu Hause tropft die Jacke auf die Fußmatte, der Kopf ist voller Fragen – und unter dem Arm steckt das BTX-Leihset. Der Betreuer des Clubs und GHOST: Du bist fast sicher, dass es derselbe Mann ist. Ob du ihm trauen kannst, weißt du nicht.'
+      : 'Zu Hause tropft die Jacke auf die Fußmatte, der Kopf ist voller neuer Ideen – und unter dem Arm steckt das BTX-Leihset des Clubs. Beim Abschied hat Herr Brandt noch gesagt: »Schau mal in die Club-Mailbox, da steht öfter was Nützliches.«',
+  );
+}
+
 export function sleep(ctx: Ctx, forced = false): void {
   const wake = wakeTime(ctx.state.gameClock);
   const school = isSchoolDay(`${dateOf(wake)}T12:00`);

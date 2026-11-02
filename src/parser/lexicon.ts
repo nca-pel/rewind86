@@ -105,7 +105,7 @@ export const VERBS: VerbEntry[] = [
   L('frage frag fragen erkundige befrage befragen', null, 'ask'),
   L('erzaehle erzaehl berichte bericht sag sage informiere erklaere erklaer', null, 'tell'),
   L('rede red sprich spreche sprech unterhalte quatsche plaudere', null, 'talk'),
-  L('tschuess tschues ciao bye wiedersehen bis', null, 'bye'),
+  L('tschuess tschues ciao bye wiedersehen bis verabschiede verabschieden', null, 'bye'),
   L('hallo hi moin servus', null, 'greet'),
   L('geh gehe gehen lauf laufe renn renne verlasse verlass betritt betrete fahr fahre', null, 'go'),
   L('durchsuche durchsuch suche such wuehle', null, 'search'),

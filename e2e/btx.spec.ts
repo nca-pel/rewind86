@@ -24,6 +24,11 @@ test('BTX: Leihset vom Club, Decoder startet beim Einschalten, Seiten per Ziffer
   await page.getByRole('button', { name: 'Entwicklerkonsole schließen' }).click();
 
   await adv(page, 'gehe zum club');
+  await expect(page.getByTestId('club-scene')).toBeVisible();
+  await expect(page.getByTestId('desk-caption')).toContainText('Computerclub');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/club-${info.project.name}.png` });
+  await adv(page, 'verabschiede dich');
+  await expect(page.getByTestId('club-scene')).toHaveCount(0);
   await adv(page, 'schalte computer aus');
   await adv(page, 'stecke btx in den c64');
   await adv(page, 'schalte computer ein');

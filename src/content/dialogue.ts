@@ -64,6 +64,21 @@ export const TOPICS: TopicDef[] = [
     aliases: ['ghost', 'brandt', 'betreuer', 'freitag', 'operation', 'rewind'],
   },
   { id: 'ralf', label: 'Ralf', aliases: ['ralf', 'sohn', 'stiefsohn', 'junge'] },
+  {
+    id: 'btx',
+    label: 'Bildschirmtext (BTX)',
+    aliases: ['btx', 'bildschirmtext', 'postmodem', 'leihset', 'decoder', 'vereinskennung'],
+  },
+  {
+    id: 'kaffee',
+    label: 'die Thermoskanne',
+    aliases: ['kaffee', 'thermoskanne', 'thermos', 'kanne', 'tee', 'strickjacke'],
+  },
+  {
+    id: 'wargames',
+    label: 'WarGames und Vorsicht',
+    aliases: ['wargames', 'film', 'hacker', 'warnung', 'vorsicht', 'gefahr', 'dummheiten'],
+  },
   { id: 'club', label: 'den Computerclub', aliases: ['club', 'computerclub', 'clubabend', 'jugendzentrum'] },
 ];
 
@@ -325,8 +340,92 @@ const SEIDEL_CALL: DialogueEntry[] = [
   },
 ];
 
+/**
+ * Clubabend: Gespräch mit Herrn Brandt. Er antwortet ruhig, väterlich, oft mit einer Gegenfrage (»Fürwahr«,
+ * »Weiter so.«), gibt nie zu, GHOST zu sein, und nennt weder Seidel noch K-01 beim Namen.
+ */
+const BRANDT: DialogueEntry[] = [
+  {
+    npc: 'brandt',
+    topic: 'club',
+    speaker: 'BRANDT',
+    text: '»Donnerstags um sieben, seit drei Jahren. Ich war mal Elektrotechniker – heute repariere ich vor allem Eitelkeiten.« Er lächelt in seinen Kaffee. »Die meisten kommen wegen der Spiele. Ein paar bleiben wegen der Fragen. Du gehörst zu denen, die fragen, oder?«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'btx',
+    speaker: 'BRANDT',
+    text: '»Das Leihset gehört dem Club, also pass darauf auf. Die Bundespost hat da ein ganzes Netz aufgebaut – Seiten, Tafeln, Mitteilungen. Fürwahr, ein wenig wie ein Telefonbuch, das zurückspricht.« Er klopft auf die Tischplatte. »Unsere Clubtafel ist auch drin. Wer genau liest, findet dort mehr als den Termin.«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'mailbox',
+    when: { fact: 'dk_ghost_rumor' },
+    speaker: 'BRANDT',
+    text: '»Ich?« Er lächelt. »Ich bin ein alter Mann mit einer Thermoskanne. Wer fragt, findet, Jan. Wer zu laut fragt …« Er lässt den Satz offen und schraubt die Kanne zu. »Im Keller, hört man, wird viel getuschelt. Nachts. Unter Freunden.«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'mailbox',
+    speaker: 'BRANDT',
+    text: '»Mailboxen? Das Postamt der kleinen Leute.« Er zuckt die Schultern. »Ich lese mehr, als ich schreibe. Man lernt dort, wer laut ist und wer zuhört. Und welche Nummern man besser nicht wählt. Warum fragst du? Hast du eine gefunden, die dir Sorgen macht?«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'kaffee',
+    speaker: 'BRANDT',
+    text: '»Schwarz, ohne Zucker. Alles andere ist Verschwendung.« Er dreht die Kanne in den Händen. »Meine Frau sagt, ich sei damit verheiratet. Aber der Kaffee hat mich wach gehalten, wenn andere längst schliefen. Man gewöhnt sich an lange Nächte.«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'wargames',
+    speaker: 'BRANDT',
+    text: '»Ein hübscher Film. Nur: In der Wirklichkeit antwortet kein Computer mit ›Möchten Sie ein Spiel spielen?‹. Da antwortet jemand. Mit einem Namen, mit einer Adresse, mit einem Anschluss.« Er sieht dich ruhig an. »Jeder Anruf hinterlässt eine Spur, Jan. Vergiss das nicht, wenn du abends wählst.«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'ghost',
+    when: { fact: 'k01_decrypted' },
+    speaker: 'BRANDT',
+    text: 'Er legt die Hände um den Becher und schweigt einen Moment. »Freitag …« Er wählt jedes Wort. »Wer fragt, findet. Wer zu laut fragt, wird gefunden. Ich kann dir nichts versprechen, was ich nicht halten kann.« Dann leiser: »Pass auf dich auf. Und auf deinen Freund.« Von Ralf hast du ihm nie erzählt.',
+    effects: [{ type: 'discoverFact', id: 'brandt_word' }],
+  },
+  {
+    npc: 'brandt',
+    topic: 'ghost',
+    when: { fact: 'ghost_word' },
+    speaker: 'BRANDT',
+    text: '»GHOST?« Er hebt die Augenbrauen, nur ein wenig. »Ein Name auf einem Bildschirm kostet nichts, Jan. Wer sich hinter Namen versteckt, hat meist Gründe. Und wer sie sucht, auch.« Er schenkt sich nach. »Fürwahr. Schreib ruhig mal in die Club-Mailbox. Gäste lesen mit.«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'ghost',
+    speaker: 'BRANDT',
+    text: '»Freitag? Was soll an dem Freitag sein? Da ist Wochenende.« Er lächelt, aber seine Augen tun es nicht. »Du hörst Gerüchte, nicht wahr? Es gibt immer Gerüchte. Weiter so, aber glaub nicht alles.«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'seidel',
+    speaker: 'BRANDT',
+    text: '»Der Name sagt mir nichts.« Er lässt einen Atemzug verstreichen. »Und wenn doch – manche Namen spricht man abends nicht laut aus, schon gar nicht in einem Raum voller Jugendlicher. Warum fragst du?«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'ralf',
+    speaker: 'BRANDT',
+    text: '»Ralf? Dein Freund aus der Grundschule?« Er hält inne. »Ein guter Junge, hört man. Gib acht auf ihn. Und – Jan – erzähl ihm nicht mehr, als er tragen kann.«',
+  },
+  {
+    npc: 'brandt',
+    topic: 'spiel',
+    speaker: 'BRANDT',
+    text: '»Spiele?« Er schmunzelt. »Das Beste an einem Spiel ist, dass man es beenden darf. Mit dem Leben geht das nicht so leicht. Hast du ein neues, das dich beschäftigt?«',
+  },
+];
+
 /** Antworten werden in Reihenfolge geprüft; der erste Eintrag mit erfüllter Bedingung gewinnt. */
 export const DIALOGUE: DialogueEntry[] = [
+  ...BRANDT,
   ...SEIDEL_CALL,
   ...RALF_LATER,
   {
@@ -397,6 +496,7 @@ export const DIALOGUE: DialogueEntry[] = [
 ];
 
 export const DIALOGUE_FALLBACK: Record<string, string> = {
+  brandt: '»Fürwahr, eine gute Frage.« Herr Brandt lächelt. »Was meinst du denn damit, Jan?«',
   ralf: '»Hä? Keine Ahnung, wovon du redest. Ich muss gleich los!«',
   seidel: '»Ich hab nicht viel Zeit, Jan. Ist Ralf bei dir gewesen heute?«',
 };

@@ -44,7 +44,7 @@ Zeile ans Adventure. Programme im »Tastenmodus« bekommen jede Taste einzeln (E
 
 ## Donnerstag 20.11.
 
-- 16:30 Ralf beim Training. **18:30–19:30: `GEHE ZUM CLUB`** (nicht mit `WARTE 30` durchrutschen!). Brandt (»Fürwahr«, »Weiter so«), BTX-Set wird verliehen. Rückkehr ~21:45 (P10, P17). **[geprüft]**
+- 16:30 Ralf beim Training. **18:30–19:30: `GEHE ZUM CLUB`** (nicht mit `WARTE 30` durchrutschen!). Anfahrt bis 19:00, dann Gespräch mit Brandt (`FRAGE BRANDT NACH DEM CLUB / BTX / DEN MAILBOXEN / GHOST …`, jede Frage 15 Min., höchstens 6; `VERABSCHIEDE DICH` beendet den Abend). BTX-Set wird verliehen. Rückkehr ca. 20:30–21:00 (P10, P17). **[geprüft]**
 - Danach BIT-SCHUPPEN, Brett CLUB: neuer Beitrag von GHOST. `RUFE RALF AN`, `FRAGE RALF NACH GHOST`. Im Modul 2 (Senden): QUITTUNG, dann ANFRAGE TREFFPUNKT, später Antwort lesen: **Freitag 23:30, Raststätte GT, Parkplatz Nord, Stichwort REWIND**. **[geprüft]**
 
 ## Freitag 21.11. (Finale)

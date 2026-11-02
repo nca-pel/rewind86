@@ -10,7 +10,7 @@ import { termDropCarrier } from '../sim/apps/term';
 import { GAME_CONFIG } from '../content/config';
 import { isOpen } from './bbs';
 import { diffMinutes, formatClock, isBefore } from './clock';
-import { nextRalfHome, ralfWhere } from './routine';
+import { leaveClub, nextRalfHome, ralfWhere } from './routine';
 import { houseLineBusy } from './conditions';
 import type { Ctx } from './context';
 import { applyEffects, discoverFact, scheduleEvent, setPuzzle } from './effects';
@@ -371,6 +371,8 @@ export function handsetIntoCoupler(ctx: Ctx): number {
 
 /** Gespräch mit einer Person über ein Thema. */
 const SEIDEL_MAX_TURNS = 3;
+const CLUB_MAX_TURNS = 6;
+const CLUB_TURN_MINUTES = 15;
 
 export function talkAbout(ctx: Ctx, npc: string, topic: string | null, rawTopic: string): number {
   const s = ctx.state;
@@ -389,6 +391,20 @@ export function talkAbout(ctx: Ctx, npc: string, topic: string | null, rawTopic:
   } else {
     ctx.say(entry.text, 'dialog', entry.speaker);
     applyEffects(ctx, entry.effects);
+  }
+  if (s.conversation && npc === 'brandt') {
+    s.conversation.turns++;
+    const late = s.gameClock.slice(11, 16) >= '20:30';
+    if (s.conversation.turns >= CLUB_MAX_TURNS || late) {
+      ctx.say(
+        '»So, es wird spät, und morgen ist Schule.« Herr Brandt schraubt die Thermoskanne zu. »Fürwahr, ein guter Abend. Weiter so, Jan.«',
+        'dialog',
+        'BRANDT',
+      );
+      leaveClub(ctx, 'Der Abend im Club geht zu Ende.');
+      return 1;
+    }
+    return CLUB_TURN_MINUTES;
   }
   if (s.conversation && npc === 'seidel') {
     s.conversation.turns++;

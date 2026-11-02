@@ -18,6 +18,7 @@ function afterClub(): Session {
   s.do({ type: 'dev', text: 'fakt club_evening' });
   s.do({ type: 'dev', text: `zeit ${C.eveningDate}T18:40` });
   s.a('gehe zum club');
+  s.a('verabschiede dich');
   if (s.state.computer.powerOn) s.a('schalte computer aus');
   return s;
 }

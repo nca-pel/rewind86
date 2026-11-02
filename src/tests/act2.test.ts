@@ -15,6 +15,10 @@ function toClub(s: Session): void {
   s.a('gehe zum club');
 }
 
+function leaveClub(s: Session): void {
+  s.a('verabschiede dich');
+}
+
 describe('Akt 2: Clubabend und GHOST', () => {
   test('Clubabend: Herr Brandt verrät sich durch seine Wendungen', () => {
     const s = new Session();
@@ -33,6 +37,46 @@ describe('Akt 2: Clubabend und GHOST', () => {
     toClub(s);
     expect(s.has('brandt_is_ghost')).toBe(true);
     expect(text(s)).toContain('GHOST');
+  });
+
+  test('Clubabend ist ein Gespräch: Fragen kosten Zeit, andere Handlungen sind gesperrt, Gehen beendet es', () => {
+    const s = new Session();
+    toClub(s);
+    expect(s.state.flags.atClub).toBe(true);
+    expect(s.state.conversation?.npc).toBe('brandt');
+    expect(s.state.itemLocations.btx_kit).toBe('inventory');
+    const before = s.state.gameClock;
+    s.a('frage brandt nach btx');
+    expect(text(s)).toContain('Clubtafel');
+    expect(s.state.gameClock > before).toBe(true);
+    s.a('schalte computer ein');
+    expect(text(s)).toContain('Hier kannst du nur reden');
+    expect(s.state.computer.powerOn).toBe(false);
+    leaveClub(s);
+    expect(s.state.flags.atClub).toBeUndefined();
+    expect(s.state.flags.away).toBeUndefined();
+    expect(s.state.conversation).toBeNull();
+    expect(text(s)).toContain('Zu Hause');
+  });
+
+  test('Brandt antwortet je nach Wissensstand und gibt nie zu, GHOST zu sein', () => {
+    const s = new Session();
+    dev(s, 'fakt ghost_word');
+    dev(s, 'fakt dk_ghost_rumor');
+    toClub(s);
+    s.a('frage brandt nach den mailboxen');
+    expect(text(s)).toContain('alter Mann mit einer Thermoskanne');
+    s.a('frage brandt nach ghost');
+    expect(text(s)).toContain('Ein Name auf einem Bildschirm');
+    expect(text(s)).not.toMatch(/Ich bin GHOST/);
+  });
+
+  test('Der Abend endet nach spätestens sechs Fragen von selbst', () => {
+    const s = new Session();
+    toClub(s);
+    for (const t of ['club', 'btx', 'kaffee', 'wargames', 'spiel', 'ralf']) s.a(`frage brandt nach ${t}`);
+    expect(s.state.flags.atClub).toBeUndefined();
+    expect(text(s)).toContain('Der Abend im Club geht zu Ende');
   });
 
   test('Prolog-Spieltexte nennen GHOST und Brandt weiterhin nicht (nur Mailbox-Inhalte)', () => {

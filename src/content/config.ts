@@ -227,12 +227,11 @@ export const GAME_CONFIG = {
     maxTurns: 8,
   },
 
-  /** Computerclub (Kontakt zu GHOST, GDD §3.4): Clubabend als erzählter Zeitblock */
+  /** Computerclub (Kontakt zu GHOST, GDD §3.4): Anfahrt als Zeitblock, dann Gespräch mit Herrn Brandt */
   club: {
     eveningDate: '1986-11-20',
     leaveFrom: '18:30',
     leaveUntil: '19:30',
-    backAt: '21:45',
   },
 
   /**

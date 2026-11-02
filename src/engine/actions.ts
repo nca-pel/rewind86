@@ -13,14 +13,14 @@ import type { GameEffect } from './types';
 import type { Intent, Segment } from '../parser/adventure';
 import { normalize } from '../parser/normalize';
 import { c64Key, c64Line, powerOff, powerOn } from '../sim/c64';
-import { formatClock, formatDm } from './clock';
+import { addMinutes, formatClock, formatDm } from './clock';
 import { evalCondition } from './conditions';
 import type { Ctx } from './context';
 import { applyEffects, discoverFact } from './effects';
 import { describe, inventoryText, itemsAt, listNames, lookAround } from './describe';
 import { dial, dropCarrier, handsetIntoCoupler, hangUp, pickUp, talkAbout } from './phone';
 import { capitalize, isReachable, resolveObject, resolveTopic, type ResolveOptions } from './resolve';
-import { canSleepNow, requestAbsence, sleep } from './routine';
+import { canSleepNow, leaveClub, requestAbsence, sleep } from './routine';
 import { advanceTime } from './time';
 
 const DEFAULT_MINUTES = 1;
@@ -528,6 +528,8 @@ const NPC_WORDS: Record<string, string> = {
   papa: 'father',
   paps: 'father',
   vati: 'father',
+  brandt: 'brandt',
+  betreuer: 'brandt',
 };
 
 function npcNotHere(ctx: Ctx, npc: string): void {
@@ -538,6 +540,8 @@ function npcNotHere(ctx: Ctx, npc: string): void {
         : 'Ralf ist nicht hier. (Telefonieren könntest du mit ihm.)',
     );
   } else if (npc === 'seidel') ctx.say('Seidel ist nicht hier – und das ist auch besser so.');
+  else if (npc === 'brandt')
+    ctx.say('Herr Brandt ist nicht hier. Du triffst ihn beim Clubabend am Donnerstag.');
   else if (npc === 'mother') ctx.say('Deine Mutter ist unten. Du könntest nach ihr rufen (RUFE MUTTER).');
   else ctx.say(ctx.state.flags.fatherHome ? 'Dein Vater ist unten.' : 'Dein Vater ist noch bei der Arbeit.');
 }
@@ -550,7 +554,9 @@ function talk(ctx: Ctx, intent: Verb): number {
     .filter((sg, i) => i !== 0 && sg.prep !== 'mit')
     .flatMap((sg) => sg.words);
   let npc = addressWords.map((w) => NPC_WORDS[w]).find(Boolean) ?? null;
-  const leftover = addressWords.filter((w) => !npc || NPC_WORDS[w] !== npc);
+  const leftover = addressWords.filter(
+    (w) => (!npc || NPC_WORDS[w] !== npc) && !(npc === 'brandt' && ['herr', 'herrn'].includes(w)),
+  );
   if (!npc) npc = ctx.state.conversation?.npc ?? null;
   if (!npc) {
     ctx.say('Mit wem möchtest du sprechen? Gerade ist niemand bei dir.');
@@ -709,13 +715,23 @@ function meta(ctx: Ctx, intent: Extract<Intent, { kind: 'meta' }>): number {
   }
 }
 
-/** Clubabend als erzählter Zeitblock (GDD: Jan erkundet keine weiteren Orte). */
+/** Clubabend: Anfahrt als Zeitblock, dann ein Gespräch mit Herrn Brandt (siehe talkAbout, leaveClub). */
 function goToClub(ctx: Ctx): number {
   const s = ctx.state;
   const c = GAME_CONFIG.club;
   const now = s.gameClock.slice(11, 16);
+  if (s.flags.atClub) {
+    ctx.say(
+      'Du bist doch schon im Club. Sprich mit Herrn Brandt oder verabschiede dich (VERABSCHIEDE DICH).',
+    );
+    return 0;
+  }
   if (!s.knownFacts.includes('club_evening')) {
     ctx.say('Zum Computerclub? Wann der sich das nächste Mal trifft, weißt du gerade gar nicht.');
+    return 0;
+  }
+  if (s.flags.clubAttended) {
+    ctx.say('Den Clubabend hast du schon hinter dir. Das BTX-Leihset liegt bei dir.');
     return 0;
   }
   if (s.gameClock.slice(0, 10) !== c.eveningDate || now < c.leaveFrom || now > c.leaveUntil) {
@@ -733,16 +749,6 @@ function goToClub(ctx: Ctx): number {
     'Du schnappst dir deine Diskettenbox und radelst durch den Nieselregen zum Jugendzentrum. Drinnen riecht es nach Kaffee und warmen Netzteilen. Ein paar Leute tauschen Disketten, an einem Tisch wird eine Datasette justiert, und jemand schwärmt vom neuen Amiga, den sich keiner leisten kann.',
     `${G.civilName}, der Betreuer des Clubs, Strickjacke, Brille, eine Thermoskanne in der Hand, winkt dich heran. »Jan! Fürwahr, du hast es doch noch geschafft. Setz dich. Schwarzer Kaffee? Nein? Dann eben nicht.« Er stellt dir das BTX-Leihset des Clubs hin: Postmodem, Decoder-Modul, Vereinskennung. »Nimm’s ruhig ein paar Tage mit und schau dir an, was die Post da aufgebaut hat. Aber keine Dummheiten. Wer zu oft ›WarGames‹ geguckt hat, wählt sich irgendwann in die falschen Leitungen. Weiter so.«`,
   ];
-  if (s.knownFacts.includes('dk_ghost_rumor')) {
-    scene.push(
-      'Du denkst an das Gerücht aus dem DATENKELLER: Einer im BIT-SCHUPPEN höre mehr zu, als einem lieb ist. Als Herr Brandt dir den Becher reicht, fragst du beiläufig, ob er auch in Mailboxen unterwegs sei. »Ich?«, sagt er und lächelt. »Ich bin ein alter Mann mit einer Thermoskanne. Wer fragt, findet, Jan. Wer zu laut fragt …« Er lässt den Satz offen und schraubt die Kanne zu.',
-    );
-  }
-  if (s.knownFacts.includes('k01_decrypted')) {
-    scene.push(
-      'Das entschlüsselte Rundschreiben geht dir den ganzen Abend nicht aus dem Kopf. Du bemerkst, dass Herr Brandt dich zweimal länger ansieht als die anderen – so, wie man jemanden ansieht, der etwas weiß, das er nicht wissen sollte. Als du gehst, sagt er leise: »Pass auf dich auf. Und auf deinen Freund.« Von Ralf hast du ihm nie erzählt.',
-    );
-  }
   const notes: GameEffect[] = [{ type: 'discoverFact', id: 'brandt_word' }];
   if (hadGhostWord) {
     scene.push(
@@ -750,17 +756,19 @@ function goToClub(ctx: Ctx): number {
     );
     notes.push({ type: 'discoverFact', id: 'brandt_is_ghost' });
   }
-  requestAbsence(
-    ctx,
-    'club',
-    `${c.eveningDate}T${c.backAt}`,
-    scene.join('\n\n'),
-    hadGhostWord
-      ? 'Kurz vor zehn bist du wieder zu Hause, die Jacke klamm vom Regen, den Kopf voller Fragen – mit dem BTX-Leihset unter dem Arm. Der Betreuer des Clubs und GHOST: Du bist fast sicher, dass es derselbe Mann ist. Ob du ihm trauen kannst, weißt du nicht.'
-      : 'Kurz vor zehn bist du wieder zu Hause, die Jacke klamm vom Regen, den Kopf voller neuer Ideen – und mit dem BTX-Leihset des Clubs unter dem Arm, das du dir für ein paar Tage ausleihen durftest. Beim Abschied hat Herr Brandt noch gesagt: »Schau mal in die Club-Mailbox, da steht öfter was Nützliches.«',
-  );
+  const arrive = now < '19:00' ? `${c.eveningDate}T19:00` : addMinutes(s.gameClock, 10);
+  requestAbsence(ctx, 'club', arrive, scene.join('\n\n'));
   applyEffects(ctx, notes);
   advanceTime(ctx, 0);
+  // Jetzt sitzt Jan bei Herrn Brandt: ein Gespräch, in dem jede Frage Zeit kostet.
+  s.flags.atClub = true;
+  s.flags.away = 'club';
+  s.conversation = { npc: 'brandt', turns: 0 };
+  s.mode = 'conversation';
+  ctx.say(
+    'Du sitzt bei Herrn Brandt am Tisch. Worüber möchtest du reden? (z. B. FRAGE BRANDT NACH DEM CLUB · … NACH BTX · … NACH DEN MAILBOXEN · THEMEN – oder VERABSCHIEDE DICH.)',
+    'system',
+  );
   return 0;
 }
 
@@ -859,9 +867,17 @@ export function runIntent(ctx: Ctx, intent: Intent): number {
   }
 }
 
+const CLUB_VERBS = new Set(['ask', 'tell', 'talk', 'bye', 'greet', 'go', 'lookat']);
+
 function verb(ctx: Ctx, intent: Verb): number {
   const s = ctx.state;
   const direct = intent.segments[0]?.words ?? [];
+  if (s.flags.atClub && !CLUB_VERBS.has(intent.verb)) {
+    ctx.say(
+      'Du sitzt im Jugendzentrum bei Herrn Brandt. Hier kannst du nur reden (FRAGE BRANDT NACH …) oder gehen (VERABSCHIEDE DICH).',
+    );
+    return 0;
+  }
   switch (intent.verb) {
     case 'lookat':
     case 'examine': {
@@ -1078,6 +1094,15 @@ function verb(ctx: Ctx, intent: Verb): number {
     case 'talk':
       return talk(ctx, intent);
     case 'bye':
+      if (s.flags.atClub) {
+        ctx.say(
+          '»Dann bis nächste Woche, Jan. Fürwahr, schön, dass du da warst. Weiter so.«',
+          'dialog',
+          'BRANDT',
+        );
+        leaveClub(ctx, 'Du verabschiedest dich.');
+        return 1;
+      }
       if (s.conversation) return hangUp(ctx);
       ctx.say('Es ist niemand da, von dem du dich verabschieden könntest.');
       return 0;
@@ -1087,6 +1112,11 @@ function verb(ctx: Ctx, intent: Verb): number {
       return 0;
     case 'go': {
       const words = intent.segments.flatMap((x) => x.words);
+      if (s.flags.atClub) {
+        ctx.say('»Schon los? Dann pass auf dich auf, Jan.«', 'dialog', 'BRANDT');
+        leaveClub(ctx, 'Du stehst auf und verabschiedest dich.');
+        return 1;
+      }
       if (words.some((w) => ['tuer', 'flur', 'zimmertuer', 'haustuer', 'treppe'].includes(w)))
         return open(ctx, 'door');
       if (words.some((w) => ['club', 'computerclub', 'clubabend', 'jugendzentrum'].includes(w)))
