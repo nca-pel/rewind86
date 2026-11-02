@@ -9,7 +9,7 @@
  * - Kleine Animationen: klingelndes Telefon, LEDs. Fenster, Radio, Päckchen (nur Kulisse) und Hörer bleiben wie im Bild.
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
-import clubUrl from '../assets/desk/club.png';
+import clubUrl from '../assets/desk/cc.png';
 import deskUrl from '../assets/desk/desk.png';
 import { OBJECT_BY_ID } from '../content/objects';
 import type { GameState } from '../engine/types';
