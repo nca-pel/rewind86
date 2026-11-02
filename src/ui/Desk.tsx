@@ -9,6 +9,7 @@
  * - Kleine Animationen: klingelndes Telefon, LEDs. Fenster, Radio, Päckchen (nur Kulisse) und Hörer bleiben wie im Bild.
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import clubUrl from '../assets/desk/club.png';
 import deskUrl from '../assets/desk/desk.png';
 import { OBJECT_BY_ID } from '../content/objects';
 import type { GameState } from '../engine/types';
@@ -400,6 +401,7 @@ export function Desk({
   const [hover, setHover] = useState<string | null>(null);
   const [showNames, setShowNames] = useState(false);
   const name = hover ?? selected;
+  const atClub = state.flags.atClub === true;
 
   // Taste N blendet alle Namen ein und aus (nicht in Eingabefeldern)
   useEffect(() => {
@@ -414,17 +416,36 @@ export function Desk({
 
   return (
     <div className="desk-stage" ref={ref}>
-      <DeskScene
-        state={state}
-        onSelect={onSelect}
-        selected={selected}
-        showNames={showNames}
-        onHover={setHover}
-        width={width}
-      />
+      {atClub ? (
+        <svg
+          viewBox={`0 0 ${DESK_W} ${DESK_H}`}
+          width={width}
+          height={width ? Math.round((width * DESK_H) / DESK_W) : undefined}
+          role="img"
+          aria-label="Im Computerclub: Herr Brandt sitzt mit seiner Thermoskanne am Tisch"
+          data-testid="club-scene"
+          className="desk-svg"
+          shapeRendering="crispEdges"
+        >
+          <image href={clubUrl} width={DESK_W} height={DESK_H} />
+        </svg>
+      ) : (
+        <DeskScene
+          state={state}
+          onSelect={onSelect}
+          selected={selected}
+          showNames={showNames}
+          onHover={setHover}
+          width={width}
+        />
+      )}
       <div className="desk-bar" style={{ width }}>
         <span className="desk-caption" data-testid="desk-caption">
-          {name && OBJECT_BY_ID[name] ? OBJECT_BY_ID[name].short : 'Jans Schreibtisch'}
+          {atClub
+            ? 'Im Computerclub – Jugendzentrum Wiedenbrück'
+            : name && OBJECT_BY_ID[name]
+              ? OBJECT_BY_ID[name].short
+              : 'Jans Schreibtisch'}
         </span>
         <button
           type="button"
