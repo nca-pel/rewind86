@@ -124,7 +124,7 @@ Webserver ausliefern (z. B. `python -m http.server 8000` im Ordner, dann http://
 
 ## Steuerung
 
-Auf dem Titelbild stehen Neues Spiel (mit Schwierigkeit Normal/Schwer), Fortsetzen, Laden, Einstellungen und Credits links; rechts gibt ein Nadeldrucker die Vorgeschichte aus. Dazu läuft eine eigene, synthetisierte Titelmusik (nach dem ersten Klick oder Tastendruck).
+Auf dem Titelbild stehen Neues Spiel (immer im Normalmodus; der schwere Modus bleibt im Code und lässt sich per `?difficulty=hard` wählen), Fortsetzen, Laden, Einstellungen und Credits links; rechts gibt ein Nadeldrucker die Vorgeschichte aus. Dazu läuft eine eigene, synthetisierte Titelmusik (nach dem ersten Klick oder Tastendruck).
 
 ### Gemeinsame Eingabezeile (im ADVENTURE-Fenster)
 

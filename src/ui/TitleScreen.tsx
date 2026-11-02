@@ -20,21 +20,10 @@ export function TitleScreen({
   showToast: (t: string) => void;
 }) {
   const [dialog, setDialog] = useState<null | 'load' | 'settings' | 'credits'>(null);
-  const [difficulty, setDifficulty] = useState<Difficulty>(() => {
-    try {
-      return localStorage.getItem('rewind86.difficulty') === 'hard' ? 'hard' : 'normal';
-    } catch {
-      return 'normal';
-    }
-  });
-  const choose = (d: Difficulty) => {
-    setDifficulty(d);
-    try {
-      localStorage.setItem('rewind86.difficulty', d);
-    } catch {
-      /* ohne Speicher: nur für diese Sitzung */
-    }
-  };
+  // Neue Spiele starten im Normalmodus. Der schwere Modus bleibt in der Engine erhalten und lässt sich
+  // vorerst nur per Adresszeile wählen (?difficulty=hard), nicht mehr über das Titelbild.
+  const difficulty: Difficulty =
+    new URLSearchParams(window.location.search).get('difficulty') === 'hard' ? 'hard' : 'normal';
   // Titelmusik: startet nach der ersten Interaktion (Autoplay-Regeln) und endet mit dem Titelbild
   useEffect(() => {
     audio.startMusic(TITLE_TRACK);
@@ -58,36 +47,6 @@ export function TitleScreen({
           <button type="button" onClick={() => onNew(difficulty)} data-testid="new-game">
             Neues Spiel
           </button>
-          <fieldset className="difficulty" aria-describedby="difficulty-desc">
-            <legend>Schwierigkeit für ein neues Spiel</legend>
-            <label>
-              <input
-                type="radio"
-                name="difficulty"
-                value="normal"
-                checked={difficulty === 'normal'}
-                onChange={() => choose('normal')}
-                data-testid="difficulty-normal"
-              />{' '}
-              Normal
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="difficulty"
-                value="hard"
-                checked={difficulty === 'hard'}
-                onChange={() => choose('hard')}
-                data-testid="difficulty-hard"
-              />{' '}
-              Schwer
-            </label>
-            <p id="difficulty-desc" className="difficulty-desc">
-              {difficulty === 'hard'
-                ? 'Weniger Hinweise in der Zeitschrift, Schlüsselteile ohne Reihenfolge, ein misstrauisches Netz – und die Telefonrechnung zahlst du selbst.'
-                : 'Fair für Einsteiger: Die Zeitschrift erklärt viel, das Netz verzeiht mehr.'}
-            </p>
-          </fieldset>
           {autoFile && (
             <button
               type="button"

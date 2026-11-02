@@ -213,26 +213,6 @@ html[data-contrast='high'] .logo span {
   padding: 0.8rem;
   text-transform: uppercase;
 }
-.difficulty {
-  border: 1px solid var(--muted);
-  padding: 0.4rem 0.8rem 0.6rem;
-  margin: 0;
-  text-align: left;
-  font-size: 0.85rem;
-}
-.difficulty legend {
-  padding: 0 0.3rem;
-  color: var(--muted);
-}
-.difficulty label {
-  margin-right: 1.2rem;
-  cursor: pointer;
-}
-.difficulty-desc {
-  margin: 0.4rem 0 0;
-  color: var(--muted);
-  font-size: 0.8rem;
-}
 .disclaimer {
   margin-top: 2rem;
   font-size: 0.8rem;
