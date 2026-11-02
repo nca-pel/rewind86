@@ -79,6 +79,20 @@ export const TOPICS: TopicDef[] = [
     label: 'WarGames und Vorsicht',
     aliases: ['wargames', 'film', 'hacker', 'warnung', 'vorsicht', 'gefahr', 'dummheiten'],
   },
+  {
+    id: 'frueher',
+    label: 'früher (alte Nachbarschaft)',
+    aliases: [
+      'frueher',
+      'damals',
+      'nachbarn',
+      'nachbarschaft',
+      'baumhaus',
+      'kindheit',
+      'grundschule',
+      'erinnerung',
+    ],
+  },
   { id: 'club', label: 'den Computerclub', aliases: ['club', 'computerclub', 'clubabend', 'jugendzentrum'] },
 ];
 
@@ -341,6 +355,100 @@ const SEIDEL_CALL: DialogueEntry[] = [
 ];
 
 /**
+ * Sonntagsbesuch (16.11.): Ralf sitzt neben Jan, ihr spielt FERNHANDEL. Ralf ist locker, wird still, sobald es um
+ * Seidel geht, und weiß nichts von der Operation. Stehen vor den Telefon-Einträgen.
+ */
+const VISIT: Condition = { flag: 'ralfVisit' };
+const RALF_VISIT: DialogueEntry[] = [
+  {
+    npc: 'ralf',
+    topic: 'spiel',
+    when: { all: [VISIT, { notFact: 'ralf_telex' }] },
+    speaker: 'RALF',
+    text: '»Ich dachte ja, da wird geballert. Aber das hier …« Er tippt auf den Bildschirm. »Telex-Auftrag, Köln, eine Rufnummer. Die Kölner Nummer kenn ich. Die steht bei uns auf einem Zettel am Telefon, in der Handschrift von meinem Alten.« Er lacht kurz, aber es klingt nicht echt. »Wer schreibt denn bitte ein Handelsspiel mit echten Telexnummern?«',
+    effects: [{ type: 'discoverFact', id: 'ralf_telex' }],
+  },
+  {
+    npc: 'ralf',
+    topic: 'spiel',
+    when: VISIT,
+    speaker: 'RALF',
+    text: '»Der Stahlpreis in Köln fällt, ich sag’s dir. Kauf lieber Tuch in Frankfurt. Und zahl endlich den Kredit ab!«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'seidel',
+    when: { all: [VISIT, { notFact: 'ralf_numbers' }] },
+    speaker: 'RALF',
+    text: 'Ralf wird still. Er dreht die Tasse in den Händen. »Gestern Nacht musste ich aufs Klo. Mein Alter hat im Arbeitszimmer telefoniert, mitten in der Nacht. Er hat Zahlen vorgelesen. Immer fünf auf einmal, dann eine Pause, dann wieder fünf.« Er zuckt mit den Schultern. »Wie im Radio, wenn die ihre Gewinnzahlen ansagen. Bestimmt was von der Arbeit. Vergiss es.« Er sieht dich nicht an.',
+    effects: [
+      { type: 'discoverFact', id: 'ralf_numbers' },
+      { type: 'changeRelationship', id: 'seidelSuspicion', delta: 2 },
+    ],
+  },
+  {
+    npc: 'ralf',
+    topic: 'seidel',
+    when: VISIT,
+    speaker: 'RALF',
+    text: '»Können wir über was anderes reden?« Ralf rutscht auf dem Stuhl hin und her. »Er ist mein Stiefvater, nicht mein Gegner. Er ist okay. Meistens.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'arbeit',
+    when: VISIT,
+    speaker: 'RALF',
+    text: '»Software, für irgendeine Firma in Gütersloh. Telefonanlagen, glaub ich, für die Engländer, die da stationiert sind. Klingt langweilig, oder? Er fährt oft hin und kommt spät zurück.« Ralf nimmt sich ein Stück Kuchen. »Mehr weiß ich nicht. Ehrlich.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'diskette',
+    when: VISIT,
+    speaker: 'RALF',
+    text: '»Hast du sie gut versteckt? Wenn mein Alter die Kopie merkt, ist Hausarrest bis Weihnachten.« Er sieht auf den Monitor. »Und? Hast du noch was anderes darauf gefunden? Außer dem Spiel?«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'frueher',
+    when: { all: [VISIT, { notFlag: 'sundayBond' }] },
+    speaker: 'RALF',
+    text: '»Weißt du noch das Baumhaus hinter eurem Garten? Dein Vater hat uns erwischt, wie wir Schrauben aus seiner Werkbank geklaut haben.« Ralf lacht, diesmal echt. »Ich hab damals gedacht, wir bleiben für immer Nachbarn. Und dann bin ich mit meiner Mutter weggezogen.« Er wird leiser. »Ist schön, dass du noch da bist.«',
+    effects: [
+      { type: 'setFlag', id: 'sundayBond', value: true },
+      { type: 'changeRelationship', id: 'ralfTrust', delta: 5 },
+    ],
+  },
+  {
+    npc: 'ralf',
+    topic: 'frueher',
+    when: VISIT,
+    speaker: 'RALF',
+    text: '»Mensch, damals war alles einfacher. Da war das größte Problem, wer den ersten Wurf am Bolzplatz hatte.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'treffen',
+    when: VISIT,
+    speaker: 'RALF',
+    text: '»Mittwoch ist Feiertag, da hab ich frei. Dienstag hab ich Mathe-Klausur, Donnerstag Training. Ich ruf dich an, wenn was ist.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'schule',
+    when: VISIT,
+    speaker: 'RALF',
+    text: '»Dienstag Mathe. Frag nicht. Aber hier lern ich ja gerade, hm? Prozentrechnung, Zinsen, Handelsspannen.«',
+  },
+  {
+    npc: 'ralf',
+    topic: 'training',
+    when: VISIT,
+    speaker: 'RALF',
+    text: '»Gestern haben wir 2:1 gewonnen. Das zweite Tor war meins, ein Abstauber. Nächste Woche ist wieder Training, Dienstag, Donnerstag, Freitag.«',
+  },
+];
+
+/**
  * Clubabend: Gespräch mit Herrn Brandt. Er antwortet ruhig, väterlich, oft mit einer Gegenfrage (»Fürwahr«,
  * »Weiter so.«), gibt nie zu, GHOST zu sein, und nennt weder Seidel noch K-01 beim Namen.
  */
@@ -426,6 +534,7 @@ const BRANDT: DialogueEntry[] = [
 /** Antworten werden in Reihenfolge geprüft; der erste Eintrag mit erfüllter Bedingung gewinnt. */
 export const DIALOGUE: DialogueEntry[] = [
   ...BRANDT,
+  ...RALF_VISIT,
   ...SEIDEL_CALL,
   ...RALF_LATER,
   {

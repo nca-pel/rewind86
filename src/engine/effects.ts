@@ -3,7 +3,7 @@ import { FACT_BY_ID, factText } from '../content/facts';
 import { addMinutes } from './clock';
 import type { Ctx } from './context';
 import { changeRelationship, lockAccount } from './pressure';
-import { meterReading, nextOccurrence, pocketMoney, requestAbsence, sleep } from './routine';
+import { endRalfVisit, meterReading, nextOccurrence, pocketMoney, requestAbsence, sleep } from './routine';
 import type { GameEffect, PuzzleStatus } from './types';
 
 const PUZZLE_RANK: Record<PuzzleStatus, number> = {
@@ -115,6 +115,13 @@ export function applyEffect(ctx: Ctx, e: GameEffect): void {
       break;
     case 'sleep':
       sleep(ctx, e.forced);
+      break;
+    case 'endRalfVisit':
+      if (s.flags.ralfVisit) {
+        endRalfVisit(ctx);
+        discoverFact(ctx, 'sunday_visit');
+        changeRelationship(ctx, 'ralfTrust', 3);
+      }
       break;
     case 'pocketMoney':
       pocketMoney(ctx);

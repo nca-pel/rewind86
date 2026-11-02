@@ -196,6 +196,36 @@ export const FACTS: FactDef[] = [
     text: 'Seidel weiß, dass Ralf dir eine Diskette gegeben hat. Er will sie Montag zurück.',
   },
   {
+    id: 'seidel_saturday_office',
+    category: 'verdacht',
+    text: 'Ralf zufolge ist Seidel am Samstag ins Büro gefahren – das macht er sonst nie.',
+  },
+  {
+    id: 'ralf_box',
+    category: 'dinge',
+    text: 'Seidel hat sein Arbeitszimmer ausgemistet. Im Flur der Brinkmanns steht ein Karton für den Sperrmüll – mit alten Kassetten.',
+  },
+  {
+    id: 'ralf_telex',
+    category: 'verdacht',
+    text: 'In FERNHANDEL stehen echte Telexnummern. Ralf erkannte die Kölner Nummer: Seidel hat sie auf einem Zettel am Telefon.',
+  },
+  {
+    id: 'ralf_numbers',
+    category: 'verdacht',
+    text: 'Seidel liest nachts am Telefon Zahlen vor, immer fünf auf einmal, dann eine Pause. Ralf hat es durch die Tür gehört.',
+  },
+  {
+    id: 'sunday_visit',
+    category: 'personen',
+    text: 'Sonntag: Mit Ralf zu zweit FERNHANDEL gespielt (Ralf gewann). Bei Seidels Namen wurde er jedes Mal still.',
+  },
+  {
+    id: 'net_shutdown',
+    category: 'kanaele',
+    text: 'SYSTEM im KNOTEN WEST: Alle Testzugänge werden am Freitag um 20:00 gesperrt, der Anschluss bleibt bis 23:30 offen.',
+  },
+  {
     id: 'seidel_called',
     category: 'personen',
     text: 'Seidel hat am Freitagabend bei euch angerufen und nach dir gefragt.',

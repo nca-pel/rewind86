@@ -161,17 +161,40 @@ function answerRalfLater(ctx: Ctx): number {
   if (s.flags.ralfCallReason === 'saturday') s.flags.ralfSaturdayDone = true;
   startRalfTalk(ctx);
   ctx.say('Du nimmst den Hörer ab.');
-  ctx.say(
-    s.flags.ralfCallReason === 'saturday'
-      ? '»Na? Und? Erzähl schon! Was ist auf der Diskette? Läuft das Ding?«'
-      : '»Hi, hier ist Ralf. Meine Mutter meinte, du hättest angerufen?«',
-    'dialog',
-    'RALF',
-  );
+  if (RALF_NEWS[reason]) ralfNews(ctx, reason);
+  else
+    ctx.say(
+      reason === 'saturday'
+        ? '»Na? Und? Erzähl schon! Was ist auf der Diskette? Läuft das Ding?«'
+        : '»Hi, hier ist Ralf. Meine Mutter meinte, du hättest angerufen?«',
+      'dialog',
+      'RALF',
+    );
   return 1;
 }
 
 function startRalfTalk(ctx: Ctx): void {
+/** Neuigkeiten aus Ralfs Wochenplan (Anrufe am Samstagabend, Sonntag, Dienstagabend) */
+const RALF_NEWS: Record<string, { line: string; fact?: string }> = {
+  match: {
+    line: '»Wir haben 2:1 gewonnen! Das zweite Tor war von mir – na ja, ein Abstauber.« Er lacht, dann wird er leiser. »Mein Alter war nicht da, nicht mal zum Zugucken. Er musste ins Büro, hat er gesagt. Samstags! Das macht er sonst nie.«',
+    fact: 'seidel_saturday_office',
+  },
+  sunday: {
+    line: '»Pst! Ich bin bei meiner Oma im Flur, hier gibt’s Kaffee, Kuchen und Politik. Ich hau gleich ab und sag, ich lern Mathe bei dir. Gegen Viertel vor vier bin ich da. Mach schon mal den Computer an – ich will sehen, was das für ein Spiel ist!«',
+  },
+  tuesday: {
+    line: '»Mathe war die Hölle, frag nicht.« Er seufzt. »Du, mein Alter hat heute sein Arbeitszimmer ausgemistet. Im Flur steht ein Karton für den Sperrmüll, voll mit altem Kram – Kassetten und so. Ich schau morgen mal rein, wenn ich Zeit hab. Vielleicht ist was vom Spiel dabei.«',
+    fact: 'ralf_box',
+  },
+};
+
+function ralfNews(ctx: Ctx, reason: string): void {
+  const n = RALF_NEWS[reason];
+  ctx.say(n.line, 'dialog', 'RALF');
+  if (n.fact) discoverFact(ctx, n.fact);
+}
+
   const s = ctx.state;
   s.conversation = { npc: 'ralf', turns: 0 };
   s.mode = 'conversation';
@@ -200,11 +223,16 @@ function dialRalf(ctx: Ctx, number: string): number {
     startRalfTalk(ctx);
     if (s.flags.ralfMissedCall) {
       s.flags.ralfMissedCall = false;
-      ctx.say(
-        '»Ah, da bist du ja. Ich hatte dich vorhin angeklingelt – wollte wissen, ob das Ding bei dir läuft.«',
-        'dialog',
-        'RALF',
-      );
+      const missed = s.flags.ralfMissedCall;
+      if (typeof missed === 'string' && RALF_NEWS[missed]) {
+        ctx.say('»Ah, da bist du ja. Ich hatte dich vorhin angeklingelt.«', 'dialog', 'RALF');
+        ralfNews(ctx, missed);
+      } else
+        ctx.say(
+          '»Ah, da bist du ja. Ich hatte dich vorhin angeklingelt – wollte wissen, ob das Ding bei dir läuft.«',
+          'dialog',
+          'RALF',
+        );
     } else ctx.say('»Jan! Was gibt’s?«', 'dialog', 'RALF');
     return 1;
   }
@@ -373,6 +401,8 @@ export function handsetIntoCoupler(ctx: Ctx): number {
 const SEIDEL_MAX_TURNS = 3;
 const CLUB_MAX_TURNS = 6;
 const CLUB_TURN_MINUTES = 15;
+const VISIT_MAX_TURNS = 6;
+const VISIT_TURN_MINUTES = 15;
 
 export function talkAbout(ctx: Ctx, npc: string, topic: string | null, rawTopic: string): number {
   const s = ctx.state;
@@ -393,6 +423,15 @@ export function talkAbout(ctx: Ctx, npc: string, topic: string | null, rawTopic:
     applyEffects(ctx, entry.effects);
   }
   if (s.conversation && npc === 'brandt') {
+  if (s.conversation && npc === 'ralf' && s.flags.ralfVisit) {
+    s.conversation.turns++;
+    const late = s.gameClock.slice(11, 16) >= '18:00';
+    if (s.conversation.turns >= VISIT_MAX_TURNS || late) {
+      applyEffects(ctx, [{ type: 'endRalfVisit' }]);
+      return 1;
+    }
+    return VISIT_TURN_MINUTES;
+  }
     s.conversation.turns++;
     const late = s.gameClock.slice(11, 16) >= '20:30';
     if (s.conversation.turns >= CLUB_MAX_TURNS || late) {

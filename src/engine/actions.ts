@@ -874,6 +874,12 @@ const CLUB_VERBS = new Set(['ask', 'tell', 'talk', 'bye', 'greet', 'go', 'lookat
 function verb(ctx: Ctx, intent: Verb): number {
   const s = ctx.state;
   const direct = intent.segments[0]?.words ?? [];
+  if (s.flags.ralfVisit && !CLUB_VERBS.has(intent.verb)) {
+    ctx.say(
+      'Ralf sitzt neben dir, und ihr seid mitten in der Spielrunde. Jetzt wird geredet (FRAGE RALF NACH …) – oder du verabschiedest ihn (VERABSCHIEDE DICH).',
+    );
+    return 0;
+  }
   if (s.flags.atClub && !CLUB_VERBS.has(intent.verb)) {
     ctx.say(
       'Du sitzt im Jugendzentrum bei Herrn Brandt. Hier kannst du nur reden (FRAGE BRANDT NACH …) oder gehen (VERABSCHIEDE DICH).',
@@ -1096,6 +1102,11 @@ function verb(ctx: Ctx, intent: Verb): number {
     case 'talk':
       return talk(ctx, intent);
     case 'bye':
+      if (s.flags.ralfVisit) {
+        ctx.say('»Schon? Na gut – ich muss eh zurück, bevor sie mich suchen.«', 'dialog', 'RALF');
+        applyEffects(ctx, [{ type: 'endRalfVisit' }]);
+        return 1;
+      }
       if (s.flags.atClub) {
         ctx.say(
           '»Dann bis nächste Woche, Jan. Fürwahr, schön, dass du da warst. Weiter so.«',
@@ -1114,6 +1125,11 @@ function verb(ctx: Ctx, intent: Verb): number {
       return 0;
     case 'go': {
       const words = intent.segments.flatMap((x) => x.words);
+      if (s.flags.ralfVisit) {
+        ctx.say('»Ich geh dann mal, bevor sie mich suchen.«', 'dialog', 'RALF');
+        applyEffects(ctx, [{ type: 'endRalfVisit' }]);
+        return 1;
+      }
       if (s.flags.atClub) {
         ctx.say('»Schon los? Dann pass auf dich auf, Jan.«', 'dialog', 'BRANDT');
         leaveClub(ctx, 'Du stehst auf und verabschiedest dich.');

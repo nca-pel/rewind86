@@ -27,15 +27,18 @@ Zeile ans Adventure. Programme im »Tastenmodus« bekommen jede Taste einzeln (E
 
 - Schule bis 12 Uhr läuft automatisch. 10:30 Post (Rundbrief des Computerclubs: Clubabend Do 20.11. 19 Uhr, BTX-Seite `*123770#`). 12:30 Taschengeld 10 DM. **[geprüft]**
 - ~19:00 Freischaltung BIT-SCHUPPEN: Postfach, Mailboxliste → DATENKELLER **38104** (nur 22–06 Uhr). **[geprüft]**
+- 17:45 Ralf ruft nach dem Fußballspiel an (Seidel war im Büro).
 - Ralf anrufen (47112): `RUFE RALF AN` (Sa nach 12:30; Di/Do/Fr erst ab 18:45, Training 16:30–18:30). **[geprüft]**
 
 ## Sonntag 16.11.
 
+- 12:30 Sonntagsbraten (Volkstrauertag). 14:30 Ralf ruft aus dem Flur seiner Oma an. 15:45 **Ralf besucht Jan**: Spielrunde FERNHANDEL mit Gesprächen (`FRAGE RALF NACH DEM SPIEL / SEIDEL / FRÜHER / DEM MODUL`, jede Frage 15 Minuten, `VERABSCHIEDE DICH` beendet). Ende spätestens 18:20.
 - Zählerstand wird abgelesen (Vater); Telefonkosten im Blick behalten (0,23 DM/Einheit). **[geprüft]**
 
 ## Montag 17.11. – Dienstag 18.11.
 
 - Schule 07:15–13:30. Ab Mo 08:00 liegt im KNOTEN WEST die Meldung **SCHLUESSELWECHSEL** (Schlüsselteil 2 `1958`) (P07). Nur mit Modul K / 41973 lesen.
+- Di 20:00 Ralf ruft an: Seidel hat ausgemistet, ein Karton mit Kassetten steht im Flur.
 - DATENKELLER ab 22 Uhr: Gerüchte über K-01 (ab Di 22:00). Ralf trainiert Di/Do/Fr 16:30. **[geprüft]**
 
 ## Mittwoch 19.11. (Buß- und Bettag, schulfrei)

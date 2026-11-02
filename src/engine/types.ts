@@ -291,6 +291,8 @@ export type GameEffect =
   /** Schlafen bis zum nächsten Morgen (Weckzeit je nach Schultag) */
   | { type: 'sleep'; forced?: boolean }
   | { type: 'pocketMoney' }
+  /** Sonntagsbesuch bei Jan beenden (Ralf geht) */
+  | { type: 'endRalfVisit' }
   | { type: 'meterReading' }
   /** Endgültiges Spielende (nur nach vorheriger Warnung einsetzen, GDD §10.3) */
   | { type: 'gameOver'; ending: string };

@@ -35,7 +35,7 @@ const SCHOOL_BACK =
   'Kurz nach halb zwei bist du wieder zu Hause. Nach dem Mittagessen sitzt du endlich wieder an deinem Schreibtisch.';
 
 /** Ralf ruft an (späteres Telefonat); der Grund bestimmt die Begrüßung beim Abheben. */
-function ralfRings(reason: 'saturday' | 'callback'): GameEffect[] {
+function ralfRings(reason: 'saturday' | 'callback' | 'match' | 'sunday' | 'tuesday'): GameEffect[] {
   return [
     { type: 'setFlag', id: 'ralfCallReason', value: reason },
     { type: 'telecom', op: 'ring', who: 'ralf' },
@@ -634,6 +634,18 @@ export const EVENTS: EventDef[] = [
     id: 'ev_ralf_ring_end',
     repeatable: true,
     variants: [
+      ...(['match', 'sunday', 'tuesday'] as const).map((reason) => ({
+        when: { all: [{ ringing: true as const }, { flag: 'ralfCallReason', eq: reason }] },
+        effects: [
+          { type: 'telecom', op: 'stopRinging' } as GameEffect,
+          { type: 'cancelEvent', id: 'ev_ring_reminder' } as GameEffect,
+          {
+            type: 'say',
+            text: 'Unten nimmt deine Mutter ab. Kurz darauf ruft sie hoch: »Jan! Das war Ralf. Du sollst ihn zurückrufen!«',
+          } as GameEffect,
+          { type: 'setFlag', id: 'ralfMissedCall', value: reason } as GameEffect,
+        ],
+      })),
       {
         when: { ringing: true },
         effects: [
@@ -964,25 +976,43 @@ export const EVENTS: EventDef[] = [
     ],
   },
 
-  // ── Alltag mit Ziel: kleine Gedanken an den toten Tagen Sa–Di (Wegweiser, keine Lösungen) ─────────
+  // ── Wochenfüllung (Continuity): Samstagabend, Sonntag, Dienstag, Mittwoch, Freitag ──────────────
   {
-    id: 'ev_sun_thought',
-    at: '1986-11-16T17:30',
+    id: 'ev_sat_match_call',
+    at: '1986-11-15T17:45',
+    repeatable: true,
+    interrupts: true,
+    variants: [
+      { when: { timeAfter: '1986-11-15T21:00' }, effects: [] },
+      {
+        when: { any: [{ lineBusy: true }, { ringing: true }, { flag: 'away' }] },
+        effects: [{ type: 'scheduleEvent', id: 'ev_sat_match_call', inMinutes: 20 }],
+      },
+      { effects: [...ralfRings('match')] },
+    ],
+  },
+  {
+    id: 'ev_sun_lunch',
+    at: '1986-11-16T12:30',
     variants: [
       {
         effects: [
           {
-            type: 'say',
-            kind: 'thought',
-            text: 'Sonntagabend. Der Zählerstand ist abgelesen, die Rechnung hängt wie ein Damoklesschwert über dem Telefon. Die Nummer 41973 geht dir nicht aus dem Kopf. Vielleicht liegt dort bald Post – nachts wird in den Boxen gern getuschelt, wenn niemand lauscht.',
+            type: 'absence',
+            kind: 'meal',
+            until: '13:45',
+            text: 'Sonntagsbraten. Heute ist Volkstrauertag, im Radio läuft die Feierstunde aus Bonn, und dein Vater hört mit gesenktem Kopf zu. Beim Nachtisch erzählt er von deinem Großvater, der nie viel über den Krieg gesprochen hat – nur dass er jedes Jahr an diesem Tag still zum Friedhof ging. Deine Mutter schiebt dir den Rotkohl zu: »Iss. Und danach gehst du an die frische Luft, nicht wieder an den Computer.« Du sagst, vielleicht kommt ja Besuch.',
+            backText: 'Satt und etwas nachdenklich gehst du wieder nach oben an deinen Schreibtisch.',
           },
         ],
       },
     ],
   },
   {
-    id: 'ev_mon_thought',
-    at: '1986-11-17T14:15',
+    id: 'ev_sun_ralf_call',
+    at: '1986-11-16T14:30',
+    repeatable: true,
+    interrupts: true,
     variants: [
       {
         when: { fact: 'key_part_2' },
@@ -990,20 +1020,93 @@ export const EVENTS: EventDef[] = [
       },
       {
         effects: [
+        when: { any: [{ lineBusy: true }, { ringing: true }, { flag: 'away' }] },
+        effects: [{ type: 'scheduleEvent', id: 'ev_sun_ralf_call', inMinutes: 10 }],
+      },
+      { effects: [...ralfRings('sunday')] },
+    ],
+  },
+  {
+    id: 'ev_sun_ralf_arrive',
+    at: '1986-11-16T15:45',
+    repeatable: true,
+    interrupts: true,
+    variants: [
+      { when: { any: [{ flag: 'ralfVisit' }, { not: { date: '1986-11-16' } }] }, effects: [] },
+      {
+        when: { any: [{ rel: 'ralfTrust', below: 'trusting' }, { timeAfter: '1986-11-16T17:30' }] },
           {
             type: 'say',
-            kind: 'thought',
-            text: 'Montag, kurz nach der Schule. Ob im KNOTEN WEST inzwischen etwas liegt? Nach acht Uhr morgens vielleicht. Mit dem Modul kommst du hinein – ein Anruf kostet allerdings Einheiten.',
+            text: 'Deine Mutter ruft nach oben: »Jan, Ralf hat angerufen. Er schafft es heute nicht mehr, es ist zu spät geworden.«',
+          },
+        ],
+      },
+      {
+        when: { any: [{ lineBusy: true }, { ringing: true }, { flag: 'away' }, { flag: 'finaleOpen' }] },
+        effects: [{ type: 'scheduleEvent', id: 'ev_sun_ralf_arrive', inMinutes: 15 }],
+      },
+      {
+        effects: [
+          { type: 'audio', cue: 'doorbell' },
+          { type: 'say', kind: 'caption', text: '[Es klingelt an der Haustür.]' },
+          {
+            type: 'say',
+            text: 'Unten klappt die Tür, dann hörst du Stimmen, Geschirrklappern und deine Mutter, die »Marmorkuchen!« ruft. Kurz darauf poltert Ralf die Treppe hoch: Fahrradhelm unter dem Arm, ein Mathebuch obenauf in der Sporttasche. Hinter ihm balanciert deine Mutter ein Tablett mit zwei Tassen und einem Teller Kuchen.',
+          },
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'MUTTER',
+            text: '»Mathe, ja? Mit dem Computer?« Sie stellt das Tablett ab und mustert die beiden. »Soso. Ich komm in zwei Stunden mit der Wäsche vorbei.«',
+          },
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'RALF',
+            text: '»Handel ist angewandte Mathematik, Frau Keller.« Er grinst, bis sie weg ist. Dann lässt er sich auf deinen Stuhl fallen. »Los, starten wir das Ding!«',
+          },
+          {
+            type: 'say',
+            text: 'Ihr startet FERNHANDEL und handelt abwechselnd: Kaffee aus Hamburg, Stahl aus Köln, einen Kredit, den ihr beide zu spät abbezahlt. Ralf ist ehrgeizig und flucht bei jedem Preissturz. Zwischendurch wird er stiller, und man merkt, dass er noch etwas sagen will.',
+          },
+          { type: 'setFlag', id: 'ralfVisit', value: true },
+          { type: 'setFlag', id: 'ralfPresent', value: true },
+          { type: 'setFlag', id: 'away', value: 'visit' },
+          { type: 'startConversation', npc: 'ralf' },
+          { type: 'scheduleEvent', id: 'ev_sun_ralf_end', inMinutes: 155 },
+          {
+            type: 'say',
+            kind: 'system',
+            text: '(Ralf ist bei dir. FRAGE RALF NACH … – z. B. DEM SPIEL, SEIDEL, DER DISKETTE, FRÜHER oder DEM MODUL. THEMEN zeigt mehr. VERABSCHIEDE DICH beendet den Besuch.)',
           },
         ],
       },
     ],
   },
   {
-    id: 'ev_tue_thought',
-    at: '1986-11-18T19:30',
+    id: 'ev_sun_ralf_end',
+    variants: [{ when: { flag: 'ralfVisit' }, effects: [{ type: 'endRalfVisit' }] }, { effects: [] }],
+  },
+  {
+    id: 'ev_tue_ralf_call',
+    at: '1986-11-18T20:00',
+    repeatable: true,
+    interrupts: true,
     variants: [
       {
+      { when: { timeAfter: '1986-11-18T21:30' }, effects: [] },
+      {
+        when: { any: [{ lineBusy: true }, { ringing: true }, { flag: 'away' }] },
+        effects: [{ type: 'scheduleEvent', id: 'ev_tue_ralf_call', inMinutes: 20 }],
+      },
+      { effects: [...ralfRings('tuesday')] },
+    ],
+  },
+  {
+    id: 'ev_wed_morning',
+    at: '1986-11-19T09:30',
+    variants: [
+      { when: { flag: 'away' }, effects: [] },
         effects: [
           {
             type: 'say',
@@ -1085,5 +1188,79 @@ export const EVENT_BY_ID: Record<string, EventDef> = Object.fromEntries(EVENTS.m
         ],
       },
     ],
+  // ── Alltag mit Ziel: kleine Gedanken an den toten Tagen Sa–Di (Wegweiser, keine Lösungen) ─────────
+  {
+    id: 'ev_sun_thought',
+    at: '1986-11-16T19:30',
+    variants: [
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Sonntagabend. Der Zählerstand ist abgelesen, die Rechnung hängt wie ein Damoklesschwert über dem Telefon. Die Nummer 41973 geht dir nicht aus dem Kopf. Vielleicht liegt dort bald Post – nachts wird in den Boxen gern getuschelt, wenn niemand lauscht.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_mon_thought',
+    at: '1986-11-17T14:15',
+    variants: [
+      {
+        when: { fact: 'key_part_2' },
+        effects: [],
+      },
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Montag, kurz nach der Schule. Ob im KNOTEN WEST inzwischen etwas liegt? Nach acht Uhr morgens vielleicht. Mit dem Modul kommst du hinein – ein Anruf kostet allerdings Einheiten.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_tue_thought',
+    at: '1986-11-18T19:30',
+    variants: [
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Morgen ist Buß- und Bettag, schulfrei. Ein freier Tag ohne Schule – ideal, um dem Schlüssel hinterherzujagen. Ein Teil steckt im Spiel selbst, einer im Netz. Und der dritte? Frag doch mal Ralf, ob er noch etwas vom Spiel gefunden hat.',
+          },
+        ],
+      },
+    ],
+  },
+
+  // ── Computerclub (Kontakt zu GHOST, GDD §3.4) ──────────────────────────────────────────────────
+  {
+    id: 'ev_club_reminder',
+    at: `${GAME_CONFIG.club.eveningDate}T${GAME_CONFIG.club.leaveFrom}`,
+    variants: [
+      {
+        when: { all: [{ fact: 'club_evening' }, { notFlag: 'away' }] },
+        effects: [
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'MUTTER',
+            text: '(von unten) »Jan, ist heute nicht dein Computerclub? Wenn du hinwillst, musst du langsam los!«',
+          },
+          { type: 'say', kind: 'system', text: '(GEHE ZUM CLUB – bis 19:30 Uhr.)' },
+        ],
+      },
+      { effects: [] },
+    ],
+  },
+];
+
+export const EVENT_BY_ID: Record<string, EventDef> = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
   },
 

@@ -87,6 +87,29 @@ export function leaveClub(ctx: Ctx, reason: string): void {
   );
 }
 
+/** Sonntagsbesuch beenden: Ralfs Mutter ruft an, Ralf geht. Wertung der Spielrunde, Vertrauen wächst. */
+export function endRalfVisit(ctx: Ctx): void {
+  const st = ctx.state;
+  if (!st.flags.ralfVisit) return;
+  st.conversation = null;
+  st.mode = 'desk';
+  st.flags.ralfVisit = false;
+  st.flags.ralfPresent = false;
+  delete st.flags.away;
+  ctx.cue('door');
+  ctx.say(
+    'Unten klingelt das Telefon. Kurz darauf ruft deine Mutter die Treppe hinauf: »Jan! Ralfs Mutter ist dran. Er soll heimkommen, es gibt gleich Abendbrot!«',
+  );
+  ctx.say(
+    '»Mist. Immer, wenn es lustig wird.« Ralf klappt sein Mathebuch zu, das er keine Minute aufgeschlagen hat. »Kassenstand? 31.040 zu 28.775. Ich. Natürlich ich.« Er grinst. »Handel ist angewandte Mathematik, hab ich doch gesagt.« An der Tür bleibt er kurz stehen. »Danke, Jan. Echt. Und – kein Wort zu meinem Alten, ja?«',
+    'dialog',
+    'RALF',
+  );
+  ctx.say(
+    'Seine Schritte poltern die Treppe hinunter, dann fällt die Haustür ins Schloss. Auf dem Bildschirm blinkt noch der Kassenstand.',
+  );
+}
+
 export function sleep(ctx: Ctx, forced = false): void {
   const wake = wakeTime(ctx.state.gameClock);
   const school = isSchoolDay(`${dateOf(wake)}T12:00`);
