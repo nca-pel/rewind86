@@ -192,23 +192,23 @@ export const GAME_CONFIG = {
     familyName: 'Brinkmann',
     phoneNumber: '47112',
     /**
-     * Wann Ralf zu Hause ans Telefon geht (nach Wochentag). Außerhalb: Schule, Training (Di/Do/Fr) oder
+     * Wann Ralf zu Hause ans Telefon geht (nach Wochentag). Außerhalb: Schule, Training (Di/Do/Fr, 16:30–18:30) oder
      * unterwegs – dann nimmt jemand anderes ab, und Ralf ruft zurück. Ab 21:30 ruft man dort nicht mehr an.
      */
     home: {
       Montag: [['14:00', '21:30']],
       Dienstag: [
         ['14:00', '16:30'],
-        ['19:30', '21:30'],
+        ['18:45', '21:30'],
       ],
       Mittwoch: [['14:00', '21:30']],
       Donnerstag: [
         ['14:00', '16:30'],
-        ['19:30', '21:30'],
+        ['18:45', '21:30'],
       ],
       Freitag: [
         ['14:00', '16:30'],
-        ['19:30', '21:30'],
+        ['18:45', '21:30'],
       ],
       // Samstag: Schule bis mittags, nachmittags Fußballspiel
       Samstag: [

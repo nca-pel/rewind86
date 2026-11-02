@@ -48,7 +48,7 @@ describe('Kalender (GDD §10.2)', () => {
     expect(ralfWhere('1986-11-16T13:00')).toBe('out');
     expect(ralfWhere('1986-11-15T22:00')).toBe('late');
     expect(ralfWhere('1986-11-19T10:30')).toBe('home'); // schulfrei
-    expect(nextRalfHome('1986-11-18T17:30')).toBe('1986-11-18T19:30');
+    expect(nextRalfHome('1986-11-18T17:30')).toBe('1986-11-18T18:45');
   });
 });
 

@@ -159,7 +159,12 @@ function onLine(ctx: Ctx, app: TermState, raw: string): AppResult {
         login(ctx, sys.id, handle);
         app.screen = 'main';
         if (before === 'neu' && acc.status === 'mitglied')
-          ctx.say('Freigeschaltet! Im Postfach wartet eine Nachricht vom Sysop.', 'thought');
+          ctx.say(
+            sys.memberMail
+              ? 'Freigeschaltet! Im Postfach wartet eine Nachricht vom Sysop.'
+              : 'Freigeschaltet! Jetzt darfst du auch schreiben und Post verschicken.',
+            'thought',
+          );
         return { minutes: 1 };
       }
       if (acc) {

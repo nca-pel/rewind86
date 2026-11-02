@@ -188,8 +188,11 @@ function saveRaw(ctx: Ctx, app: ModkState): number {
 export const modkApp: AppDef<ModkState> = {
   id: 'modk',
   tickMs: null,
-  start() {
-    return { id: 'modk', screen: 'insert', note: null, msg: 0 };
+  start(ctx) {
+    // Ein einmal eingegebener Ersatzschlüssel bleibt im Spielstand (Jan merkt ihn sich).
+    const saved = ctx.state.flags.modkKey;
+    const key = typeof saved === 'string' && saved.length === KEY_LENGTH ? saved : undefined;
+    return { id: 'modk', screen: 'insert', note: null, msg: 0, ...(key ? { key } : {}) };
   },
   key(ctx, app, key) {
     const k = key.toUpperCase();
@@ -256,11 +259,13 @@ export const modkApp: AppDef<ModkState> = {
         } else if (k === 'RETURN') {
           if (input.length === 0) {
             app.key = undefined;
+            ctx.state.flags.modkKey = false;
             app.note = 'SCHLUESSEL GELOESCHT';
             app.screen = 'menu';
           } else if (input.length < KEY_LENGTH) app.note = `${KEY_LENGTH} ZIFFERN NOETIG`;
           else {
             app.key = input;
+            ctx.state.flags.modkKey = input;
             app.note = 'ERSATZSCHLUESSEL GESETZT (UNGEPRUEFT)';
             app.screen = 'menu';
           }

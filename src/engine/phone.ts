@@ -187,6 +187,8 @@ function dialRalf(ctx: Ctx, number: string): number {
   if (where === 'home') {
     t.call = newCall(ctx, { kind: 'voice', with: 'ralf', number });
     s.flags.ralfCallbackPending = false;
+    // Hat Jan schon mit Ralf gesprochen, muss er am Samstag nicht mehr »aus heiterem Himmel« anrufen
+    s.flags.ralfSaturdayDone = true;
     const evening = s.gameClock.slice(11, 16) >= '19:30';
     if (evening) {
       ctx.say(
@@ -196,7 +198,14 @@ function dialRalf(ctx: Ctx, number: string): number {
         ctx.say('Hat er eben einen Augenblick zu lange gezögert, bevor er nach Ralf gerufen hat?', 'thought');
     } else ctx.say('»Bei Seidel?« – Ralfs Mutter. »Ach, der Jan. Ich hol ihn.«');
     startRalfTalk(ctx);
-    ctx.say('»Jan! Was gibt’s?«', 'dialog', 'RALF');
+    if (s.flags.ralfMissedCall) {
+      s.flags.ralfMissedCall = false;
+      ctx.say(
+        '»Ah, da bist du ja. Ich hatte dich vorhin angeklingelt – wollte wissen, ob das Ding bei dir läuft.«',
+        'dialog',
+        'RALF',
+      );
+    } else ctx.say('»Jan! Was gibt’s?«', 'dialog', 'RALF');
     return 1;
   }
   t.call = newCall(ctx, { kind: 'dead', number });

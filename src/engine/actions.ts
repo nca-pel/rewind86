@@ -733,6 +733,16 @@ function goToClub(ctx: Ctx): number {
     'Du schnappst dir deine Diskettenbox und radelst durch den Nieselregen zum Jugendzentrum. Drinnen riecht es nach Kaffee und warmen Netzteilen. Ein paar Leute tauschen Disketten, an einem Tisch wird eine Datasette justiert, und jemand schwärmt vom neuen Amiga, den sich keiner leisten kann.',
     `${G.civilName}, der Betreuer des Clubs, Strickjacke, Brille, eine Thermoskanne in der Hand, winkt dich heran. »Jan! Fürwahr, du hast es doch noch geschafft. Setz dich. Schwarzer Kaffee? Nein? Dann eben nicht.« Er stellt dir das BTX-Leihset des Clubs hin: Postmodem, Decoder-Modul, Vereinskennung. »Nimm’s ruhig ein paar Tage mit und schau dir an, was die Post da aufgebaut hat. Aber keine Dummheiten. Wer zu oft ›WarGames‹ geguckt hat, wählt sich irgendwann in die falschen Leitungen. Weiter so.«`,
   ];
+  if (s.knownFacts.includes('dk_ghost_rumor')) {
+    scene.push(
+      'Du denkst an das Gerücht aus dem DATENKELLER: Einer im BIT-SCHUPPEN höre mehr zu, als einem lieb ist. Als Herr Brandt dir den Becher reicht, fragst du beiläufig, ob er auch in Mailboxen unterwegs sei. »Ich?«, sagt er und lächelt. »Ich bin ein alter Mann mit einer Thermoskanne. Wer fragt, findet, Jan. Wer zu laut fragt …« Er lässt den Satz offen und schraubt die Kanne zu.',
+    );
+  }
+  if (s.knownFacts.includes('k01_decrypted')) {
+    scene.push(
+      'Das entschlüsselte Rundschreiben geht dir den ganzen Abend nicht aus dem Kopf. Du bemerkst, dass Herr Brandt dich zweimal länger ansieht als die anderen – so, wie man jemanden ansieht, der etwas weiß, das er nicht wissen sollte. Als du gehst, sagt er leise: »Pass auf dich auf. Und auf deinen Freund.« Von Ralf hast du ihm nie erzählt.',
+    );
+  }
   const notes: GameEffect[] = [{ type: 'discoverFact', id: 'brandt_word' }];
   if (hadGhostWord) {
     scene.push(

@@ -105,7 +105,7 @@ export function ralfWhere(clock: string): RalfWhere {
   if (
     (RALF.trainingDays as readonly string[]).includes(weekday(clock)) &&
     m >= hm('16:30') &&
-    m < hm('19:30')
+    m < hm('18:30')
   )
     return 'training';
   return 'out';

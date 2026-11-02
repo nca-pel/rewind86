@@ -439,6 +439,78 @@ export const EVENTS: EventDef[] = [
         ],
       },
       {
+        when: { weekday: 'Samstag' },
+        effects: [
+          {
+            type: 'absence',
+            kind: 'meal',
+            until: DINNER_END,
+            text: 'Deine Mutter ruft zum Abendbrot. Samstags gibt es Bratkartoffeln mit Spiegelei. Dein Vater liest dabei die Wochenendzeitung von hinten nach vorn und liest dir die Meldung vor, dass die Volkszählung im nächsten Jahr wohl doch kommt. »Die wollen alles wissen«, brummt er. »Sogar, wie viele Zimmer man hat.«',
+            backText: 'Satt und ein bisschen ungeduldig gehst du wieder nach oben an deinen Schreibtisch.',
+          },
+        ],
+      },
+      {
+        when: { weekday: 'Sonntag' },
+        effects: [
+          {
+            type: 'absence',
+            kind: 'meal',
+            until: DINNER_END,
+            text: 'Zum Abendbrot kommt die Familie zusammen: kalter Braten vom Mittag, dazu Brot und saure Gurken. Deine Mutter erzählt von Tante Gisela und ihrem Rücken, dein Vater schaut auf die Uhr, weil die Tagesschau gleich anfängt, und fragt nebenbei, ob du die Woche etwas Vernünftiges vorhast.',
+            backText: 'Satt und ein bisschen ungeduldig gehst du wieder nach oben an deinen Schreibtisch.',
+          },
+        ],
+      },
+      {
+        when: { weekday: 'Montag' },
+        effects: [
+          {
+            type: 'absence',
+            kind: 'meal',
+            until: DINNER_END,
+            text: 'Deine Mutter ruft zum Abendbrot. Dein Vater ist von der Frühschicht müde und erzählt vom Ärger mit dem neuen Zulieferer in der Möbelfabrik. Deine Mutter stellt dir die Teekanne hin und fragt, ob die Hausaufgaben fertig sind. Im Fernsehen laufen die Nachrichten.',
+            backText: 'Satt und ein bisschen ungeduldig gehst du wieder nach oben an deinen Schreibtisch.',
+          },
+        ],
+      },
+      {
+        when: { weekday: 'Dienstag' },
+        effects: [
+          {
+            type: 'absence',
+            kind: 'meal',
+            until: DINNER_END,
+            text: 'Deine Mutter hat Kartoffelsuppe gekocht. Dein Vater kommentiert den Wetterbericht (»Das wird nichts mehr vor Dezember«) und die Telefonrechnung vom letzten Monat gleich mit: »Nur, damit wir uns verstehen: 0,23 Mark die Einheit.«',
+            backText: 'Satt und ein bisschen ungeduldig gehst du wieder nach oben an deinen Schreibtisch.',
+          },
+        ],
+      },
+      {
+        when: { weekday: 'Mittwoch' },
+        effects: [
+          {
+            type: 'absence',
+            kind: 'meal',
+            until: DINNER_END,
+            text: 'Heute ist Buß- und Bettag, und deine Mutter hat sich Zeit genommen: Es gibt Rouladen. Dein Vater ist ungewöhnlich gesprächig und redet über die Nachrichten, deine Mutter fragt, ob du in letzter Zeit schlecht schläfst, du siehst blass aus.',
+            backText: 'Satt und ein bisschen ungeduldig gehst du wieder nach oben an deinen Schreibtisch.',
+          },
+        ],
+      },
+      {
+        when: { weekday: 'Donnerstag' },
+        effects: [
+          {
+            type: 'absence',
+            kind: 'meal',
+            until: DINNER_END,
+            text: 'Deine Mutter ruft zum Abendbrot, früh genug vor dem Club. »Iss ordentlich, Jan, wer weiß, wann du wiederkommst.« Dein Vater lässt die Zeitung sinken und fragt, was ein Computerclub eigentlich den ganzen Abend macht. »Disketten tauschen«, sagst du. Er nickt, als würde das etwas erklären.',
+            backText: 'Satt und ein bisschen ungeduldig gehst du wieder nach oben an deinen Schreibtisch.',
+          },
+        ],
+      },
+      {
         effects: [
           {
             type: 'absence',
@@ -572,6 +644,7 @@ export const EVENTS: EventDef[] = [
             text: 'Unten nimmt deine Mutter ab. Kurz darauf ruft sie hoch: »Jan! Das war Ralf. Du sollst ihn zurückrufen!«',
           },
           { type: 'setFlag', id: 'ralfSaturdayDone', value: true },
+          { type: 'setFlag', id: 'ralfMissedCall', value: true },
         ],
       },
       { effects: [] },
@@ -783,7 +856,7 @@ export const EVENTS: EventDef[] = [
           {
             type: 'say',
             kind: 'thought',
-            text: 'Heute Nacht. »Operation REWIND beginnt Freitag« – und Freitag ist jetzt. Um 23:30 ist es vorbei, so oder so. Drei Wege: die 110. GHOST, über die Club-Mailbox, offen bis Mitternacht. Ralf, solange man dort noch anrufen kann. Oder nichts tun.',
+            text: 'Heute Nacht. »Operation REWIND beginnt Freitag« – und Freitag ist jetzt. Um 23:30 ist es vorbei, so oder so. Irgendwann heute Abend könnte jemand anrufen – dann nimm den Hörer ab. Drei Wege: die 110. GHOST, über die Club-Mailbox, offen bis Mitternacht. Ralf, solange man dort noch anrufen kann. Oder nichts tun.',
           },
           { type: 'ui', effect: { type: 'autosave', reason: 'Beginn des Finales' } },
         ],
@@ -858,7 +931,7 @@ export const EVENTS: EventDef[] = [
             type: 'say',
             kind: 'dialog',
             speaker: 'MUTTER',
-            text: '(von unten) »Jan? Das war Herr Seidel, Ralfs Stiefvater. Er wollte dich sprechen. Er klang … komisch. Ich hab gesagt, du schläfst schon.«',
+            text: '(von unten) »Jan? Das war Herr Seidel, Ralfs Stiefvater. Er wollte dich sprechen. Er klang … komisch. Ich hab gesagt, du hast das Klingeln wohl nicht gehört. Er meinte, es sei nicht wichtig.«',
           },
           { type: 'discoverFact', id: 'seidel_called' },
         ],
@@ -888,6 +961,57 @@ export const EVENTS: EventDef[] = [
     variants: [
       { when: { flag: 'gameOver' }, effects: [] },
       { effects: [{ type: 'gameOver', ending: 'end_silent' }] },
+    ],
+  },
+
+  // ── Alltag mit Ziel: kleine Gedanken an den toten Tagen Sa–Di (Wegweiser, keine Lösungen) ─────────
+  {
+    id: 'ev_sun_thought',
+    at: '1986-11-16T17:30',
+    variants: [
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Sonntagabend. Der Zählerstand ist abgelesen, die Rechnung hängt wie ein Damoklesschwert über dem Telefon. Die Nummer 41973 geht dir nicht aus dem Kopf. Vielleicht liegt dort bald Post – nachts wird in den Boxen gern getuschelt, wenn niemand lauscht.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_mon_thought',
+    at: '1986-11-17T14:15',
+    variants: [
+      {
+        when: { fact: 'key_part_2' },
+        effects: [],
+      },
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Montag, kurz nach der Schule. Ob im KNOTEN WEST inzwischen etwas liegt? Nach acht Uhr morgens vielleicht. Mit dem Modul kommst du hinein – ein Anruf kostet allerdings Einheiten.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_tue_thought',
+    at: '1986-11-18T19:30',
+    variants: [
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Morgen ist Buß- und Bettag, schulfrei. Ein freier Tag ohne Schule – ideal, um dem Schlüssel hinterherzujagen. Ein Teil steckt im Spiel selbst, einer im Netz. Und der dritte? Frag doch mal Ralf, ob er noch etwas vom Spiel gefunden hat.',
+          },
+        ],
+      },
     ],
   },
 

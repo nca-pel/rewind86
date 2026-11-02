@@ -183,7 +183,7 @@ export const FACTS: FactDef[] = [
   {
     id: 'seidel_alibi',
     category: 'verdacht',
-    text: 'Seidel hat Ralfs Mutter erzählt, er gehe Freitag mit Kollegen in die Spätvorstellung von »Der Name der Rose«. Laut BTX-Kinoseite läuft die von 22:45 bis gegen eins. Genau die Zeit der Übergabe.',
+    text: 'Seidel hat Ralfs Mutter erzählt, er gehe Freitag mit Kollegen in die Spätvorstellung von »Der Name der Rose«. Ralf zufolge war er seit Jahren nicht im Kino – ein Alibi für die Nacht, in der Operation REWIND beginnt?',
   },
   {
     id: 'seidel_rastplatz',
