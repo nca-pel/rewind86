@@ -273,7 +273,27 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Die neue Ausgabe des »Heimcomputer-Journals« (fiktive Zeitschrift), heute mit der Post gekommen. Sie riecht noch nach Druckerschwärze. Auf dem Umschlag steht, was drin ist: eine ZEICHENTABELLE, ein ARTIKEL über Akustikkoppler, die LESERTIPPS und die KLEINANZEIGEN.',
+        text: 'Die neue Ausgabe des »Heimcomputer-Journals« (fiktive Zeitschrift), heute mit der Post gekommen. Sie riecht noch nach Druckerschwärze. Auf dem Umschlag steht, was drin ist: das LISTING DES MONATS zum Abtippen, eine ZEICHENTABELLE, ein ARTIKEL über Akustikkoppler, die LESERTIPPS und die KLEINANZEIGEN.',
+      },
+    ],
+    historicalStatus: 'fictional',
+  },
+  {
+    id: 'mag_listing',
+    name: 'das Listing des Monats',
+    acc: 'das Listing des Monats',
+    dat: 'dem Listing des Monats',
+    short: 'Listing des Monats',
+    gender: 'n',
+    nouns: ['listing', 'listings', 'knacker', 'codeknacker', 'abtippen', 'denksport', 'monats'],
+    partOf: 'magazine',
+    readEffects: [
+      { type: 'discoverFact', id: 'listing_read' },
+      { type: 'puzzle', id: 'P18', status: 'discovered' },
+    ],
+    description: [
+      {
+        text: '»LISTING DES MONATS – CODE-KNACKER für alle Rechner mit BASIC V2«. Der C64 denkt sich einen Code aus vier Ziffern von 1 bis 6 aus. Du tippst deinen Tipp ein, er antwortet mit »RICHTIG« (richtige Ziffer an der richtigen Stelle) und »ZIFFERN DABEI« (alle Ziffern, die im Code vorkommen, auch an falscher Stelle). Je weniger Versuche, desto besser.\n\n10 PRINT CHR$(147);"CODE-KNACKER":DIM C(4),A(6),B(6)\n20 FOR I=1 TO 4:C(I)=INT(RND(1)*6)+1:A(C(I))=A(C(I))+1:NEXT I\n30 INPUT "TIP";T$:IF LEN(T$)<>4 THEN 30\n35 N=N+1\n40 S=0:M=0:FOR I=1 TO 6:B(I)=0:NEXT I\n50 FOR I=1 TO 4:G=VAL(MID$(T$,I,1)):IF G=C(I) THEN S=S+1\n60 IF G>0 AND G<7 THEN B(G)=B(G)+1\n70 NEXT I\n80 FOR I=1 TO 6:M=M+A(I):IF B(I)<A(I) THEN M=M-A(I)+B(I)\n90 NEXT I\n100 PRINT "RICHTIG:";S;" ZIFFERN DABEI:";M\n110 IF S<4 THEN 30\n120 PRINT "CODE GEKNACKT IN";N;"VERSUCHEN"\n\nTipp der Redaktion: Zeile für Zeile eintippen (jede mit RETURN), dann RUN. Fehlermeldung? Mit LIST nachsehen, wo ein Tippfehler steckt. Neues Spiel: RUN.',
       },
     ],
     historicalStatus: 'fictional',

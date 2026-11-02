@@ -6,7 +6,7 @@ import { GAME_CONFIG } from '../content/config';
 import { cassetteProgram } from '../content/disks';
 import { isHard } from '../engine/difficulty';
 import type { Ctx } from '../engine/context';
-import { discoverFact } from '../engine/effects';
+import { discoverFact, setPuzzle } from '../engine/effects';
 import { bootProfile, bootScreen } from '../engine/state';
 import type { C64Key, GameState, ProgramLine, VirtualDisk, VirtualFile } from '../engine/types';
 import { archiveApp } from './apps/archive';
@@ -466,6 +466,17 @@ function afterBasic(ctx: Ctx): void {
   const s = ctx.state;
   keyPartsOnScreen(ctx);
   const screen = videoLines(s.computer.screen).join('\n');
+  if (/CODE GEKNACKT IN\s*\d+\s*VERSUCH/.test(screen) && !s.knownFacts.includes('knacker_won')) {
+    const tries = Number(/CODE GEKNACKT IN\s*(\d+)/.exec(screen)?.[1] ?? 99);
+    ctx.say(
+      tries <= 8
+        ? `Geknackt – in ${tries} Versuchen! Ziffern ausschließen statt blind raten, so geht das. Das hat fast etwas von einem Schloss, das man Stück für Stück öffnet.`
+        : `Geknackt, nach ${tries} Versuchen. Es geht auch ohne Glück: Ziffern ausschließen statt blind raten.`,
+      'thought',
+    );
+    discoverFact(ctx, 'knacker_won');
+    setPuzzle(ctx, 'P18', 'solved');
+  }
   if (s.computer.loaded?.diskId === 'game') {
     if (
       s.computer.programIsDirectory &&

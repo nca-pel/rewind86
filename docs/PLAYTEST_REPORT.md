@@ -99,3 +99,4 @@ zusätzliche Ermittlungsschritte vor dem Finale (z. B. Ralf zeigt Seidels Arbeit
 - Clubabend: spielbares Gespräch mit Herrn Brandt (Themen Club, BTX, Mailboxen, Thermoskanne, WarGames, GHOST, Seidel, Ralf, Spiel). Jede Frage kostet 15 Minuten, nach sechs Fragen oder ab 20:30 endet der Abend; `VERABSCHIEDE DICH` beendet ihn früher. Antworten hängen vom Wissensstand ab; Brandt gibt nie zu, GHOST zu sein.
 - Ersatzschlüssel: wird als Flag `modkKey` gespeichert und beim Start des Moduls wiederhergestellt.
 - Finale: Die Meldung bei `ev_finale_open` weist auf den möglichen Anruf hin.
+- Freitagabend 14.11. (19:30–21:00): neues optionales Rätsel P18 »CODE-KNACKER«: Listing des Monats im Heimcomputer-Journal, das Jan abtippt (Mastermind mit vier Ziffern, im Test lösbar). Dazu drei kleine Alltagsmeldungen (19:30 Hinweis, 20:00 Tagesschau, 20:40 Schlafenszeit).

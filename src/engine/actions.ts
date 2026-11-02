@@ -477,7 +477,9 @@ function read(ctx: Ctx, id: string): number {
   const s = ctx.state;
   switch (id) {
     case 'magazine':
-      ctx.say(describe(s, 'magazine') + ' (z. B. LIES TABELLE, LIES ARTIKEL, LIES KLEINANZEIGEN)');
+      ctx.say(
+        describe(s, 'magazine') + ' (z. B. LIES LISTING, LIES TABELLE, LIES ARTIKEL, LIES KLEINANZEIGEN)',
+      );
       return DEFAULT_MINUTES;
     case 'mag_table':
       ctx.say(describe(s, id));

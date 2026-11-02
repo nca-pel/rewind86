@@ -365,6 +365,38 @@ export const PUZZLES: PuzzleDef[] = [
       },
     ],
   },
+  {
+    id: 'P18',
+    title: 'CODE-KNACKER (Listing des Monats)',
+    strand: 'C64',
+    order: 18,
+    historicalStatus: 'fictional',
+    stages: [
+      {
+        when: { notFact: 'listing_read' },
+        hints: [
+          'Im Heimcomputer-Journal steht noch mehr, als du bisher gelesen hast.',
+          'Auf dem Umschlag steht etwas von einem Listing zum Abtippen.',
+          'LIES LISTING – ein kleines Ratespiel für den C64. Tippe es Zeile für Zeile ein.',
+        ],
+      },
+      {
+        when: { notFact: 'knacker_won' },
+        hints: [
+          'Jede Zeile mit RETURN abschließen, danach RUN. Bei einer Fehlermeldung hilft LIST.',
+          'Tippfehler sind der häufigste Fehler: Doppelpunkte, Klammern und Anführungszeichen prüfen.',
+          'Beim Raten: Mit einem Tipp wie 1122 siehst du, ob 1 und 2 überhaupt vorkommen. Ziffer für Ziffer ausschließen. Das Spiel endet mit »CODE GEKNACKT«.',
+        ],
+      },
+      {
+        hints: [
+          'Das Rätsel ist gelöst.',
+          'Du hast den Code geknackt.',
+          'Nichts mehr zu tun – neues Spiel mit RUN.',
+        ],
+      },
+    ],
+  },
 ];
 
 export const PUZZLE_BY_ID: Record<string, PuzzleDef> = Object.fromEntries(PUZZLES.map((p) => [p.id, p]));

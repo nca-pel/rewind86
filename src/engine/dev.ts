@@ -393,7 +393,7 @@ export function contentGraph(): GraphEdge[] {
  */
 export const CODE_TRIGGERS = {
   events: ['ev_doorbell', 'ev_mother_modem', 'ev_ralf_callback', 'ev_finale_police'],
-  puzzles: ['P01', 'P03', 'P04', 'P05', 'P06', 'P09', 'P17'],
+  puzzles: ['P01', 'P03', 'P04', 'P05', 'P06', 'P09', 'P17', 'P18'],
 } as const;
 
 export interface ContentWarning {

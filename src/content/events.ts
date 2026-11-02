@@ -1038,3 +1038,52 @@ export const EVENTS: EventDef[] = [
 ];
 
 export const EVENT_BY_ID: Record<string, EventDef> = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
+  // ── Freitagabend (14.11.): Zeit zwischen Mailbox und Schlafen füllen, ohne den Plot zu bewegen ───
+  {
+    id: 'ev_fri_listing',
+    at: '1986-11-14T19:30',
+    variants: [
+      { when: { any: [{ fact: 'listing_read' }, { flag: 'away' }] }, effects: [] },
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Halb acht, und die Mailbox ist abgegrast. Im Heimcomputer-Journal wirbt der Umschlag mit einem »Listing des Monats« zum Abtippen. Das richtige Programm für einen Freitagabend – und Papier und Finger hast du ja.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_fri_tagesschau',
+    at: '1986-11-14T20:00',
+    variants: [
+      { when: { flag: 'away' }, effects: [] },
+      {
+        effects: [
+          {
+            type: 'say',
+            text: 'Von unten dringt die Titelmelodie der Tagesschau herauf. Dein Vater kommentiert die Nachrichten laut für niemanden Bestimmtes – irgendwas mit Bonn und der Kronzeugenregelung.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ev_fri_late',
+    at: '1986-11-14T20:40',
+    variants: [
+      { when: { any: [{ flag: 'away' }, { fact: 'knacker_won' }] }, effects: [] },
+      {
+        effects: [
+          {
+            type: 'say',
+            kind: 'thought',
+            text: 'Bald neun. Die Mutter wird gleich fragen, ob du nicht langsam ins Bett willst. Aber ein Rätsel will gelöst sein – oder schläft man besser darüber?',
+          },
+        ],
+      },
+    ],
+  },
+
