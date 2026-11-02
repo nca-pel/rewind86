@@ -131,12 +131,16 @@ describe('Schlüssel-Strang im Spiel (Ausbauplan Punkt 6)', () => {
     s.do({ type: 'dev', text: `zeit ${K.cassetteAt.slice(0, 10)}T16:00` });
     expect(s.state.itemLocations.cassette).toBe('inventory');
     expect(s.has('cassette')).toBe(true);
+    // Jan findet die Datasette hinter dem Monitor und stellt sie obenauf
+    expect(s.state.flags.datasetteFound).toBe(true);
+    expect(s.a('schau dich um')).toMatch(/Oben auf dem Monitor steht die alte Datasette/);
+    expect(s.a('untersuche datasette')).toMatch(/oben auf dem Monitor/);
     if (s.state.computer.app) s.key('4');
     expect(s.state.computer.app).toBeNull();
     s.c('LOAD');
     expect(s.log.at(-1)?.text).toMatch(/nicht angeschlossen/);
     expect(s.a('lege kassette in den kassettenrekorder')).toMatch(/Datasette/);
-    expect(s.a('lege kassette in die datasette')).toMatch(/Kassettenport/);
+    expect(s.a('lege kassette in die datasette')).toMatch(/die oben auf dem Monitor steht/);
     expect(s.state.flags.datasetteConnected).toBe(true);
     expect(s.c('LOAD"FALSCH",1')).not.toContain('FOUND');
     expect(s.c('LOAD')).toContain('FOUND PRUEFBAND3');

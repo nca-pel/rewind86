@@ -104,6 +104,7 @@ const CROPS: Record<string, [number, number, number, number]> = {
   handset: [205, 78, 52, 52],
   coupler: [246, 78, 66, 36],
   tape: [276, 84, 40, 30],
+  datasette: [140, 34, 76, 34],
   radio: [32, 98, 60, 58],
   window: [0, 0, 72, 122],
   door: [296, 0, 88, 180],
@@ -151,7 +152,8 @@ export function DeviceArt({ state, id, label }: { state: GameState; id: string; 
         <MagazineCover />
       </figure>
     );
-  const crop = CROPS[id];
+  // Die Datasette ist erst im Bild, wenn Jan sie gefunden hat; vorher bleibt die eigene Zeichnung
+  const crop = id === 'datasette' && !state.flags.datasetteFound ? undefined : CROPS[id];
   if (crop)
     return (
       <figure className="device-art pixel-art">

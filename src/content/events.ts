@@ -75,6 +75,17 @@ function cassetteGiven(): GameEffect[] {
   ];
 }
 
+/** Jan erinnert sich an die Datasette: Sie steht verstaubt hinter dem Monitor und kommt zum Anschließen obenauf */
+function datasetteFound(): GameEffect[] {
+  return [
+    {
+      type: 'say',
+      text: 'Eine Datasette? Du denkst kurz nach, dann schiebst du den Monitor ein Stück vor. Und tatsächlich: Hinter ihm, unter einer Staubschicht, steht noch deine alte Datasette – seit du die 1541 hast, hat sie niemand mehr angefasst. Du wischst sie mit dem Ärmel ab und stellst sie oben auf den Monitor. Der Stecker hängt noch lose herunter.',
+    },
+    { type: 'setFlag', id: 'datasetteFound', value: true },
+  ];
+}
+
 export const EVENTS: EventDef[] = [
   {
     id: 'ev_ralf_call',
@@ -587,9 +598,10 @@ export const EVENTS: EventDef[] = [
           ...cassetteArrives(),
           {
             type: 'say',
-            text: 'Kurz darauf kommt deine Mutter die Treppe hoch. »Das war Ralf. Er hatte es eilig, wollte nicht reinkommen – das soll ich dir geben.« Sie drückt dir eine Kassette in die Hand.',
+            text: 'Kurz darauf kommt deine Mutter die Treppe hoch. »Das war Ralf. Er hatte es eilig, wollte nicht reinkommen – das soll ich dir geben.« Sie drückt dir eine Kassette in die Hand. »Er meinte, du hättest bestimmt noch eine Datasette?«',
           },
           ...cassetteGiven(),
+          ...datasetteFound(),
         ],
       },
       {
@@ -597,7 +609,7 @@ export const EVENTS: EventDef[] = [
         effects: [
           ...cassetteArrives(),
           ...ralfAtDoor(
-            '»Du wolltest doch alles, was mit dem Spiel zu tun hat. Mein Alter hat sein Arbeitszimmer ausgemistet, da stand ein Karton für den Sperrmüll. Die hier lag ganz unten. Steht WT-07 drauf – wie auf der Diskette.«',
+            '»Du wolltest doch alles, was mit dem Spiel zu tun hat. Mein Alter hat sein Arbeitszimmer ausgemistet, da stand ein Karton für den Sperrmüll. Die hier lag ganz unten. Steht WT-07 drauf – wie auf der Diskette. Ist ein Datenband – du hast doch noch eine Datasette, oder?«',
           ),
           ...cassetteGiven(),
           {
@@ -607,13 +619,14 @@ export const EVENTS: EventDef[] = [
             text: '»Und Jan – sei vorsichtig mit dem Modul-Kram, ja? Mein Alter ist komisch drauf in letzter Zeit.« Dann ist er wieder weg.',
           },
           { type: 'audio', cue: 'door' },
+          ...datasetteFound(),
         ],
       },
       {
         effects: [
           ...cassetteArrives(),
           ...ralfAtDoor(
-            '»Mein Alter hat sein Arbeitszimmer ausgemistet. Im Karton für den Sperrmüll lag die hier – steht WT-07 drauf, wie auf der Diskette. Vielleicht ist da noch was vom Spiel drauf. Du hast doch noch deine alte Datasette.«',
+            '»Mein Alter hat sein Arbeitszimmer ausgemistet. Im Karton für den Sperrmüll lag die hier – steht WT-07 drauf, wie auf der Diskette. Vielleicht ist da noch was vom Spiel drauf. Du hast doch noch eine Datasette, oder?«',
           ),
           ...cassetteGiven(),
           {
@@ -623,6 +636,7 @@ export const EVENTS: EventDef[] = [
             text: '»Meine Mutter wartet unten im Auto. Erzähl mir, was drauf ist!« Dann ist er wieder weg.',
           },
           { type: 'audio', cue: 'door' },
+          ...datasetteFound(),
         ],
       },
     ],

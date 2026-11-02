@@ -220,9 +220,16 @@ function drop(ctx: Ctx, id: string): number {
 function connectDatasette(ctx: Ctx): boolean {
   if (ctx.state.flags.datasetteConnected) return false;
   ctx.state.flags.datasetteConnected = true;
-  ctx.say(
-    'Du ziehst die alte Datasette hinter dem Monitor hervor und steckst ihren Stecker in den Kassettenport hinten am C64.',
-  );
+  if (ctx.state.flags.datasetteFound) {
+    ctx.say(
+      'Du steckst den Stecker der Datasette, die oben auf dem Monitor steht, in den Kassettenport hinten am C64.',
+    );
+  } else {
+    ctx.state.flags.datasetteFound = true;
+    ctx.say(
+      'Du ziehst die alte Datasette hinter dem Monitor hervor, stellst sie obenauf und steckst ihren Stecker in den Kassettenport hinten am C64.',
+    );
+  }
   return true;
 }
 

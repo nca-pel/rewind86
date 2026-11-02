@@ -48,6 +48,10 @@ export const OBJECTS: WorldObject[] = [
     nouns: ['schreibtisch', 'tisch', 'zimmer', 'raum'],
     description: [
       {
+        when: { flag: 'datasetteFound' },
+        text: 'Der Schreibtisch ist älter als du: Pressspan, eine Furnierkante, die sich an einer Ecke löst. Brandlöcher von der Lötkolbenzeit (deine Mutter erwähnt sie noch immer), ein klebriger Colaring, der nie ganz abgehen will. Und mittendrin alles, was zählt: C64 und Monitor, die 1541, das Telefon mit dem Akustikkoppler, das Radio, der Kassettenrekorder, dein Notizblock. Oben auf dem Monitor steht die alte Datasette. Rechts die Schublade. Sie klemmt.',
+      },
+      {
         text: 'Der Schreibtisch ist älter als du: Pressspan, eine Furnierkante, die sich an einer Ecke löst. Brandlöcher von der Lötkolbenzeit (deine Mutter erwähnt sie noch immer), ein klebriger Colaring, der nie ganz abgehen will. Und mittendrin alles, was zählt: C64 und Monitor, die 1541, das Telefon mit dem Akustikkoppler, das Radio, der Kassettenrekorder, dein Notizblock. Rechts die Schublade. Sie klemmt.',
       },
     ],
@@ -185,7 +189,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Ein Mono-Kassettenrekorder. Auf den Tasten haben deine Finger die Beschriftung längst weggeschliffen. Gerade liegt keine Kassette drin; das Fach steht offen wie ein Mund, der gleich etwas sagen will.',
+        text: 'Ein Mono-Kassettenrekorder für Musik und Radiomitschnitte – kein Datengerät. Auf den Tasten haben deine Finger die Beschriftung längst weggeschliffen. Gerade liegt keine Kassette drin; das Fach steht offen wie ein Mund, der gleich etwas sagen will.',
       },
     ],
     historicalStatus: 'plausible',
@@ -202,6 +206,10 @@ export const OBJECTS: WorldObject[] = [
       {
         when: { flag: 'datasetteConnected' },
         text: 'Deine alte Datasette hängt wieder am Kassettenport des C64. Laden: LOAD am C64 (Gerät 1 ist der Standard).',
+      },
+      {
+        when: { flag: 'datasetteFound' },
+        text: 'Deine alte Datasette steht oben auf dem Monitor, noch nicht angeschlossen. Der Stecker hängt lose herunter. Zum Anschließen: LEGE KASSETTE IN DATASETTE.',
       },
       {
         text: 'Deine alte Datasette steht abgestöpselt hinter dem Monitor und sammelt Staub. Seit du die 1541 hast, fasst du sie kaum noch an. Ein kleines schlechtes Gewissen ist dabei.',

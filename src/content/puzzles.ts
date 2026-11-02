@@ -222,7 +222,7 @@ export const PUZZLES: PuzzleDef[] = [
         when: { notFlag: 'datasetteConnected' },
         hints: [
           'Eine Datenkassette braucht das passende Gerät.',
-          'Deine alte Datasette steht abgestöpselt hinter dem Monitor.',
+          'Deine alte Datasette steht abgestöpselt auf oder hinter dem Monitor.',
           'LEGE KASSETTE IN DATASETTE – Jan schließt sie dabei gleich an. Dann am C64: LOAD und RUN.',
         ],
       },

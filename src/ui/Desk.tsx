@@ -43,6 +43,8 @@ export const DESK_AREAS: Record<string, string> = {
   c64: 'M121 112H226V152H121Z',
   drive1541: 'M253 105H311V130H253Z',
   tape: 'M284 92H306V108H284Z',
+  /** Datasette oben auf dem Monitor (nur sichtbar, wenn Jan sie gefunden hat) */
+  datasette: 'M151 41H205V52H151Z',
   coupler: 'M254 85H284V107H254Z',
   phone: 'M211 92H251V126H211Z',
   notebook: 'M74 143L100 136L125 157L97 167L84 164Z',
@@ -217,7 +219,8 @@ export function DeskScene({
   const handsetImg = <path d={HANDSET} fill={`url(#${ref('img')})`} />;
 
   const named = interactive && showNames;
-  const visibleAreas = (k: string) => k !== 'magazine' || magVisible;
+  const visibleAreas = (k: string) =>
+    k === 'magazine' ? magVisible : k === 'datasette' ? state.flags.datasetteFound === true : true;
 
   return (
     <svg
@@ -261,6 +264,26 @@ export function DeskScene({
       )}
 
       {spot('tape')}
+
+      {/* Datasette oben auf dem Monitor, sobald Jan sie hinter dem Monitor gefunden hat */}
+      {state.flags.datasetteFound &&
+        spot(
+          'datasette',
+          <g>
+            <R x={152} y={51} w={52} h={1} c={C.dark} />
+            <R x={151} y={42} w={54} h={9} c={C.black} />
+            <R x={152} y={43} w={52} h={7} c={C.grey} />
+            <R x={152} y={43} w={52} h={1} c={C.paper} />
+            <R x={156} y={45} w={14} h={4} c={C.black} />
+            <R x={159} y={46} w={2} h={2} c={C.paper} />
+            <R x={165} y={46} w={2} h={2} c={C.paper} />
+            <R x={176} y={45} w={24} h={1} c={C.greyDark} />
+            <R x={176} y={47} w={5} h={2} c={C.red} />
+            <R x={183} y={47} w={5} h={2} c={C.greyDark} />
+            <R x={190} y={47} w={5} h={2} c={C.greyDark} />
+            {state.flags.datasetteConnected && <R x={198} y={45} w={2} h={1} c={C.green} />}
+          </g>,
+        )}
 
       {spot(
         'coupler',
