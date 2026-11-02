@@ -1,3 +1,4 @@
+import { renderC64 } from '../sim/c64';
 import { MAX_STEPS } from '../sim/basic/interpreter';
 import { Session } from './helpers';
 
@@ -80,13 +81,31 @@ describe('BASIC-Teilmenge', () => {
     expect(s.state.computer.run?.awaitingInput).toBeNull();
   });
 
-  test('Endlosschleife wird nach Schrittlimit mit BREAK abgebrochen', () => {
+  test('Endlosschleife läuft im Animationstakt weiter und RUN/STOP bricht sie ab', () => {
     const s = poweredOn();
     s.c('10 GOTO 10');
-    const scr = s.c('RUN');
-    expect(scr).toMatch(/BREAK IN 10\nREADY\.$/);
-    expect(s.log.some((l) => l.text.includes('RUN/STOP'))).toBe(true);
+    s.c('RUN');
+    expect(s.state.computer.run?.running).toBe(true);
+    expect(renderC64(s.state).tickMs).not.toBeNull();
+    s.do({ type: 'c64tick' });
+    expect(s.state.computer.run?.running).toBe(true);
+    s.c('PRINT 1');
+    s.key('RUNSTOP');
+    expect(s.state.computer.run?.running).toBeUndefined();
+    expect(s.screen()).toMatch(/BREAK IN 10\nREADY\.$/);
     expect(MAX_STEPS).toBeLessThanOrEqual(100_000);
+  });
+
+  test('Animierte Programme verändern den Bildschirm von Takt zu Takt', () => {
+    const s = poweredOn();
+    s.c('10 FOR I=0 TO 15:POKE 53280,I:FOR D=1 TO 300:NEXT:NEXT:GOTO 10');
+    s.c('RUN');
+    const seen = new Set<number>();
+    for (let i = 0; i < 12; i++) {
+      s.do({ type: 'c64tick' });
+      seen.add(s.state.computer.screen.border);
+    }
+    expect(seen.size).toBeGreaterThan(3);
   });
 
   test('Eingabezeilen sind wie am C64 auf 80 Zeichen begrenzt', () => {

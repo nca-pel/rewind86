@@ -9,6 +9,8 @@ import type { BasicRun, OpenFile, ProgramLine } from '../../engine/types';
 import { BasicSyntaxError, canonicalVar, crunchedLength, tokenize, type Token } from './tokenizer';
 
 export const MAX_STEPS = 50_000;
+/** Anweisungen pro Animationstakt, wenn ein Programm länger als MAX_STEPS läuft (Demo-Effekte) */
+export const SLICE_STEPS = 6_000;
 const MAX_STACK = 64;
 /** Fehlerkanal der 1541 ohne Fehler */
 export const DISK_OK = '00, OK,00,00\r';
@@ -60,7 +62,7 @@ export interface BasicHost {
   programIsDirectory(): boolean;
 }
 
-export type RunStatus = 'ready' | 'input' | 'app' | 'reset';
+export type RunStatus = 'ready' | 'input' | 'app' | 'reset' | 'running';
 
 export function newRun(seed = 1): BasicRun {
   return {
@@ -110,7 +112,8 @@ type Signal =
   | { k: 'reset' }
   | { k: 'restart' }
   | { k: 'break' }
-  | { k: 'nextLine' };
+  | { k: 'nextLine' }
+  | { k: 'frame' };
 
 export class Interpreter {
   private cache = new Map<number, Token[][]>();
@@ -198,6 +201,7 @@ export class Interpreter {
   breakProgram(): void {
     const line = this.run.pc.line;
     this.run.awaitingInput = null;
+    delete this.run.running;
     this.host.newline();
     this.host.write(line >= 0 ? `BREAK IN ${line}` : 'BREAK');
     this.host.newline();
@@ -205,7 +209,22 @@ export class Interpreter {
 
   // ------------------------------------------------------------------ main loop
 
-  private loop(): RunStatus {
+  /** Läuft ein Programm länger als das Limit, geht es im Animationstakt weiter (RUN/STOP beendet es). */
+  resume(): RunStatus {
+    return this.loop(SLICE_STEPS);
+  }
+
+  private loop(budget = MAX_STEPS): RunStatus {
+    const wasRunning = !!this.run.running;
+    const status = this.loopInner(budget);
+    if (status === 'running') {
+      if (!wasRunning) this.host.note('Das Programm läuft weiter. RUN/STOP (Esc) hält es an.');
+      this.run.running = true;
+    } else delete this.run.running;
+    return status;
+  }
+
+  private loopInner(budget: number): RunStatus {
     let steps = 0;
     while (true) {
       const { line, stmt } = this.run.pc;
@@ -231,11 +250,7 @@ export class Interpreter {
         this.run.pc = { line: nl, stmt: 0 };
         continue;
       }
-      if (++steps > MAX_STEPS) {
-        this.breakProgram();
-        this.host.note('Das Programm läuft und läuft … Jan drückt RUN/STOP.');
-        return 'ready';
-      }
+      if (++steps > budget) return 'running';
       let sig: Signal;
       try {
         sig = this.exec(sts[stmt]);
@@ -260,6 +275,10 @@ export class Interpreter {
         case 'jump':
           this.run.pc = { line: sig.line, stmt: sig.stmt };
           break;
+        case 'frame':
+          this.run.pc = { line, stmt: stmt + 1 };
+          if (line === DIRECT) break;
+          return 'running';
         case 'end':
           return 'ready';
         case 'break':
@@ -406,6 +425,17 @@ export class Interpreter {
         const val = this.intArg(0, 255);
         this.host.poke(addr, val);
         return { k: 'next' };
+      }
+      case 'WAIT': {
+        // Rasterzeilen-Wartebefehl: hier endet ein Bild (Animationstakt), der Rest läuft im nächsten Takt
+        this.intArg(0, 65535);
+        this.expectOp(',');
+        this.intArg(0, 255);
+        if (this.isOp(',')) {
+          this.p++;
+          this.intArg(0, 255);
+        }
+        return { k: 'frame' };
       }
       case 'SYS': {
         const r = this.host.sys(this.intArg(0, 65535));

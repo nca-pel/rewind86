@@ -404,7 +404,7 @@ function runBasic(ctx: Ctx, fn: (i: Interpreter) => RunStatus): number {
   const interp = new Interpreter(m, comp.run);
   const status = fn(interp);
   let minutes = m.minutes;
-  if (status === 'input') return minutes;
+  if (status === 'input' || status === 'running') return minutes;
   if (status === 'app' && comp.loaded?.appId) {
     minutes += startApp(ctx, comp.loaded.appId);
     return minutes;
@@ -571,6 +571,8 @@ export function c64Line(ctx: Ctx, rawText: string): number {
     if (comp.inputHistory.length > 50) comp.inputHistory.shift();
   }
 
+  if (comp.run?.running) return 0;
+
   if (comp.run?.awaitingInput) {
     printLine(comp.screen, text);
     return runBasic(ctx, (i) => i.provideInput(text));
@@ -644,7 +646,7 @@ export function c64Key(ctx: Ctx, key: C64Key): number {
   }
   ctx.cue('keyclick');
   if (comp.app) return applyAppResult(ctx, APPS[comp.app.id].key(ctx, comp.app, key));
-  if (key === 'RUNSTOP' && comp.run?.awaitingInput) {
+  if (key === 'RUNSTOP' && (comp.run?.awaitingInput || comp.run?.running)) {
     runBasic(ctx, (i) => {
       i.breakProgram();
       return 'ready';
@@ -661,7 +663,11 @@ export function c64Key(ctx: Ctx, key: C64Key): number {
 
 export function c64Tick(ctx: Ctx): void {
   const comp = ctx.state.computer;
-  if (!comp.powerOn || !comp.app) return;
+  if (!comp.powerOn) return;
+  if (!comp.app) {
+    if (comp.run?.running) runBasic(ctx, (i) => i.resume());
+    return;
+  }
   const def = APPS[comp.app.id];
   if (def.tick) applyAppResult(ctx, def.tick(ctx, comp.app));
 }
@@ -704,6 +710,15 @@ export function renderC64(state: GameState): C64View {
       tickMs: def.tickMs,
     };
   }
+  if (comp.run?.running)
+    return {
+      powerOn: true,
+      video: comp.screen,
+      cursor: null,
+      lines: videoLines(comp.screen, null),
+      inputMode: 'keys',
+      tickMs: 70,
+    };
   const cursor = { x: comp.screen.cx, y: comp.screen.cy };
   return {
     powerOn: true,

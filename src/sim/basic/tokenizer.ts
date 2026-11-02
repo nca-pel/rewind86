@@ -23,6 +23,7 @@ export const KEYWORDS = [
   'READ',
   'RESTORE',
   'POKE',
+  'WAIT',
   'PEEK',
   'CLR',
   'NEW',

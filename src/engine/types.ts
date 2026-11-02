@@ -65,6 +65,8 @@ export interface BasicRun {
   /** Wartet auf INPUT in diese Variablen. */
   awaitingInput: string[] | null;
   rng: number;
+  /** Programm läuft im Animationstakt weiter (c64Tick setzt es fort) */
+  running?: boolean;
   /** Mit DEF FN definierte Funktionen: Parametername + Tokens des Funktionsterms */
   fns?: Record<string, { param: string; body: Array<{ t: string; v: string | number }> }>;
   /** Mit OPEN geöffnete sequenzielle Dateien (logische Dateinummer → Puffer) */
