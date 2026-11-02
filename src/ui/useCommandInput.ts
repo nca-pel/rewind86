@@ -14,11 +14,18 @@ function mapKey(e: KeyboardEvent): C64Key | null {
   if (e.key === 'Enter') return 'RETURN';
   if (e.key === 'Escape') return 'RUNSTOP';
   if (e.key === ' ') return 'SPACE';
-  if (e.code === 'Backquote' || e.key === '^' || e.key === '`' || e.key === '←' || e.key === '_')
+  if (
+    e.key === 'Backspace' ||
+    e.code === 'Backquote' ||
+    e.key === '^' ||
+    e.key === '`' ||
+    e.key === '←' ||
+    e.key === '_'
+  )
     return 'ARROW_LEFT';
   if (/^F[1-8]$/.test(e.key)) return e.key;
   if (e.key === 'Home') return 'CLRHOME';
-  if (e.key === 'Backspace') return 'DEL';
+  if (e.key === 'Delete') return 'DEL';
   if (e.key.length === 1) return e.key.toUpperCase();
   return null;
 }

@@ -70,7 +70,7 @@ export const PUZZLES: PuzzleDef[] = [
         hints: [
           'Der Pfeil oben links … wo sitzt so ein Pfeil auf der C64-Tastatur?',
           'Die C64-Tastatur hat ganz oben links eine Taste mit einem Pfeil nach links: »←«.',
-          'Drücke während der Credits die Taste »←« (Sondertaste unter dem Monitor, auf PC-Tastaturen ^ oder `) – oder tippe im Adventure DRÜCKE PFEILTASTE.',
+          'Drücke während der Credits die Taste »←« (Sondertaste unter dem Monitor, auf PC-Tastaturen Backspace, ^ oder `) – oder tippe im Adventure DRÜCKE PFEILTASTE.',
         ],
       },
     ],

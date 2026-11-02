@@ -94,7 +94,7 @@ export function C64Panel({ game, view: r, input }: { game: GameUi; view: C64View
         Die Eingabezeile im Adventure-Fenster wechselt mit dem Umschalter vor der Zeile oder dem Tastenkürzel
         Alt+C zwischen Adventure und C64; im C64-Modus gibt ein vorangestelltes Ausrufezeichen eine Zeile an
         das Adventure. Im Tastenmodus wird jede Taste sofort an das laufende Programm gesendet. Escape
-        entspricht RUN/STOP; ^ oder ` entspricht der Taste Pfeil links.
+        entspricht RUN/STOP; Backspace, ^ oder ` entspricht der Taste Pfeil links; Entf entspricht DEL.
       </p>
     </section>
   );

@@ -53,7 +53,7 @@ Eigene Programme
 • FOR I=1 TO 5 … NEXT · IF … THEN · READ A mit DATA 1,2,3 · INPUT A$ · NEW (Programm löschen)
 • Dateien: OPEN 2,8,2,"NAME,S,R" · INPUT#2,A$ · GET#2,A$ · CLOSE 2 (ST = Status, 64 = Dateiende)
 Tasten (Leiste unter dem Monitor)
-• RUN/STOP (Esc) bricht ab · RETURN · LEERTASTE · ← (auf PC-Tastaturen ^ oder \`) · CLR/HOME · F1–F7
+• RUN/STOP (Esc) bricht ab · RETURN · LEERTASTE · ← (auf PC-Tastaturen Backspace, ^ oder \`) · CLR/HOME · F1–F7
 • Läuft ein Programm im Tastenmodus, geht jede Taste direkt an das Programm.
 Abkürzungen im Adventure: ZEIGE DATEIEN · LADE SPIEL · TIPPE <Zeile> · DRÜCKE <Taste>`;
 }
