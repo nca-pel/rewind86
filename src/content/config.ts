@@ -185,6 +185,22 @@ export const GAME_CONFIG = {
       hours: { from: '22:00', to: '06:00' },
       validateAfterMinutes: 60,
     },
+    /** Cracker-Szene (Zeitvertreib, hat mit dem Agentenstrang nichts zu tun): Demos und News */
+    fluxhq: {
+      name: 'FLUX-HQ',
+      phoneNumber: '58331',
+      sysop: 'KRAKEN',
+      hours: { from: '17:00', to: '23:00' },
+      validateAfterMinutes: 20,
+    },
+    /** Chat mit dem Cracker RASTAR */
+    stardust: {
+      name: 'STARDUST BBS',
+      phoneNumber: '61877',
+      sysop: 'DUSTY',
+      hours: { from: '19:00', to: '01:00' },
+      validateAfterMinutes: 20,
+    },
   },
 
   ralf: {

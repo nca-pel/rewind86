@@ -56,6 +56,12 @@ Zeile ans Adventure. Programme im »Tastenmodus« bekommen jede Taste einzeln (E
 - Ab 20:00 läuft die Operation (`ev_finale_open`). Seidel ruft zwischen 21:00 und 22:15 an. Ralf erreichbar bis 21:30.
 - Optionen: WÄHLE 110 (mit Beweisen → `end_exposed`), GHOST schreiben (`end_cover`), Ralf (`end_ralf_stops` / `end_ralf_betrayal`), Warnung an K-01 im Modul (`end_abort`), nichts tun (`end_silent`). **[geprüft]**
 
+## Optional: Cracker-Szene (Zeitvertreib, jeden Abend)
+
+- BIT-SCHUPPEN, Brett C64-ECKE: Beitrag »DEMOS BEI FLUX« nennt FLUX-HQ **58331** (17–23 Uhr). FLUX NEWS empfiehlt die STARDUST BBS **61877** (19–01 Uhr).
+- STARDUST: als Gast anmelden, Menü 6 = Chat mit RASTAR. Fragen: `FARBBALKEN`, `FARBWELLE`, `SINUS-SCROLLER` – er diktiert die Zeilen, am C64 eintippen, `RUN`. Esc = RUN/STOP.
+- FLUX-HQ: Downloads STERNE, BALKEN, FLUX-INTRO (nach 20 Minuten Freischaltung). Siehe `docs/STORY_CRACKER.md`.
+
 ---
 
 _Weitere Abschnitte (Beobachtungen, Spielzeit, Fehler) siehe `docs/PLAYTEST_REPORT.md`._

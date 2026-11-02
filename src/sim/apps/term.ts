@@ -22,6 +22,7 @@ import {
   type BoardEntry,
 } from '../../engine/bbs';
 import type { Ctx } from '../../engine/context';
+import { crackerOpen, crackerSay } from '../../engine/cracker';
 import { lockNote, lockedUntil } from '../../engine/pressure';
 import type { AppState, GameState, StoredMessage } from '../../engine/types';
 import { centered, toPetsciiText } from '../screen';
@@ -40,7 +41,8 @@ type Screen =
   | 'read'
   | 'to'
   | 'subject'
-  | 'body';
+  | 'body'
+  | 'chat';
 
 export interface TermState extends AppState {
   id: 'term';
@@ -53,9 +55,16 @@ export interface TermState extends AppState {
   readFrom: 'board' | 'mail';
   msg: number;
   draft: { to: string | null; subject: string; body: string[] } | null;
+  /** Verlauf des Chats (fertig umbrochene Zeilen, nur Bildschirm) */
+  chat?: string[];
 }
 
-const LINE_SCREENS: Screen[] = ['login', 'to', 'subject', 'body'];
+const LINE_SCREENS: Screen[] = ['login', 'to', 'subject', 'body', 'chat'];
+const CHAT_LOG_MAX = 60;
+
+function chatPush(app: TermState, lines: string[]): void {
+  app.chat = [...(app.chat ?? []), ...lines].slice(-CHAT_LOG_MAX);
+}
 const STATUS_LABEL = { gast: 'GAST', neu: 'NEU (NICHT FREIGESCHALTET)', mitglied: 'MITGLIED' };
 
 function connected(state: GameState): MailboxSystem | null {
@@ -179,6 +188,18 @@ function onLine(ctx: Ctx, app: TermState, raw: string): AppResult {
       app.screen = 'newuser';
       return {};
     }
+    case 'chat': {
+      const text = cleanLine(raw, 60);
+      if (!text) return {};
+      chatPush(app, [`${ctx.state.telecom.currentUserHandle ?? 'GAST'}> ${text}`.slice(0, 40)]);
+      const r = crackerSay(ctx, text);
+      chatPush(app, r.lines);
+      if (r.end) {
+        app.screen = 'main';
+        app.note = 'RASTAR HAT DEN CHAT BEENDET';
+      }
+      return { minutes: 1 };
+    }
     case 'to': {
       const to = cleanLine(raw, 12);
       if (!to) {
@@ -243,6 +264,11 @@ function onKey(ctx: Ctx, app: TermState, key: string): AppResult {
     // Zeilenmodus: RUN/STOP bricht ab
     if (k === 'RUNSTOP') {
       if (app.screen === 'login') return {};
+      if (app.screen === 'chat') {
+        app.screen = 'main';
+        app.note = 'CHAT VERLASSEN';
+        return {};
+      }
       app.screen = app.draft && app.draft.to !== null ? 'mail' : 'board';
       app.draft = null;
       app.note = 'ABGEBROCHEN';
@@ -275,6 +301,11 @@ function onKey(ctx: Ctx, app: TermState, key: string): AppResult {
         markRead(ctx, `${sys.id}-sysinfo`, sys.sysinfoEffects);
       } else if (k === '5') {
         logoff(ctx, app, sys);
+        return { minutes: 1 };
+      } else if (k === '6' && sys.chat) {
+        app.screen = 'chat';
+        app.chat = [];
+        chatPush(app, crackerOpen(ctx, ctx.state.telecom.currentUserHandle ?? '').lines);
         return { minutes: 1 };
       } else if (k === 'RUNSTOP') app.note = 'ERST ABMELDEN (5)';
       return {};
@@ -427,6 +458,7 @@ export const termApp: AppDef<TermState> = {
           ' 3  DATEIEN',
           ' 4  SYSTEMINFO',
           ' 5  ABMELDEN',
+          ...(sys!.chat ? [` 6  CHAT MIT ${sys!.chat.handle}`] : []),
         );
         break;
       }
@@ -483,6 +515,15 @@ export const termApp: AppDef<TermState> = {
             ...m.body,
           );
         L.push('', 'TASTE = ZURUECK');
+        break;
+      }
+      case 'chat': {
+        L.push(
+          head,
+          `CHAT MIT ${sys!.chat?.handle ?? '?'}  (RUN/STOP = ENDE)`,
+          '----------------------------------------',
+        );
+        L.push(...(app.chat ?? []).slice(-19));
         break;
       }
       case 'to':

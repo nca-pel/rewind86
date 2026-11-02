@@ -296,6 +296,36 @@ export const FACTS: FactDef[] = [
     text: `Mailbox »${C.mailboxes.datenkeller.name}«, Tel. ${C.mailboxes.datenkeller.phoneNumber} – nur nachts (${C.mailboxes.datenkeller.hours.from}–${C.mailboxes.datenkeller.hours.to} Uhr).`,
   },
   {
+    id: 'bbs_fluxhq',
+    category: 'kanaele',
+    text: `Cracker-Mailbox »${C.mailboxes.fluxhq.name}«, Tel. ${C.mailboxes.fluxhq.phoneNumber} – News und Demos, ab ${C.mailboxes.fluxhq.hours.from} Uhr.`,
+  },
+  {
+    id: 'bbs_stardust',
+    category: 'kanaele',
+    text: `Mailbox »${C.mailboxes.stardust.name}«, Tel. ${C.mailboxes.stardust.phoneNumber} – dort sitzt der Cracker RASTAR im Chat (${C.mailboxes.stardust.hours.from}–${C.mailboxes.stardust.hours.to} Uhr).`,
+  },
+  {
+    id: 'rastar_met',
+    category: 'personen',
+    text: 'RASTAR (Rico, 17, Elektroniker-Azubi) von der Gruppe STARDUST – quatscht gern über Demos und Effekte. Hat mit dem Rest nichts zu tun.',
+  },
+  {
+    id: 'fx_balken',
+    category: 'dinge',
+    text: 'Effekt FARBBALKEN: Rahmen und Hintergrund wechseln jedes Bild (POKE 53280/53281, WAIT 53265,128).',
+  },
+  {
+    id: 'fx_welle',
+    category: 'dinge',
+    text: 'Effekt FARBWELLE: Bildschirm mit Blöcken füllen und den Farb-RAM (55296) verschieben.',
+  },
+  {
+    id: 'fx_sinus',
+    category: 'dinge',
+    text: 'Effekt SINUS-SCROLLER: Text, der als Sinuswelle durchs Bild läuft.',
+  },
+  {
     id: 'hidden_text',
     category: 'codes',
     text: 'Lesertipp: Farbcodes in REM-Zeilen können Text beim LIST unsichtbar machen (Schrift = Hintergrundfarbe). Hintergrund ändern: POKE 53281,<Farbe>.',

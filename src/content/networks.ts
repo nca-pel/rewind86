@@ -1,6 +1,7 @@
 import { K01_CIPHERTEXT, groups } from '../engine/cipher';
 import type { Condition, GameEffect } from '../engine/types';
 import { GAME_CONFIG } from './config';
+import { FLUXHQ, STARDUST } from './cracker';
 
 const N = GAME_CONFIG.secretNetwork;
 const B = GAME_CONFIG.unreleasedGame.buildCode;
@@ -77,6 +78,8 @@ export interface MailboxSystem {
   /** Begrüßungspost nach der Freischaltung */
   memberMail?: { from: string; subject: string; body: string[]; effects?: GameEffect[] };
   historicalStatus: 'fictional';
+  /** Chat mit einer Gesprächsfigur (Menüpunkt 6 im Terminal) */
+  chat?: { handle: string };
   sysinfo: string[];
   sysinfoEffects: GameEffect[];
 }
@@ -436,6 +439,20 @@ export const BITSCHUPPEN: MailboxSystem = {
             'RAHMEN! WIE GEHT DAS UEBERHAUPT??',
           ],
           effects: [],
+        },
+        {
+          id: 'bs_flux',
+          from: 'ZAPPO',
+          to: 'ALLE',
+          subject: 'DEMOS BEI FLUX',
+          encrypted: false,
+          body: [
+            'WER DEMOS UND NEWS AUS DER SZENE',
+            `WILL: FLUX-HQ, TEL. ${GAME_CONFIG.mailboxes.fluxhq.phoneNumber}, AB`,
+            `${GAME_CONFIG.mailboxes.fluxhq.hours.from} UHR. DIE HABEN EFFEKTE ZUM`,
+            'NACHTIPPEN. TELEFONRECHNUNG BEACHTEN!',
+          ],
+          effects: [{ type: 'discoverFact', id: 'bbs_fluxhq' }],
         },
         {
           id: 'bs_koppler',
@@ -841,6 +858,8 @@ export const MAILBOXES: Record<string, MailboxSystem> = {
   secret: SECRET_MAILBOX,
   bitschuppen: BITSCHUPPEN,
   datenkeller: DATENKELLER,
+  fluxhq: FLUXHQ,
+  stardust: STARDUST,
 };
 
 /** Fiktives Telefonbuch: Nummer → Ziel. Keine Nummer wird jemals real gewählt. */
@@ -849,6 +868,8 @@ export const PHONEBOOK: Record<string, { kind: 'person' | 'carrier'; id: string 
   [N.phoneNumber]: { kind: 'carrier', id: 'secret' },
   [BS.phoneNumber]: { kind: 'carrier', id: 'bitschuppen' },
   [DK.phoneNumber]: { kind: 'carrier', id: 'datenkeller' },
+  [GAME_CONFIG.mailboxes.fluxhq.phoneNumber]: { kind: 'carrier', id: 'fluxhq' },
+  [GAME_CONFIG.mailboxes.stardust.phoneNumber]: { kind: 'carrier', id: 'stardust' },
 };
 
 function pad(s: string, n: number): string {
