@@ -13,6 +13,7 @@ import { archiveApp } from './apps/archive';
 import { btxApp, btxDropCarrier } from './apps/btx';
 import { diskInDrive } from './drive';
 import { ABANDON_FILE, abandonApp } from './apps/abandon';
+import { crashApp } from './apps/crash';
 import { intruderApp } from './apps/intruder';
 import { termApp } from './apps/term';
 import { modkApp } from './apps/modk';
@@ -50,6 +51,7 @@ export const APPS: Record<string, AppDef<any>> = {
   term: termApp,
   btx: btxApp,
   abandon: abandonApp,
+  crash: crashApp,
 };
 
 /** Easter-Egg: genau LOAD"ABANDON",8,1 (Leerzeichen egal) – funktioniert auch ohne Diskette */
@@ -155,6 +157,12 @@ class Machine implements BasicHost {
     this.write('LOADING');
     this.newline();
     this.minutes += Math.ceil(file.blocks / 100);
+    if (file.crashes) {
+      // Gimmick »Schneewitchen«: Datenmüll, Stillstand, Reset – nie ein Bild
+      this.comp.loaded = null;
+      startApp(this.ctx, 'crash');
+      return 'error';
+    }
     if (file.appId && inProgram && secondary === 1) {
       this.comp.loaded = { name: file.name, appId: file.appId, diskId: disk.id };
       return 'machine';
@@ -441,7 +449,14 @@ export function exitApp(ctx: Ctx): void {
 
 function applyAppResult(ctx: Ctx, res: AppResult): number {
   let minutes = res.minutes ?? 0;
-  if (res.switchTo) minutes += startApp(ctx, res.switchTo);
+  if (res.reset) {
+    ctx.state.computer.app = null;
+    powerOnReset(ctx);
+    ctx.say(
+      'Der C64 meldet sich mit dem Startbildschirm zurück. Dein Programm im Speicher ist weg.',
+      'system',
+    );
+  } else if (res.switchTo) minutes += startApp(ctx, res.switchTo);
   else if (res.exit) exitApp(ctx);
   return minutes;
 }

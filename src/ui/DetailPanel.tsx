@@ -86,7 +86,8 @@ function actionsFor(state: GameState, id: string): Action[] {
     case 'disk_new2':
     case 'disk_new3':
     case 'disk_new4':
-    case 'disk_new5': {
+    case 'disk_new5':
+    case 'disk_sw': {
       const loc = state.itemLocations[id];
       if (loc !== 'inventory' && loc !== 'drive') a.push({ label: 'Nehmen', cmd: `NIMM ${cmdName(id)}` });
       if (loc !== 'drive') a.push({ label: 'Ins Laufwerk', cmd: `LEGE ${cmdName(id)} INS LAUFWERK` });

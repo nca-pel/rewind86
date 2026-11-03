@@ -62,6 +62,7 @@ const DISKS: Record<string, { x: number; label: string }> = {
   disk_archive: { x: 130, label: C.night },
   disk_1001: { x: 149, label: C.red },
   disk_game: { x: 168, label: C.yellow },
+  disk_sw: { x: 187, label: C.green },
 };
 const DRAWER_DISKS: Record<string, number> = { disk_1001: 240, disk_archive: 262, disk_game: 284 };
 

@@ -347,6 +347,11 @@ export const FACTS: FactDef[] = [
     text: 'Samstag: Schule bis 12 Uhr, 12:30 Taschengeld. In der Schublade liegen fünf neue Disketten – formatieren (siehe Journal), dann abends die Boxen (FLUX-HQ ab 17, STARDUST ab 19 Uhr).',
   },
   {
+    id: 'disk_sw',
+    category: 'dinge',
+    text: 'Unter dem Heimcomputer-Journal lag eine Diskette mit der Aufschrift »Schneewitchen«.',
+  },
+  {
     id: 'hidden_text',
     category: 'codes',
     text: 'Lesertipp: Farbcodes in REM-Zeilen können Text beim LIST unsichtbar machen (Schrift = Hintergrundfarbe). Hintergrund ändern: POKE 53281,<Farbe>.',

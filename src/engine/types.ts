@@ -26,6 +26,8 @@ export type ItemLocation = 'inventory' | 'desk' | 'drawer' | 'drive' | 'datasett
 export type C64Color = number; // 0..15, C64-Palettenindex
 
 export interface VirtualFile {
+  /** Laden stürzt den C64 ab und setzt ihn zurück (Gimmick: Diskette »Schneewitchen«) */
+  crashes?: boolean;
   name: string;
   type: 'PRG' | 'SEQ' | 'USR' | 'REL' | 'DEL';
   blocks: number;

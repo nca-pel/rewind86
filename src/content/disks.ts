@@ -42,8 +42,28 @@ export const BLANK_DISKS: Record<string, VirtualDisk> = Object.fromEntries(
   ]),
 );
 
+/**
+ * Gimmick: »Schneewitchen« fällt unter dem Heimcomputer-Journal hervor. Die Bilddateien (Koala-Format, 41 Blöcke,
+ * Endung .KOA) sehen nach »nicht jugendfrei« aus – jedes Laden stürzt den C64 ab. Es ist nie ein Bild zu sehen.
+ */
+const SW_PICTURE = (name: string) => ({
+  name: `${name}.KOA`,
+  type: 'PRG' as const,
+  blocks: 41,
+  crashes: true,
+});
+export const SCHNEEWITCHEN_DISK: VirtualDisk = {
+  id: 'sw',
+  header: 'SCHNEEWITCHEN',
+  diskId: 'SW',
+  writeProtected: true,
+  blocksTotal: 664,
+  files: ['SW_ZW1', 'SW_ZW2', 'SW_ZW3', 'GRUPPE'].map(SW_PICTURE),
+};
+
 export const INITIAL_DISKS: Record<string, VirtualDisk> = {
   ...BLANK_DISKS,
+  sw: SCHNEEWITCHEN_DISK,
   game: {
     id: 'game',
     header: `${B} ARBEITSK.`,

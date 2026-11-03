@@ -641,6 +641,25 @@ export const OBJECTS: WorldObject[] = [
     historicalStatus: 'fictional',
   },
   {
+    id: 'disk_sw',
+    name: 'die Diskette »Schneewitchen«',
+    acc: 'die Diskette »Schneewitchen«',
+    dat: 'der Diskette »Schneewitchen«',
+    short: 'Diskette Schneewitchen',
+    gender: 'f',
+    nouns: ['diskette', 'disk', 'schneewitchen', 'schneewittchen', 'etikett', 'aufkleber'],
+    adjectives: ['schneewitchen', 'schneewittchen', 'seltsame', 'fremde', 'unbekannte'],
+    portable: true,
+    initialLocation: 'nowhere',
+    hotspot: true,
+    description: [
+      {
+        text: 'Eine Diskette ohne Hülle, die Ecken abgegriffen. Auf dem Etikett steht mit Filzstift, in Druckbuchstaben: »Schneewitchen«. Keine weitere Angabe, kein Absender. Du fragst dich, wie die unter das Heft gekommen ist – und was jemand da draufgespeichert hat.',
+      },
+    ],
+    historicalStatus: 'fictional',
+  },
+  {
     id: 'door',
     name: 'die Zimmertür',
     acc: 'die Zimmertür',
@@ -791,4 +810,5 @@ export const DISK_ITEM_TO_IMAGE: Record<string, string> = {
   disk_new3: 'new3',
   disk_new4: 'new4',
   disk_new5: 'new5',
+  disk_sw: 'sw',
 };

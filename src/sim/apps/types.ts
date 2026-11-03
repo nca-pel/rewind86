@@ -23,6 +23,8 @@ export interface Rendered {
 
 export interface AppResult {
   minutes?: number;
+  /** C64 setzt sich zurück (Absturz): Programmspeicher gelöscht, Startbildschirm */
+  reset?: boolean;
   exit?: boolean;
   switchTo?: string;
 }

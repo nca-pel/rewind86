@@ -16,6 +16,7 @@ export type VerbId =
   | 'read'
   | 'use'
   | 'pickup'
+  | 'lift'
   | 'hangup'
   | 'call'
   | 'shout'
@@ -54,6 +55,8 @@ const L = (words: string, particle: string | null, verb: VerbId): VerbEntry => (
 export const VERBS: VerbEntry[] = [
   L('schau schaue sieh siehe guck gucke kuck kucke', 'an', 'examine'),
   L('heb hebe heben', 'auf', 'take'),
+  L('heb hebe heben lupf lupfe', 'hoch', 'lift'),
+  L('heb hebe heben lupf lupfe', 'an', 'lift'),
   L('heb hebe heben nimm nehme', 'ab', 'pickup'),
   L('geh gehe', 'ran', 'pickup'),
   L('geh gehe', 'dran', 'pickup'),
@@ -96,6 +99,7 @@ export const VERBS: VerbEntry[] = [
   L('lies lese les lesen blaettere blaetter studiere ueberfliege', null, 'read'),
   L('benutze benutz verwende verwend bediene bedien nutze nutz benutzen', null, 'use'),
   L('abheben abnehmen antworte antworten', null, 'pickup'),
+  L('hochheben hochhebe lupfen schuettle schuettel schuetteln', null, 'lift'),
   L('auflegen', null, 'hangup'),
   L('anrufen telefoniere telefonier', null, 'call'),
   L('rufe ruf brulle bruelle schrei schreie', null, 'shout'),

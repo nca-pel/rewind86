@@ -17,6 +17,7 @@ const DISK_LABEL: Record<string, string> = {
   disk_new3: '',
   disk_new4: '',
   disk_new5: '',
+  disk_sw: 'SW',
 };
 
 function Floppy({ label, dark = false }: { label: string; dark?: boolean }) {
@@ -74,6 +75,7 @@ function art(id: string): { viewBox: string; body: ReactNode } | null {
     case 'disk_new3':
     case 'disk_new4':
     case 'disk_new5':
+    case 'disk_sw':
       return { viewBox: '0 0 200 160', body: <Floppy label={DISK_LABEL[id]} /> };
     case 'disk_key':
       return { viewBox: '0 0 200 160', body: <Floppy label="??" dark /> };

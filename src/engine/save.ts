@@ -7,7 +7,7 @@ import { CELLS, TEXT_COLS, TEXT_ROWS } from '../c64/geometry';
 import { textToScreen } from '../c64/petscii';
 import { videoFromLines, type VideoState } from '../c64/video';
 import { GAME_CONFIG } from '../content/config';
-import { BLANK_DISKS, LOADER_LINES } from '../content/disks';
+import { BLANK_DISKS, LOADER_LINES, SCHNEEWITCHEN_DISK } from '../content/disks';
 import { EVENT_BY_ID } from '../content/events';
 import { SCHEMA_VERSION, dailySchedule } from './state';
 import type { GameState } from './types';
@@ -31,6 +31,7 @@ const virtualFile = z.object({
   basic: z.array(z.string().max(255)).max(2000).optional(),
   textContent: z.string().max(20000).optional(),
   hiddenUntilFact: z.string().optional(),
+  crashes: z.boolean().optional(),
 });
 
 const virtualDisk = z.object({
@@ -295,6 +296,17 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
       telecom: { ...telecom, costsAtLastReading: telecom.costsAtLastReading ?? s.phoneCostsDm ?? 0 },
       itemLocations: { club_letter: 'nowhere', ...items },
       scheduledEvents: [...events, ...missing],
+    };
+  },
+  10: (s) => {
+    // Gimmick-Diskette »Schneewitchen«
+    const items = (s.itemLocations ?? {}) as Record<string, unknown>;
+    const disks = (s.disks ?? {}) as Record<string, unknown>;
+    return {
+      ...s,
+      schemaVersion: 11,
+      itemLocations: { disk_sw: 'nowhere', ...items },
+      disks: { sw: structuredClone(SCHNEEWITCHEN_DISK), ...disks },
     };
   },
   9: (s) => {

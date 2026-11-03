@@ -1037,6 +1037,31 @@ function verb(ctx: Ctx, intent: Verb): number {
           return 0;
       }
     }
+    case 'lift': {
+      // Versteckter Befehl (nirgends erklärt): Unter dem Heft liegt eine Diskette.
+      const id = direct.length ? obj(ctx, intent, 0) : null;
+      if (direct.length && !id) return 0;
+      if (id !== 'magazine') {
+        ctx.say(
+          id
+            ? `${capitalize(OBJECT_BY_ID[id].name)} hochzuheben bringt nichts.`
+            : 'Was möchtest du hochheben?',
+        );
+        return 0;
+      }
+      if (s.itemLocations.disk_sw === 'nowhere') {
+        applyEffects(ctx, [
+          { type: 'moveItem', id: 'disk_sw', to: 'desk' },
+          { type: 'discoverFact', id: 'disk_sw' },
+        ]);
+        ctx.say(
+          'Du hebst das Heft an einer Ecke hoch – und etwas rutscht heraus, schlittert über die Tischplatte und bleibt vor der 1541 liegen: eine Diskette. Auf dem Etikett steht in Filzstift »Schneewitchen«. Wie lange die schon zwischen den Seiten steckte, weißt du nicht.',
+        );
+      } else {
+        ctx.say('Unter dem Heft liegt nichts mehr, nur ein heller Rechteckabdruck im Staub.');
+      }
+      return DEFAULT_MINUTES;
+    }
     case 'pickup':
       if (direct.length) {
         const id = obj(ctx, intent, 0);
