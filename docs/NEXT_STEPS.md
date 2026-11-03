@@ -30,8 +30,8 @@
 - Eigenständige C64-Bildschirmsimulation (`src/c64/`): PAL-Geometrie, berechnete Palette, eigener Zeichensatz,
   Röhreneffekte, austauschbares Startbild; BASIC mit Trigonometrie, `DEF FN`, `FRE`, `POS`.
 - Allgemeines Mailbox-System: Öffnungszeiten, Gast/Anmeldung/Freischaltung, Bretter, private Post mit verzögerten
-  Antworten, Downloads auf die Diskette; Terminalprogramm `TERMINAL`; zwei reguläre Mailboxen (Kleinanzeige →
-  BIT-SCHUPPEN → Mailboxliste → DATENKELLER).
+  Antworten, Downloads auf die Diskette; Terminalprogramm `TERMINAL`; vier reguläre Mailboxen (Kleinanzeige →
+  BIT-SCHUPPEN → Mailboxliste → DATENKELLER; optional FLUX-HQ und STARDUST mit Chat, siehe `STORY_CRACKER.md`).
 - Tagesablauf: Kalender mit Schultagen, erzählte Zeitblöcke (Schule, Schlaf, Abendbrot, Clubabend), Ralfs
   Wochenplan mit Rückrufen und späteren Telefonaten, Post, Taschengeld, Gebührenablesung durch den Vater.
 - Verdachtslogik: benannte Schwellen, Risiko durch Verhalten im geheimen Netz, Symptome (Systemnachrichten,
@@ -51,7 +51,7 @@
 
 ### Getestet (automatisiert, zuletzt alle grün)
 
-- `npm test`: 235 Vitest-Tests in 22 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
+- `npm test`: 297 Vitest-Tests in 29 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
   Prolog-Durchlauf, Demo, Archiv, Content-Integrität, Entwicklerkonsole/Meilensteine, Mailbox-System, Verdacht,
   Tagesablauf, Schlüssel-Strang, BTX).
 - `npm run test:e2e`: 16 Playwright-Szenarien × 2 Geräteprofile (Desktop Chrome, Pixel 7) = 32 Tests, darunter die Credits, das Easter-Egg, die Detailansicht, der

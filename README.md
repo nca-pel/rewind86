@@ -191,6 +191,7 @@ Das Spiel auf Ralfs Diskette (FERNHANDEL) ist spielbar: Im Intro startet die **L
 Nebenspur Mailbox: `LIES KLEINANZEIGEN` → BIT-SCHUPPEN GT (ab 18 Uhr). Archivdiskette einlegen, `LOAD"TERMINAL",8` +
 `RUN`, `WÄHLE 23586`, Hörer in den Koppler, RETURN, eigenen Namen eingeben, `J`. Nach der Freischaltung (später erneut
 anrufen) gibt es Post, Downloads und die Mailboxliste mit dem nächtlichen DATENKELLER.
+Optional (Zeitvertreib): die Cracker-Boxen FLUX-HQ und STARDUST mit Chat und BASIC-Demoeffekten, siehe `docs/STORY_CRACKER.md`.
 
 Nach dem Ausschnitt laufen die Tage als Alltag weiter: `SCHLAFE` ab 21 Uhr, Schule montags bis samstags, Abendbrot,
 Taschengeld am Samstag und sonntags die Abrechnung des Gebührenzählers. Ralf ist nach seinem Wochenplan erreichbar

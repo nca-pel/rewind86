@@ -161,12 +161,12 @@ Alle möglicherweise geschützten Elemente (Herstellername in der Einschaltmeldu
 | Dateien     | `OPEN n,8,sa,"NAME[,S,R\|W]"`, `CLOSE n`, `PRINT#n,…`, `INPUT#n,v[,w]`, `GET#n,v`, Status `ST` (64 = Dateiende); nur SEQ-Dateien auf der 1541; **Kommandokanal** `OPEN 15,8,15[,"Befehl"]`, `PRINT#15,"S0:NAME"` (löschen, mehrere Namen und `*` am Ende), `R0:NEU=ALT` (umbenennen), `I0`/`V0`; Antwort per `INPUT#15,EN,EM$,ET,ES` (`00, OK`, `01, FILES SCRATCHED` mit Anzahl, `26`, `31`, `34`, `62`, `63`, `74`); Programmdateien (Apps) sind gesperrt; `CLR`/`RUN` schließen alle Dateien |
 | Fehler      | `?SYNTAX`, `?TYPE MISMATCH`, `?UNDEF'D STATEMENT`, `?NEXT WITHOUT FOR`, `?RETURN WITHOUT GOSUB`, `?OUT OF DATA`, `?DIVISION BY ZERO`, `?ILLEGAL QUANTITY`, `?BAD SUBSCRIPT`, `?FILE NOT FOUND`, `?DEVICE NOT PRESENT`, `?MISSING FILE NAME`, `?ILLEGAL DIRECT`, `?REDO FROM START`, `BREAK IN n`; Dateien: `?FILE NOT OPEN`, `?FILE OPEN`, `?FILE EXISTS`, `?WRITE PROTECT ON`, `?NOT INPUT/OUTPUT FILE`                                                                                        |
 
-**Bewusst nicht unterstützt:** relative Dateien, Drucker, `CMD`, Formatieren (`N0:`), `VERIFY`, `CONT`, `WAIT`, `USR`, Bildschirmeditor mit Cursorsteuerung, Grafik-/Sprite-Register,
-Maschinensprache. Solche Befehle liefern `?SYNTAX ERROR` plus Hinweis im Adventure-Protokoll. Der Interpreter
+**Bewusst nicht unterstützt:** relative Dateien, Drucker, `CMD`, Formatieren (`N0:`), `VERIFY`, `CONT`, `USR`, Bildschirmeditor mit Cursorsteuerung, Grafik-/Sprite-Register,
+Maschinensprache. `WAIT adr,maske` ist nur als Bildtakt für Animationen gedacht (siehe `docs/STORY_CRACKER.md`). Solche Befehle liefern `?SYNTAX ERROR` plus Hinweis im Adventure-Protokoll. Der Interpreter
 behauptet keine vollständige V2-Kompatibilität.
 
 **Sicherheit:** eigener Tokenizer + rekursiver Ausdrucksparser, kein `eval`/`new Function` (per ESLint verboten).
-Schrittlimit `MAX_STEPS = 50 000` Anweisungen pro Ausführung → `BREAK IN n`. Stacktiefe (GOSUB/FOR) max. 64, Arrays
+Schrittlimit: höchstens `SLICE_STEPS` (6000) Anweisungen pro Takt; Programme laufen im Takt weiter (`WAIT` beendet ein Bild), eine Endlosschleife endet erst mit RUN/STOP. Stacktiefe (GOSUB/FOR) max. 64, Arrays
 max. 10 000 Elemente, Strings max. 255 Zeichen. `POKE`/`PEEK` wirken nur auf eine simulierte Speichertabelle.
 
 ### Laden & Starten
@@ -220,6 +220,8 @@ C64-Programme:
 | geheime Mailbox   | `access: 'module'`        | `MODUL K` (`sim/apps/modk.ts`, Auto-Anmeldung) | immer          |
 | `BIT-SCHUPPEN GT` | `access: 'public'`, Gäste | `TERMINAL` auf der Archivdiskette (`term.ts`)  | 18–24 Uhr      |
 | `DATENKELLER`     | `access: 'public'`, Gäste | `TERMINAL`                                     | 22–6 Uhr       |
+| `FLUX-HQ`         | `access: 'public'`, Gäste | `TERMINAL`                                     | 17–23 Uhr      |
+| `STARDUST BBS`    | `access: 'public'`, Gäste | `TERMINAL` (Menü 6: Chat mit RASTAR)           | 19–1 Uhr       |
 
 - **Öffnungszeiten** (`hours`, auch über Mitternacht): Außerhalb klingelt es ohne Modemton durch.
 - **Benutzerstatus**: `gast` (lesen) → `neu` (nach Anmeldung mit eigenem Handle) → `mitglied` (schreiben, private
@@ -232,6 +234,7 @@ C64-Programme:
 - **Downloads**: echte BASIC-Programme, die auf die Diskette im Laufwerk geschrieben werden (Schreibschutz, freie
   Blöcke und doppelte Namen werden geprüft); Dauer nach 300 Baud (254 Byte/Block, 30 Zeichen/s).
 - **Kosten**: laufen über den normalen Gebührenzähler der Verbindung; `onlineMinutes` zählt mit.
+- **Chat** (`chat: { handle }`): Gesprächsfigur im Terminalmenü 6, regelbasiert ohne Sprachmodell (`content/cracker.ts`, `engine/cracker.ts`, siehe `docs/STORY_CRACKER.md`).
 - Das Modul verbindet sich nur mit der geheimen Mailbox, TERMINAL nicht mit ihr („unbekanntes Protokoll“).
 
 Neue Mailbox: Eintrag in `GAME_CONFIG.mailboxes` (Name, Nummer, Sysop, Zeiten), `MailboxSystem` in `networks.ts`,
@@ -396,6 +399,7 @@ Browser-Sitzung, `?dev=0` schaltet ab. Ohne den Parameter wird nichts davon ange
 | `src/tests/save.test.ts`         | Roundtrip, Fortsetzen nach Import, Ablehnung defekter/manipulierter Dateien (§19.5)                                                                                                                                               |
 | `src/tests/prolog.test.ts`       | Prolog auf Engine-Ebene, Intro-Fairness, Mailbox ohne Diskette 2, Leitungsereignisse, Demo, Archiv, Content-Integrität (§19.4)                                                                                                    |
 | `src/tests/bbs.test.ts`          | Öffnungszeiten, Handles, Gast/Anmeldung/Freischaltung, Bretter, Post mit Antwort, Download + RUN, Schreibschutz, NO CARRIER, zwei Systeme, Modul/TERMINAL-Trennung, Migration v2→v3                                               |
+| `src/tests/cracker.test.ts`      | Cracker-Boxen FLUX-HQ/STARDUST, Chat mit RASTAR (Absichten, Gedächtnis, Strikes), Effektlistings, animierte BASIC-Läufe                                                                                                           |
 | `src/tests/pressure.test.ts`     | Benannte Schwellen, Deckel bis zur Warnung, Risiko durch Anmeldung/Online-Zeit/Sendeversuch, alle Verdachtsstufen im Spiel, Sperre, anonymer Anruf, Spielende, Migration v3→v4                                                    |
 | `src/tests/routine.test.ts`      | Kalender, Weckzeiten, Ralfs Wochenplan, Schlafen/Einschlafen, Samstag (Taschengeld, Post, Ralf ruft an, Risiko beim Erzählen), Rückruf, Schultag, Abendbrot, Gebührenzähler mit Schulden, Clubabend, Meilenstein, Migration v4→v5 |
 | `src/tests/keystrand.test.ts`    | Chiffre, unsichtbare REM-Zeile + POKE 53281, Lesertipps, kompletter Schlüsselweg (Netzmeldung, Kassette, Datasette, Ersatzschlüssel), Expertenweg mit eigenem BASIC, SEQ-Dateien, Migration v5→v6                                 |
