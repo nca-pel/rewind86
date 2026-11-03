@@ -98,7 +98,7 @@ describe('Parser-Szenarien (GDD §19.1)', () => {
     const s = new Session();
     s.a('öffne schublade');
     const out = s.a('NIMM DISKETTE');
-    expect(out).toMatch(/Welche Diskette meinst du: .*1001.* oder .*Archivdiskette/);
+    expect(out).toMatch(/Welche Diskette meinst du: .*1001.*Archivdiskette.* oder .*neue Diskette/);
     expect(s.state.itemLocations.disk_1001).toBe('drawer');
     s.a('die 1001');
     expect(s.state.itemLocations.disk_1001).toBe('inventory');

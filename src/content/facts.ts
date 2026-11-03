@@ -1,7 +1,7 @@
 import type { GameState } from '../engine/types';
 import { GAME_CONFIG } from './config';
 
-export type FactCategory = 'personen' | 'kanaele' | 'codes' | 'verdacht' | 'dinge';
+export type FactCategory = 'personen' | 'kanaele' | 'codes' | 'verdacht' | 'dinge' | 'plaene';
 
 export interface FactDef {
   id: string;
@@ -19,6 +19,7 @@ export const FACT_CATEGORIES: Record<FactCategory, string> = {
   codes: 'Codes & Technik',
   verdacht: 'Verdachtsmomente',
   dinge: 'Gegenstände',
+  plaene: 'Pläne & Termine',
 };
 
 export const FACTS: FactDef[] = [
@@ -324,6 +325,26 @@ export const FACTS: FactDef[] = [
     id: 'fx_sinus',
     category: 'dinge',
     text: 'Effekt SINUS-SCROLLER: Text, der als Sinuswelle durchs Bild läuft.',
+  },
+  {
+    id: 'format_howto',
+    category: 'codes',
+    text: 'Neue Disketten sind unformatiert: OPEN 15,8,15,"N0:NAME,01":CLOSE 15 legt Spuren und Directory an (löscht alles darauf!).',
+  },
+  {
+    id: 'download_howto',
+    category: 'codes',
+    text: 'Download aus einer Box: im TERMINAL Dateibereich wählen, Datei nummerieren. Braucht Mitgliedsstatus und eine formatierte, beschreibbare Diskette mit freien Blöcken. 300 Baud ≈ 7 Blöcke pro Minute.',
+  },
+  {
+    id: 'listing2_read',
+    category: 'dinge',
+    text: 'Im Journal: GEBÜHREN-RECHNER (6 Zeilen). Rechnet Online-Minuten im 8-Minuten-Takt zu 23 Pfennig.',
+  },
+  {
+    id: 'plan_saturday',
+    category: 'plaene',
+    text: 'Samstag: Schule bis 12 Uhr, 12:30 Taschengeld. In der Schublade liegen fünf neue Disketten – formatieren (siehe Journal), dann abends die Boxen (FLUX-HQ ab 17, STARDUST ab 19 Uhr).',
   },
   {
     id: 'hidden_text',

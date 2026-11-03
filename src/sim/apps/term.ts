@@ -355,13 +355,14 @@ function onKey(ctx: Ctx, app: TermState, key: string): AppResult {
         if (r.ok) {
           app.note = `${sys.downloads[n - 1].name}: OK`;
           ctx.say(
-            `Die 1541 surrt. ${sys.downloads[n - 1].name} liegt jetzt auf der Diskette im Laufwerk (LOAD"${sys.downloads[n - 1].name}",8).`,
+            `Das Terminal empfängt ${sys.downloads[n - 1].name} im Punter-Protokoll, Block für Block (${sys.downloads[n - 1].blocks} Blöcke, ${r.minutes} Min. bei 300 Baud). Zum Schluss surrt die 1541: ${sys.downloads[n - 1].name} liegt jetzt auf der Diskette im Laufwerk (LOAD"${sys.downloads[n - 1].name}",8).`,
           );
           return { minutes: r.minutes };
         }
         app.note = {
           status: 'NUR FUER MITGLIEDER',
           nodisk: 'KEINE DISKETTE IM LAUFWERK',
+          unformatted: 'DISKETTE NICHT FORMATIERT',
           protected: 'DISKETTE SCHREIBGESCHUETZT',
           full: 'DISKETTE VOLL',
           exists: 'DATEI SCHON VORHANDEN',

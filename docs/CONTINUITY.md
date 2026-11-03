@@ -10,7 +10,7 @@ oder Figurenkontakt.
 | Tag       | Pflicht-/Zeitereignisse                                      | Leerlauf                                                                     |
 | --------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
 | Fr 14.11. | Anruf Ralf 16:00, Vater 18:00, Abendbrot, Mailbox            | **18:00–21:00** (bereits mit CODE-KNACKER gefüllt)                           |
-| Sa 15.11. | Post 10:30, Geld 12:30, Ralf 13:00, BBS-Freischaltung ~19:00 | **13:30–19:00** (Nachmittag ohne Auslöser)                                   |
+| Sa 15.11. | Post 10:30, Geld 12:30, Ralf 13:00, BBS-Freischaltung ~19:00 | **13:30–19:00** (jetzt: Formatieren, FLUX-HQ ab 17 Uhr)                      |
 | So 16.11. | Zählerstand 19:00, GHOST-Beitrag 20:00                       | **fast der ganze Tag**                                                       |
 | Mo 17.11. | Systemmeldung 08:00 (P07)                                    | **14:15–22:00** (nach P07 kein Ziel)                                         |
 | Di 18.11. | DATENKELLER-Gerücht 22:00                                    | **ganzer Tag**, Ralfs Karton-Hinweis fehlt (Kassette kommt »aus dem Nichts«) |

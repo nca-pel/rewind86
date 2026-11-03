@@ -175,7 +175,7 @@ describe('BTX (Ausbauplan Punkt 7)', () => {
     old.itemLocations.magazine = 'package';
     old.objectStates.package = { open: false };
     const m = migrate(old) as typeof old;
-    expect(m.schemaVersion).toBe(8);
+    expect(m.schemaVersion).toBe(SCHEMA_VERSION);
     expect(m.itemLocations.package).toBeUndefined();
     expect(m.itemLocations.magazine).toBe('desk');
     expect(m.objectStates.package).toBeUndefined();

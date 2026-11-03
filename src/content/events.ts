@@ -390,9 +390,11 @@ export const EVENTS: EventDef[] = [
             type: 'absence',
             kind: 'school',
             until: CAL.schoolUntilSaturday,
-            text: 'Samstag – und trotzdem Schule. Nur vier Stunden, aber die ziehen sich wie Kaugummi. Alle denken schon ans Wochenende.',
-            backText: 'Mittags bist du wieder zu Hause. Endlich Wochenende – zumindest der Rest davon.',
+            text: 'Samstag – und trotzdem Schule. Vier Stunden: Physik bei Herrn Wiegand (Stromkreise, du hättest sie im Schlaf zeichnen können), Deutsch, Erdkunde, zuletzt Kunst. In der großen Pause steht Tobias an der Fahrradständerreihe und erzählt, dass er sich am Wochenende Demos aus den Boxen zieht. »Dafür brauchst du formatierte Disketten«, sagt er. »Neue sind erst mal leer und unformatiert, sonst frisst die 1541 gar nichts.« Du nickst. Zu Hause liegt noch ein Fünferpack in der Schublade, und das Heimcomputer-Journal hat eine Diskettenseite.',
+            backText:
+              'Kurz nach zwölf bist du wieder zu Hause, die Tasche fliegt in die Ecke. Endlich Wochenende – zumindest der Rest davon. Der Plan für heute steht: eine der neuen Disketten aus der Schublade formatieren, dann abends die Boxen.',
           },
+          { type: 'discoverFact', id: 'plan_saturday' },
         ],
       },
       {
@@ -569,7 +571,13 @@ export const EVENTS: EventDef[] = [
   {
     id: 'ev_pocket_money',
     daily: GAME_CONFIG.household.pocketMoneyAt,
-    variants: [{ when: { weekday: 'Samstag' }, effects: [{ type: 'pocketMoney' }] }, { effects: [] }],
+    variants: [
+      {
+        when: { weekday: 'Samstag' },
+        effects: [{ type: 'pocketMoney' }],
+      },
+      { effects: [] },
+    ],
   },
   {
     id: 'ev_mail',

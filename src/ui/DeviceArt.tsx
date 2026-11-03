@@ -8,7 +8,16 @@ import { glyphPath } from './glyphPath';
 import type { ReactNode } from 'react';
 import type { GameState } from '../engine/types';
 
-const DISK_LABEL: Record<string, string> = { disk_game: 'WT-07', disk_1001: '1001', disk_archive: 'ARCHIV' };
+const DISK_LABEL: Record<string, string> = {
+  disk_game: 'WT-07',
+  disk_1001: '1001',
+  disk_archive: 'ARCHIV',
+  disk_new1: '',
+  disk_new2: '',
+  disk_new3: '',
+  disk_new4: '',
+  disk_new5: '',
+};
 
 function Floppy({ label, dark = false }: { label: string; dark?: boolean }) {
   return (
@@ -60,6 +69,11 @@ function art(id: string): { viewBox: string; body: ReactNode } | null {
     case 'disk_game':
     case 'disk_1001':
     case 'disk_archive':
+    case 'disk_new1':
+    case 'disk_new2':
+    case 'disk_new3':
+    case 'disk_new4':
+    case 'disk_new5':
       return { viewBox: '0 0 200 160', body: <Floppy label={DISK_LABEL[id]} /> };
     case 'disk_key':
       return { viewBox: '0 0 200 160', body: <Floppy label="??" dark /> };

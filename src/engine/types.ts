@@ -47,6 +47,8 @@ export interface VirtualDisk {
   writeProtected: boolean;
   blocksTotal: number;
   files: VirtualFile[];
+  /** Fabrikneue Disketten sind unformatiert (fehlt = formatiert); erst `N0:NAME,ID` macht sie nutzbar. */
+  formatted?: boolean;
 }
 
 export interface ProgramLine {

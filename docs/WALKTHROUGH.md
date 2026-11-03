@@ -25,7 +25,11 @@ Zeile ans Adventure. Programme im »Tastenmodus« bekommen jede Taste einzeln (E
 
 ## Samstag 15.11.
 
-- Schule bis 12 Uhr läuft automatisch. 10:30 Post (Rundbrief des Computerclubs: Clubabend Do 20.11. 19 Uhr, BTX-Seite `*123770#`). 12:30 Taschengeld 10 DM. **[geprüft]**
+- Schule bis 12 Uhr läuft automatisch (Physik, Deutsch, Erdkunde, Kunst; Tobias in der Pause: Demos aus den Boxen, Disketten müssen formatiert sein). 10:30 Post (Rundbrief des Computerclubs: Clubabend Do 20.11. 19 Uhr, BTX-Seite `*123770#`). 12:30 Taschengeld 10 DM. **[geprüft]**
+- **Disketten:** In der Schublade liegt ein Fünferpack (`ÖFFNE SCHUBLADE`, `NIMM ZWEITE NEUE DISKETTE`). Fabrikneu = unformatiert. Zuerst im Journal `LIES DISKETTENARTIKEL` / `LIES MAILBOX-ARTIKEL` / `LIES GEBÜHREN-LISTING`.
+- **Formatieren:** neue Diskette ins Laufwerk (`LEGE ZWEITE NEUE DISKETTE INS LAUFWERK`), am C64 `OPEN 15,8,15,"N0:MEINE DISK,01":CLOSE 15`. Danach gehen `SAVE`, `LOAD"$",8` und Downloads.
+- **Downloads:** FLUX-HQ (ab 17 Uhr, Mitglied nach 20 Min.): STERNE, BALKEN, FLUX-INTRO. STARDUST (ab 19 Uhr): FARBREGEN, PULSAR. Im Terminal Menü 3 (Dateien), Nummer wählen; je nach Größe dauert es mehrere Minuten. Dann `LOAD"NAME",8`, `RUN`.
+- Am Abend: BIT-SCHUPPEN, DATENKELLER (22 Uhr), Chat mit RASTAR.
 - ~19:00 Freischaltung BIT-SCHUPPEN: Postfach, Mailboxliste → DATENKELLER **38104** (nur 22–06 Uhr). **[geprüft]**
 - 17:45 Ralf ruft nach dem Fußballspiel an (Seidel war im Büro).
 - Ralf anrufen (47112): `RUFE RALF AN` (Sa nach 12:30; Di/Do/Fr erst ab 18:45, Training 16:30–18:30). **[geprüft]**

@@ -222,7 +222,7 @@ export function blocksFree(disk: VirtualDisk): number {
 
 export type DownloadResult =
   | { ok: true; minutes: number; diskId: string }
-  | { ok: false; reason: 'status' | 'nodisk' | 'protected' | 'full' | 'exists' };
+  | { ok: false; reason: 'status' | 'nodisk' | 'unformatted' | 'protected' | 'full' | 'exists' };
 
 /** Download auf die Diskette im Laufwerk. Dauer nach 300 Baud. */
 export function download(ctx: Ctx, sysId: string, name: string): DownloadResult {
@@ -232,6 +232,7 @@ export function download(ctx: Ctx, sysId: string, name: string): DownloadResult 
   if (!file || sessionStatus(s, sysId) !== 'mitglied') return { ok: false, reason: 'status' };
   const disk = diskInDrive(s);
   if (!disk) return { ok: false, reason: 'nodisk' };
+  if (disk.formatted === false) return { ok: false, reason: 'unformatted' };
   if (disk.writeProtected) return { ok: false, reason: 'protected' };
   if (disk.files.some((f) => f.name === file.name)) return { ok: false, reason: 'exists' };
   if (blocksFree(disk) < file.blocks) return { ok: false, reason: 'full' };

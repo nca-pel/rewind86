@@ -49,7 +49,9 @@ Die Listings sind so kurz, dass sie in die 40 Zeichen der Chatzeile passen. Als 
 | FARBWELLE      | 5      | Bildschirm voller Blöcke, der Farb-RAM (55296) wird verschoben: diagonale Streifen   |
 | SINUS-SCROLLER | 9      | Text läuft als Sinuswelle durchs Bild (Zeichen im Bildschirm-RAM, Farbe im Farb-RAM) |
 
-Dazu die FLUX-Downloads: STERNE (Sternenhimmel, 3 Geschwindigkeiten), BALKEN, FLUX-INTRO (Laufschrift, Balken, Rahmen).
+Dazu die FLUX-Downloads: STERNE (Sternenhimmel, 3 Geschwindigkeiten), BALKEN, FLUX-INTRO (Laufschrift, Balken, Rahmen) und bei STARDUST FARBREGEN (fallende Kugeln) und PULSAR (pulsierender Rand).
+
+Downloads brauchen eine **formatierte** Diskette (siehe `RECHERCHE_DOWNLOAD_1986.md`).
 
 ## Technik: animierte BASIC-Läufe
 

@@ -1,5 +1,5 @@
 import { GAME_CONFIG } from '../content/config';
-import { CRACKER_EFFECTS, FLUXHQ, INTENTS } from '../content/cracker';
+import { CRACKER_EFFECTS, FLUXHQ, INTENTS, STARDUST } from '../content/cracker';
 import { Session } from './helpers';
 
 const SD = GAME_CONFIG.mailboxes.stardust;
@@ -160,8 +160,8 @@ describe('Effekte laufen wirklich animiert auf dem C64', () => {
   });
 });
 
-describe('FLUX-Downloads sind lauffähig', () => {
-  test.each(FLUXHQ.downloads.map((d) => [d.name, d] as const))(
+describe('Box-Downloads sind lauffähig', () => {
+  test.each([...FLUXHQ.downloads, ...STARDUST.downloads].map((d) => [d.name, d] as const))(
     '%s läuft ohne Fehler und animiert',
     (_n, d) => {
       const s = new Session();

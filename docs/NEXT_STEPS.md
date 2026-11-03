@@ -51,7 +51,7 @@
 
 ### Getestet (automatisiert, zuletzt alle grün)
 
-- `npm test`: 297 Vitest-Tests in 29 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
+- `npm test`: 303 Vitest-Tests in 30 Dateien (Parser, Zeit/Ereignisse, BASIC, Disketten, Bildschirm/Video, Save/Load,
   Prolog-Durchlauf, Demo, Archiv, Content-Integrität, Entwicklerkonsole/Meilensteine, Mailbox-System, Verdacht,
   Tagesablauf, Schlüssel-Strang, BTX).
 - `npm run test:e2e`: 16 Playwright-Szenarien × 2 Geräteprofile (Desktop Chrome, Pixel 7) = 32 Tests, darunter die Credits, das Easter-Egg, die Detailansicht, der

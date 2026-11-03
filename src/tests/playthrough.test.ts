@@ -70,6 +70,8 @@ describe('Durchspiel-Befunde', () => {
     s.a('nimm 1001');
     s.a('nimm archivdiskette');
     s.a('lege archivdiskette ins laufwerk');
+    // das Fünferpack neuer Disketten ebenfalls ausräumen
+    for (let n = 1; n <= 5; n++) s.state.itemLocations[`disk_new${n}`] = 'inventory';
     expect(s.a('schau dich um')).toMatch(/Die Schublade ist offen und/);
   });
 

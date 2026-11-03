@@ -15,6 +15,11 @@ export const COMMAND_NAME: Record<string, string> = {
   disk_game: 'SPIELEDISKETTE',
   disk_1001: 'DISKETTE 1001',
   disk_archive: 'ARCHIVDISKETTE',
+  disk_new1: 'NEUE DISKETTE 1',
+  disk_new2: 'ZWEITE NEUE DISKETTE',
+  disk_new3: 'DRITTE NEUE DISKETTE',
+  disk_new4: 'VIERTE NEUE DISKETTE',
+  disk_new5: 'FUENFTE NEUE DISKETTE',
   door: 'TÜR',
   window: 'FENSTER',
 };

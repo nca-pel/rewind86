@@ -34,7 +34,16 @@ export const LOADER_LINES_HARD = LOADER_LINES.map((l) =>
   l.startsWith('70 REM') ? `70 REM ${BLUE}K-SCHLUESSEL: ${KEY[0]}${LIGHT_BLUE}` : l,
 );
 
+/** Fünferpack in Jans Schublade: fabrikneu und unformatiert, bis `N0:NAME,ID` sie beschreibbar macht. */
+export const BLANK_DISKS: Record<string, VirtualDisk> = Object.fromEntries(
+  ['new1', 'new2', 'new3', 'new4', 'new5'].map((id) => [
+    id,
+    { id, header: '', diskId: '', writeProtected: false, blocksTotal: 664, files: [], formatted: false },
+  ]),
+);
+
 export const INITIAL_DISKS: Record<string, VirtualDisk> = {
+  ...BLANK_DISKS,
   game: {
     id: 'game',
     header: `${B} ARBEITSK.`,

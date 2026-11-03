@@ -138,6 +138,7 @@ class Machine implements BasicHost {
       this.note('Die 1541 rattert, dann blinkt ihre rote LED: Es liegt keine Diskette im Laufwerk.');
       throw new BasicError('FILE NOT FOUND');
     }
+    if (this.unformatted(disk)) throw new BasicError('FILE NOT FOUND');
     if (name === '$') {
       this.write('LOADING');
       this.newline();
@@ -222,6 +223,7 @@ class Machine implements BasicHost {
       this.note('Die rote LED der 1541 blinkt: keine Diskette im Laufwerk.');
       throw new BasicError('FILE NOT FOUND');
     }
+    if (this.unformatted(disk)) throw new BasicError('FILE NOT FOUND');
     if ((rawMode ?? 'R').trim().startsWith('W')) {
       if (disk.writeProtected) {
         this.note('Die rote LED der 1541 blinkt: Die Diskette ist schreibgeschützt.');
@@ -246,13 +248,56 @@ class Machine implements BasicHost {
   writeFile(name: string, data: string): void {
     const disk = diskInDrive(this.ctx.state);
     this.ctx.cue('drive');
-    if (!disk || disk.writeProtected) {
+    if (!disk || disk.writeProtected || disk.formatted === false) {
       this.note('Die rote LED der 1541 blinkt: Die Datei konnte nicht geschrieben werden.');
       return;
     }
     const blocks = Math.max(1, Math.ceil(data.length / 254));
     disk.files.push({ name, type: 'SEQ', blocks, textContent: data });
     this.minutes += 1;
+  }
+
+  /** Fabrikneue Diskette: Die 1541 findet keine Spuren. Meldet das im Adventure-Protokoll. */
+  private unformatted(disk: VirtualDisk): boolean {
+    if (disk.formatted !== false) return false;
+    this.note(
+      'Die 1541 rattert, die rote LED blinkt: Die Diskette ist fabrikneu und noch nicht formatiert. (OPEN 15,8,15,"N0:NAME,01":CLOSE 15)',
+    );
+    return true;
+  }
+
+  /** `N0:NAME,ID`: Spuren und Directory anlegen. Ohne ID nur schnelles Löschen einer schon formatierten Diskette. */
+  private format(
+    disk: VirtualDisk,
+    arg: string,
+    msg: (nr: number, text: string, track?: number) => string,
+  ): string {
+    const [rawName, rawId] = arg.split(',');
+    const name = (rawName ?? '').trim().slice(0, 16);
+    if (!name) return msg(34, 'SYNTAX ERROR');
+    if (disk.writeProtected) {
+      this.note('Die rote LED der 1541 blinkt: Die Diskette ist schreibgeschützt.');
+      return msg(26, 'WRITE PROTECT ON');
+    }
+    if (disk.files.some((f) => f.appId)) {
+      this.note(
+        'Die Diskette enthält deine Programme. Das Formatieren würde sie unwiederbringlich löschen – das lässt du lieber bleiben.',
+      );
+      return msg(26, 'WRITE PROTECT ON');
+    }
+    const full = rawId !== undefined;
+    if (!full && disk.formatted === false) return msg(21, 'READ ERROR', 18);
+    disk.files = [];
+    disk.header = name;
+    if (full) disk.diskId = rawId.trim().slice(0, 2);
+    disk.formatted = true;
+    this.minutes += full ? 2 : 1;
+    this.note(
+      full
+        ? 'Die 1541 knattert, rattert, knattert – fast zwei Minuten lang. Dann ist die Diskette formatiert: Spuren, Directory, alles leer.'
+        : 'Die 1541 räumt das Directory auf. Die Diskette ist leer.',
+    );
+    return DISK_OK;
   }
 
   /**
@@ -272,6 +317,11 @@ class Machine implements BasicHost {
     }
     const kind = text[0];
     const arg = text.replace(/^[A-Z]*\d*:?/, '');
+    if (kind === 'N') return this.format(disk, arg, msg);
+    if (disk.formatted === false) {
+      this.note('Die rote LED der 1541 blinkt: Diese Diskette ist noch unformatiert.');
+      return msg(74, 'DRIVE NOT READY');
+    }
     if (kind === 'I' || kind === 'V') {
       this.minutes += 1;
       return DISK_OK;
@@ -333,6 +383,7 @@ class Machine implements BasicHost {
     this.newline();
     this.ctx.cue('drive');
     if (!disk) return this.note('Die rote LED der 1541 blinkt: keine Diskette im Laufwerk.');
+    if (this.unformatted(disk)) return;
     if (disk.writeProtected)
       return this.note('Die rote LED der 1541 blinkt: Die Diskette ist schreibgeschützt.');
     if (disk.files.some((f) => f.name === upper))

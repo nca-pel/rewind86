@@ -7,7 +7,7 @@ import { CELLS, TEXT_COLS, TEXT_ROWS } from '../c64/geometry';
 import { textToScreen } from '../c64/petscii';
 import { videoFromLines, type VideoState } from '../c64/video';
 import { GAME_CONFIG } from '../content/config';
-import { LOADER_LINES } from '../content/disks';
+import { BLANK_DISKS, LOADER_LINES } from '../content/disks';
 import { EVENT_BY_ID } from '../content/events';
 import { SCHEMA_VERSION, dailySchedule } from './state';
 import type { GameState } from './types';
@@ -40,6 +40,7 @@ const virtualDisk = z.object({
   writeProtected: z.boolean(),
   blocksTotal: z.number().int(),
   files: z.array(virtualFile).max(144),
+  formatted: z.boolean().optional(),
 });
 
 const basicRun = z.object({
@@ -294,6 +295,20 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
       telecom: { ...telecom, costsAtLastReading: telecom.costsAtLastReading ?? s.phoneCostsDm ?? 0 },
       itemLocations: { club_letter: 'nowhere', ...items },
       scheduledEvents: [...events, ...missing],
+    };
+  },
+  8: (s) => {
+    // Neue Leerdisketten aus der Schublade (unformatiert) und ihre Gegenstände nachtragen
+    const items = (s.itemLocations ?? {}) as Record<string, unknown>;
+    const disks = (s.disks ?? {}) as Record<string, unknown>;
+    return {
+      ...s,
+      schemaVersion: 9,
+      itemLocations: {
+        ...Object.fromEntries([1, 2, 3, 4, 5].map((n) => [`disk_new${n}`, 'drawer'])),
+        ...items,
+      },
+      disks: { ...structuredClone(BLANK_DISKS), ...disks },
     };
   },
   7: (s) => {
