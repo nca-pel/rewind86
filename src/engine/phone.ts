@@ -12,6 +12,7 @@ import { isOpen } from './bbs';
 import { diffMinutes, formatClock, isBefore } from './clock';
 import { leaveClub, nextRalfHome, ralfWhere } from './routine';
 import { houseLineBusy } from './conditions';
+import { omaCallLines } from './household';
 import type { Ctx } from './context';
 import { applyEffects, discoverFact, scheduleEvent, setPuzzle } from './effects';
 import { evalCondition } from './conditions';
@@ -89,6 +90,7 @@ export function pickUp(ctx: Ctx): number {
     return 1;
   }
   if (t.ringing === 'seidel') return answerSeidel(ctx);
+  if (t.ringing === 'oma') return answerOma(ctx);
   if (t.ringing === 'anon') {
     // Symptom von Seidels Verdacht (ev_susp_dangerous). Entschieden: Es ist Seidel selbst, der prüft, ob die
     // Leitung belegt ist – Jan erkennt es erst bei Seidels Anruf im Finale (answerSeidel).
@@ -118,6 +120,30 @@ export function pickUp(ctx: Ctx): number {
 }
 
 /** Finale: Seidel ruft an, bevor er losfährt. */
+/** Oma ruft an (reine Stimmung): kurzes Gespräch, dann legt sie auf; eingehende Anrufe kosten nichts. */
+function answerOma(ctx: Ctx): number {
+  const s = ctx.state;
+  const t = s.telecom;
+  t.ringing = null;
+  delete s.flags.omaRinging;
+  for (const ev of s.scheduledEvents)
+    if ((ev.id === 'ev_ring_reminder' || ev.id === 'ev_oma_ring_end') && ev.status === 'pending')
+      ev.status = 'cancelled';
+  ctx.say('Du nimmst ab.');
+  const [opener, ...rest] = omaCallLines(ctx);
+  ctx.say(opener, 'dialog', 'OMA');
+  rest.slice(0, -1).forEach((line, i) => {
+    if (i % 2 === 0) ctx.say(line, 'dialog', 'OMA');
+    else ctx.say(line);
+  });
+  ctx.say(rest[rest.length - 1], 'dialog', 'OMA');
+  ctx.say('Es klickt in der Leitung. Oma hat aufgelegt, und du legst den Hörer zurück auf die Gabel.');
+  t.handset = 'cradle';
+  t.call = null;
+  ctx.cue('hangup');
+  return 6;
+}
+
 function answerSeidel(ctx: Ctx): number {
   const s = ctx.state;
   const t = s.telecom;

@@ -297,6 +297,15 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
       scheduledEvents: [...events, ...missing],
     };
   },
+  9: (s) => {
+    // Omas tägliche Anruf-Prüfungen nachtragen
+    const events = (s.scheduledEvents ?? []) as Array<{ id: string; status: string }>;
+    const clock = typeof s.gameClock === 'string' ? s.gameClock : GAME_CONFIG.startDate;
+    const missing = dailySchedule(clock).filter(
+      (d) => !events.some((e) => e.id === d.id && e.status === 'pending'),
+    );
+    return { ...s, schemaVersion: 10, scheduledEvents: [...events, ...missing] };
+  },
   8: (s) => {
     // Neue Leerdisketten aus der Schublade (unformatiert) und ihre Gegenstände nachtragen
     const items = (s.itemLocations ?? {}) as Record<string, unknown>;

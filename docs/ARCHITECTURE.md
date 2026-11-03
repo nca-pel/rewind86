@@ -390,6 +390,14 @@ Browser-Sitzung, `?dev=0` schaltet ab. Ohne den Parameter wird nichts davon ange
   `contentWarnings()` (Ereignisse ohne Zeitpunkt/Auslöser/Einplanung, nie gesetzte Rätsel). Im Code ausgelöste
   Ereignisse/Rätsel stehen in `CODE_TRIGGERS`; ein Test gleicht die Liste mit dem Quelltext ab.
 
+## Alltag im Haus (reine Stimmung)
+
+`content/household.ts` (Texte) und `engine/household.ts` (Auswahl, Zufall). Nichts davon wirkt auf Verdacht, Vertrauen, Rätsel oder Enden.
+
+- **Tür öffnen**: `DOOR_SCENES` nach Datum, Wochentag, Schultag und Uhrzeit (Nacht, Schulmorgen, Sonntag in vier Abschnitten, Samstag, Tagesschau 19:30–20:15, Buß- und Bettag 19.11.). Erster passender Eintrag gewinnt, darin zufällige Variante. Mit 40 % ruft die Mutter von unten eine Frage (`MOTHER_QUESTIONS`, nicht zweimal dieselbe hintereinander, nie zwischen 23 und 6 Uhr); Jans Antwort ist erzählt.
+- **Omas Anrufe**: zwei tägliche Prüfungen (`ev_oma_check_1` 16:30, `ev_oma_check_2` 19:35, Effekt `omaRing`). 18 % Chance, solange Jan frei ist (nicht online, nicht abwesend, Leitung frei, kein Besuch/Club, nicht im Finale), höchstens 3 Anrufe, mindestens 20 Stunden Abstand; Di–Do mit 50 %, solange sie noch nie angerufen hat. Abnehmen (`pickUp`, `ringing === 'oma'`) führt ein kurzes, zufällig zusammengesetztes Gespräch (Eröffnung, zwei Themen, Abschied) und legt dann auf; eingehende Anrufe kosten nichts. Verpasst Jan den Anruf, nimmt die Mutter ab (`ev_oma_ring_end`).
+- **Zufall**: `nextRandom` (mulberry32) liest und schreibt `rngSeed` im Spielstand, ist also deterministisch und speicherbar.
+
 ## Tests
 
 | Datei                            | Abdeckung                                                                                                                                                                                                                         |
@@ -401,6 +409,7 @@ Browser-Sitzung, `?dev=0` schaltet ab. Ohne den Parameter wird nichts davon ange
 | `src/tests/save.test.ts`         | Roundtrip, Fortsetzen nach Import, Ablehnung defekter/manipulierter Dateien (§19.5)                                                                                                                                               |
 | `src/tests/prolog.test.ts`       | Prolog auf Engine-Ebene, Intro-Fairness, Mailbox ohne Diskette 2, Leitungsereignisse, Demo, Archiv, Content-Integrität (§19.4)                                                                                                    |
 | `src/tests/disks.test.ts`        | Fünferpack in der Schublade, unformatierte Disketten, `N0:` Formatieren, Schutz der Archivdiskette, Download nur auf formatierte Disketten                                                                                        |
+| `src/tests/household.test.ts`    | Tür-Szenen nach Zeit/Wochentag, Fragen der Mutter, Omas Anrufe (Zufall, Grenzen, verpasster Anruf)                                                                                                                                |
 | `src/tests/bbs.test.ts`          | Öffnungszeiten, Handles, Gast/Anmeldung/Freischaltung, Bretter, Post mit Antwort, Download + RUN, Schreibschutz, NO CARRIER, zwei Systeme, Modul/TERMINAL-Trennung, Migration v2→v3                                               |
 | `src/tests/cracker.test.ts`      | Cracker-Boxen FLUX-HQ/STARDUST, Chat mit RASTAR (Absichten, Gedächtnis, Strikes), Effektlistings, animierte BASIC-Läufe                                                                                                           |
 | `src/tests/pressure.test.ts`     | Benannte Schwellen, Deckel bis zur Warnung, Risiko durch Anmeldung/Online-Zeit/Sendeversuch, alle Verdachtsstufen im Spiel, Sperre, anonymer Anruf, Spielende, Migration v3→v4                                                    |

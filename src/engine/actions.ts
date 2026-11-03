@@ -20,6 +20,7 @@ import { applyEffects, discoverFact } from './effects';
 import { describe, inventoryText, itemsAt, listNames, lookAround } from './describe';
 import { dial, dropCarrier, handsetIntoCoupler, hangUp, pickUp, talkAbout } from './phone';
 import { capitalize, isReachable, resolveObject, resolveTopic, type ResolveOptions } from './resolve';
+import { openDoorScene } from './household';
 import { canSleepNow, leaveClub, requestAbsence, sleep } from './routine';
 import { advanceTime } from './time';
 
@@ -357,9 +358,7 @@ function open(ctx: Ctx, id: string): number {
       }
       return DEFAULT_MINUTES;
     case 'door':
-      ctx.say(
-        'Du öffnest die Tür und schaust in den Flur. Unten läuft der Fernseher, aus der Küche riecht es nach Bratkartoffeln. Du machst die Tür wieder zu – dein Platz ist am Schreibtisch.',
-      );
+      openDoorScene(ctx);
       return DEFAULT_MINUTES;
     case 'magazine':
       return read(ctx, 'magazine');

@@ -295,6 +295,8 @@ export type GameEffect =
   /** Schlafen bis zum nächsten Morgen (Weckzeit je nach Schultag) */
   | { type: 'sleep'; forced?: boolean }
   | { type: 'pocketMoney' }
+  /** Oma ruft gelegentlich an (Zufall, nur Stimmung) */
+  | { type: 'omaRing' }
   /** Sonntagsbesuch bei Jan beenden (Ralf geht) */
   | { type: 'endRalfVisit' }
   | { type: 'meterReading' }

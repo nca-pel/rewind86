@@ -110,6 +110,20 @@ export const EVENTS: EventDef[] = [
     interrupts: true,
     variants: [
       {
+        when: { all: [{ ringing: true }, { notFlag: 'away' }, { flag: 'omaRinging' }] },
+        effects: [
+          { type: 'audio', cue: 'phone_ring' },
+          { type: 'say', kind: 'caption', text: '[Das Telefon klingelt weiter.]' },
+          {
+            type: 'say',
+            kind: 'dialog',
+            speaker: 'MUTTER',
+            text: '(von unten) »Jaaan! Telefon! Ich glaub, das ist Oma!«',
+          },
+          { type: 'scheduleEvent', id: 'ev_ring_reminder', inMinutes: 6 },
+        ],
+      },
+      {
         when: { all: [{ ringing: true }, { notFlag: 'away' }] },
         effects: [
           { type: 'audio', cue: 'phone_ring' },
@@ -121,6 +135,28 @@ export const EVENTS: EventDef[] = [
             text: '(von unten) »Jaaan! Telefon! Das ist bestimmt Ralf!«',
           },
           { type: 'scheduleEvent', id: 'ev_ring_reminder', inMinutes: 6 },
+        ],
+      },
+      { effects: [] },
+    ],
+  },
+  // ── Omas Anrufe (Zufall, reine Stimmung; siehe engine/household.ts) ──────────────────────────────
+  { id: 'ev_oma_check_1', daily: '16:30', variants: [{ effects: [{ type: 'omaRing' }] }] },
+  { id: 'ev_oma_check_2', daily: '19:35', variants: [{ effects: [{ type: 'omaRing' }] }] },
+  {
+    id: 'ev_oma_ring_end',
+    repeatable: true,
+    variants: [
+      {
+        when: { all: [{ ringing: true }, { flag: 'omaRinging' }] },
+        effects: [
+          { type: 'telecom', op: 'stopRinging' },
+          { type: 'cancelEvent', id: 'ev_ring_reminder' },
+          { type: 'setFlag', id: 'omaRinging', value: false },
+          {
+            type: 'say',
+            text: 'Unten nimmt deine Mutter ab. Kurz darauf ruft sie hoch: »Jan! Das war Oma. Sie wollte nur hören, wie es dir geht. Ich hab sie schön von dir gegrüßt!«',
+          },
         ],
       },
       { effects: [] },

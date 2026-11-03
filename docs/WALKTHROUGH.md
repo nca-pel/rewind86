@@ -34,6 +34,8 @@ Zeile ans Adventure. Programme im »Tastenmodus« bekommen jede Taste einzeln (E
 - 17:45 Ralf ruft nach dem Fußballspiel an (Seidel war im Büro).
 - Ralf anrufen (47112): `RUFE RALF AN` (Sa nach 12:30; Di/Do/Fr erst ab 18:45, Training 16:30–18:30). **[geprüft]**
 
+- Alltag (optional, ohne Folgen): `ÖFFNE TÜR` zeigt je nach Wochentag und Uhrzeit eine andere Szene im Flur; manchmal ruft die Mutter eine Frage von unten. Gelegentlich ruft Oma an (`NIMM HÖRER`, Gespräch kostet nichts).
+
 ## Sonntag 16.11.
 
 - 12:30 Sonntagsbraten (Volkstrauertag). 14:30 Ralf ruft aus dem Flur seiner Oma an. 15:45 **Ralf besucht Jan**: Spielrunde FERNHANDEL mit Gesprächen (`FRAGE RALF NACH DEM SPIEL / SEIDEL / FRÜHER / DEM MODUL`, jede Frage 15 Minuten, `VERABSCHIEDE DICH` beendet). Ende spätestens 18:20.

@@ -2,6 +2,7 @@ import { EVENT_BY_ID } from '../content/events';
 import { FACT_BY_ID, factText } from '../content/facts';
 import { addMinutes } from './clock';
 import type { Ctx } from './context';
+import { omaMaybeRing } from './household';
 import { changeRelationship, lockAccount } from './pressure';
 import { endRalfVisit, meterReading, nextOccurrence, pocketMoney, requestAbsence, sleep } from './routine';
 import type { GameEffect, PuzzleStatus } from './types';
@@ -125,6 +126,9 @@ export function applyEffect(ctx: Ctx, e: GameEffect): void {
       break;
     case 'pocketMoney':
       pocketMoney(ctx);
+      break;
+    case 'omaRing':
+      omaMaybeRing(ctx);
       break;
     case 'meterReading':
       meterReading(ctx);

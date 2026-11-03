@@ -392,7 +392,14 @@ export function contentGraph(): GraphEdge[] {
  * (scheduleEvent/setPuzzle in engine/ und sim/). Ein Test gleicht diese Liste mit dem Quelltext ab.
  */
 export const CODE_TRIGGERS = {
-  events: ['ev_doorbell', 'ev_mother_modem', 'ev_ralf_callback', 'ev_finale_police'],
+  events: [
+    'ev_doorbell',
+    'ev_mother_modem',
+    'ev_ralf_callback',
+    'ev_finale_police',
+    'ev_oma_ring_end',
+    'ev_ring_reminder',
+  ],
   puzzles: ['P01', 'P03', 'P04', 'P05', 'P06', 'P09', 'P17', 'P18'],
 } as const;
 
