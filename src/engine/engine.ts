@@ -9,6 +9,7 @@ import { giveHint, runIntent } from './actions';
 import { formatClock } from './clock';
 import { Ctx } from './context';
 import { devCommand } from './dev';
+import { DEV_TOOLS } from './devFlag';
 import { resolveObject } from './resolve';
 import { advanceTime, checkTriggers } from './time';
 import type { Command, GameState, StepResult } from './types';
@@ -116,7 +117,7 @@ export function step(state: GameState, cmd: Command): StepResult {
       giveHint(ctx, cmd.puzzleId);
       break;
     case 'dev':
-      devCommand(ctx, cmd.text.slice(0, MAX_INPUT));
+      if (DEV_TOOLS) devCommand(ctx, cmd.text.slice(0, MAX_INPUT));
       break;
   }
   checkTriggers(ctx);

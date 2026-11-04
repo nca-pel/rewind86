@@ -26,18 +26,6 @@ type Tab = (typeof TABS)[number];
 const LOCATIONS = ['inventory', 'desk', 'drawer', 'drive', 'datasette', 'port', 'nowhere'];
 const PUZZLE_STATES = ['unknown', 'discovered', 'solving', 'solved', 'bypassed'];
 
-/** Entwicklermodus über ?dev=1 (bleibt für die Sitzung aktiv) */
-export function devEnabled(): boolean {
-  try {
-    const q = new URLSearchParams(window.location.search).get('dev');
-    if (q === '1') sessionStorage.setItem('rewind86.dev', '1');
-    if (q === '0') sessionStorage.removeItem('rewind86.dev');
-    return q === '1' || sessionStorage.getItem('rewind86.dev') === '1';
-  } catch {
-    return false;
-  }
-}
-
 /** Lokales Playtest-Protokoll: vom Parser nicht verstandene Eingaben (siehe app/playtestLog.ts) */
 function ParserLog() {
   const [log, setLog] = useState(() => readLog());

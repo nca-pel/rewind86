@@ -668,29 +668,6 @@ html[data-contrast='high'] .status-values dd {
   stroke: #19120e;
   stroke-width: 1.6px;
 }
-.desk-bar {
-  display: flex;
-  max-width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.25rem 0.4rem;
-  background: #19120e;
-  border: 1px solid var(--line);
-  border-top: 0;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.7rem;
-  color: #f2cf3a;
-}
-.desk-names {
-  font: inherit;
-  font-size: 0.6rem;
-  padding: 0.25rem 0.5rem;
-}
-.desk-names[aria-pressed='true'] {
-  background: #f2cf3a;
-  color: #19120e;
-}
 /* Animationen: Regen, Laterne, LEDs */
 .desk-scene .rain {
   animation: rain 0.6s steps(3) infinite;
@@ -1659,6 +1636,9 @@ html[data-contrast='high'] .slice-end h2 {
 @media (max-width: 899px) {
   .game {
     grid-template-rows: auto auto minmax(0, 1fr);
+    /* sichtbarer Bereich über der Bildschirmtastatur (siehe App.tsx) */
+    height: var(--vv-h, 100dvh);
+    transform: translateY(var(--vv-top, 0px));
   }
   .status-bar {
     gap: 0.2rem 0.6rem;
@@ -1950,4 +1930,196 @@ html[data-motion='reduced'] *::after {
 .device-art.pixel-art svg {
   border-radius: 4px;
   image-rendering: pixelated;
+}
+
+/* ---------------------------------------------------------------- Handy (Hochformat)
+   Eigenes Layout nur für Telefone: Kopfzeile mit Werten in einem Streifen, darunter die „Bühne“
+   (Schreibtisch, Detailansicht oder C64), das Adventure-Protokoll füllt den Rest, unten sitzen Eingabezeile
+   und Reiter im Daumenbereich. */
+@media (max-width: 640px) {
+  .game {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .mobile-tabs {
+    order: 3;
+    padding: 0.3rem 0.4rem calc(0.3rem + env(safe-area-inset-bottom, 0px));
+    border-top: 2px solid #0d0a07;
+  }
+  .mobile-tabs button {
+    min-height: 2.75rem;
+    padding: 0.2rem 0.1rem;
+    font-size: 0.5rem;
+  }
+
+  /* Kopfzeile: Logo | Hand | Ton, Menü – darunter ein Streifen mit Zeit, Geld, Telefon, Leitung */
+  .status-bar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'logo inv act'
+      'vals vals vals';
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    padding: 0.3rem 0.5rem calc(0.3rem + 7px);
+  }
+  .logo {
+    grid-area: logo;
+    font-size: 0.6rem;
+  }
+  .inventory {
+    grid-area: inv;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    min-width: 0;
+  }
+  .inv-item,
+  .inv-label,
+  .inv-empty {
+    flex: none;
+  }
+  .inv-item {
+    min-height: 2rem;
+    font-size: 0.85rem;
+  }
+  .status-actions {
+    grid-area: act;
+  }
+  .status-actions button {
+    min-height: 2.25rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.5rem;
+  }
+  .status-values {
+    grid-area: vals;
+    display: grid;
+    grid-template-columns: auto auto auto minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+  .status-values div {
+    min-width: 0;
+    gap: 0.1rem;
+    padding: 0.15rem 0.2rem 0.2rem;
+  }
+  .status-values dt {
+    font-size: 0.4rem;
+  }
+  .status-values dd {
+    padding: 0.1rem 0.25rem 0.05rem;
+    font-size: 0.95rem;
+  }
+  .status-values dd[data-testid='line-state'] {
+    white-space: normal;
+    font-size: 0.8rem;
+    line-height: 0.95;
+  }
+  /* Bühne */
+  .main-grid {
+    padding: 0.3rem;
+    gap: 0.3rem;
+  }
+  .desk-svg {
+    box-shadow: none;
+  }
+  /* Das Adventure-Fenster behält immer Platz (mindestens 11 rem); die obere Bühne scrollt, wenn sie mehr bräuchte */
+  .main-grid {
+    grid-template-rows: auto minmax(11rem, 1fr);
+  }
+  .desk-area,
+  .c64-area {
+    max-height: 56dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Detailansicht ersetzt den Schreibtisch, solange sie offen ist (das Protokoll darunter bleibt sichtbar) */
+  .desk-area:has(.detail-panel) .desk-stage {
+    display: none;
+  }
+  .detail-panel {
+    margin-top: 0;
+    max-height: 44dvh;
+    padding: 0 0.6rem 0.6rem;
+  }
+  .detail-body {
+    gap: 0.6rem;
+  }
+  .device-art {
+    flex-basis: 64px;
+  }
+  .detail-panel button {
+    min-height: 2.5rem;
+  }
+  .detail-head .close {
+    min-width: 2.5rem;
+  }
+
+  /* C64: Monitor ohne Frontleiste, Tasten in zwei Reihen mit Fingerflächen */
+  .c64-panel {
+    gap: 0.3rem;
+  }
+  .monitor {
+    width: max(14rem, min(100%, calc((100dvh - 33rem) / 0.8)));
+    margin: 0 auto;
+    padding: 3%;
+    border-radius: 12px;
+  }
+  .monitor-front {
+    display: none;
+  }
+  .monitor-bezel {
+    padding: 2%;
+  }
+  .keyboard-deck {
+    padding: 0.4rem;
+  }
+  .keyboard-deck .keys {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-areas:
+      'stop stop arrow clr f1 f3'
+      'space space ret ret f5 f7';
+    gap: 0.3rem;
+  }
+  .keys button {
+    min-height: 2.75rem;
+    font-size: 0.6rem;
+  }
+
+  /* Adventure-Fenster: schlanke Titelleiste, größere Eingabe (16 px verhindert den Zoom in iOS) */
+  .adventure-panel {
+    min-height: 11rem;
+    box-shadow:
+      inset 2px 2px 0 var(--win-hi),
+      inset -2px -2px 0 var(--win-lo);
+  }
+  .adventure-panel .panel-title {
+    padding: 0.15rem 0.4rem;
+  }
+  .adventure-panel .win-btn {
+    width: 2rem;
+    height: 2rem;
+  }
+  .adv-form {
+    gap: 0.35rem;
+    padding: 0.35rem;
+  }
+  .adv-form input {
+    min-height: 2.75rem;
+    font-size: 1rem;
+  }
+  /* iOS zoomt in jedes Eingabefeld unter 16 px hinein und zoomt nicht von selbst zurück – deshalb nie kleiner */
+  .adventure-panel.c64-mode .adv-form input {
+    font-size: 16px;
+  }
+  .game input:not([type='checkbox']):not([type='range']),
+  .game select,
+  .modal input:not([type='checkbox']):not([type='range']),
+  .modal select {
+    font-size: max(16px, 1em);
+  }
+  .adv-form button {
+    min-height: 2.75rem;
+  }
+  .adv-form .prompt-toggle {
+    width: 3.2rem;
+  }
 }

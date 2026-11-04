@@ -273,7 +273,7 @@ export const OBJECTS: WorldObject[] = [
     hotspot: true,
     description: [
       {
-        text: 'Die neue Ausgabe des »Heimcomputer-Journals« (fiktive Zeitschrift), heute mit der Post gekommen. Sie riecht noch nach Druckerschwärze. Auf dem Umschlag steht, was drin ist: das LISTING DES MONATS zum Abtippen, das kleine GEBÜHREN-Listing, eine ZEICHENTABELLE, ein ARTIKEL über Akustikkoppler, die DISKETTEN-PRAXIS, DATEN AUS DER BOX, die LESERTIPPS und die KLEINANZEIGEN.',
+        text: 'Die neue Ausgabe des »Heimcomputer-Journals« (fiktive Zeitschrift), heute mit der Post gekommen. Sie riecht noch nach Druckerschwärze. Auf dem Umschlag steht, was drin ist: das LISTING DES MONATS zum Abtippen, das kleine GEBÜHREN-Listing, eine ZEICHENTABELLE, ein ARTIKEL über Akustikkoppler, die DISKETTEN-PRAXIS, DATEN AUS DER BOX, die LESERTIPPS und die KLEINANZEIGEN. Es lohnt sich, die einzelnen Artikel zu lesen.',
       },
     ],
     historicalStatus: 'fictional',

@@ -225,7 +225,7 @@ Auswerten: `?dev=1`, Entwicklerkonsole → Tab „Parser“ → „Kopieren“. 
 
 ## Entwicklerkonsole
 
-`http://…/?dev=1` blendet oben mittig einen **DEV**-Knopf ein (für die Browser-Sitzung; `?dev=0` schaltet ab):
+Nur im Entwicklungsbuild (`npm run dev`) und in E2E-Tests (`VITE_DEV_TOOLS=1`); der Produktionsbuild (`npm run build`/`serve`) enthält die Konsole nicht und verschleiert den Spielcode (`vite.config.ts`). `http://…/?dev=1` blendet oben mittig einen **DEV**-Knopf ein (für die Browser-Sitzung; `?dev=0` schaltet ab):
 Fakten/Flags/Rätsel/Gegenstände setzen, Zeit vorspulen, Ereignisse auslösen, Meilenstein-Spielstände laden
 („Geheimer Modus“, „Online“, „Ende des Ausschnitts“ …) und den Ereignis-/Rätselgraph prüfen. `hilfe` in der
 Konsole listet alle Befehle. Eingriffe werden im Debug-Log des Spielstands markiert.

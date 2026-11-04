@@ -15,7 +15,7 @@ test('Barrierefreiheit: Titel, Spiel, Namen eingeblendet, Menü', async ({ page 
   await page.getByTestId('new-game').click();
   await check(page, 'Schreibtisch');
   await adv(page, 'nimm hörer');
-  await page.getByTestId('desk-names').click();
+  await adv(page, 'zeige namen');
   await check(page, 'Schreibtisch mit Namen');
   await page.getByRole('button', { name: 'Menü' }).click();
   await check(page, 'Menü');

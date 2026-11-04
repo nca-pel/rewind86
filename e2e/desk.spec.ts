@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { adv } from './helpers';
 
 /** Prüft, dass jede Klickfläche im Bild liegt und ein Klick auf ihre Mitte genau diesen Gegenstand trifft */
 async function checkHotspots(page: Page): Promise<string[]> {
@@ -61,8 +62,10 @@ test('Schreibtisch-Szene: Klickflächen liegen auf den Gegenständen, bei jeder 
   await expect(page.getByTestId('desk-caption')).toHaveText('Telefon');
 
   // „Namen“ blendet alle Namen ein
-  await page.getByTestId('desk-names').click();
+  await adv(page, 'zeige namen');
   await expect(page.locator('svg.desk-svg text.desk-name')).toHaveCount(ids.length);
+  await adv(page, 'blende namen aus');
+  await expect(page.locator('svg.desk-svg text.desk-name')).toHaveCount(0);
 
   // Klick öffnet die Detailansicht mit Bildausschnitt
   await page.locator('[data-hotspot="phone"] .hs-area').click({ force: true });

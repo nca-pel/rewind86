@@ -5,7 +5,7 @@
  *   generierten Vorlage docs/00-raw/finalpixel.jpg).
  * - Alles liegt in EINEM SVG in diesen Pixelkoordinaten: Bild, Klickflächen (DESK_AREAS), Zustands-Sprites.
  *   Dadurch passen Klickflächen auf jeder Auflösung; die Bühne skaliert in ganzen Gerätepixeln (scharf).
- * - Hover/Fokus: Umriss des Gegenstands + Name in der Zeile unter dem Bild; „Namen“ (Taste N) zeigt alle Namen.
+ * - Hover/Fokus: Umriss des Gegenstands + Name nur für Screenreader; ZEIGE NAMEN (Taste N) beschriftet alle Gegenstände.
  * - Kleine Animationen: klingelndes Telefon, LEDs. Fenster, Radio, Päckchen (nur Kulisse) und Hörer bleiben wie im Bild.
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
@@ -392,28 +392,31 @@ export function Desk({
   state,
   onSelect,
   selected,
+  showNames,
+  onToggleNames,
 }: {
   state: GameState;
   onSelect: (id: string) => void;
   selected: string | null;
+  showNames: boolean;
+  onToggleNames: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const width = useStageWidth(ref);
   const [hover, setHover] = useState<string | null>(null);
-  const [showNames, setShowNames] = useState(false);
   const name = hover ?? selected;
   const atClub = state.flags.atClub === true;
 
-  // Taste N blendet alle Namen ein und aus (nicht in Eingabefeldern)
+  // Taste N blendet alle Namen ein und aus (nicht in Eingabefeldern); auf dem Handy: ZEIGE NAMEN
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key === 'n' || e.key === 'N') setShowNames((v) => !v);
+      if (e.key === 'n' || e.key === 'N') onToggleNames();
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
-  }, []);
+  }, [onToggleNames]);
 
   return (
     <div className="desk-stage" ref={ref}>
@@ -440,25 +443,14 @@ export function Desk({
           width={width}
         />
       )}
-      <div className="desk-bar" style={{ width }}>
-        <span className="desk-caption" data-testid="desk-caption">
-          {atClub
-            ? 'Im Computerclub – Jugendzentrum Wiedenbrück'
-            : name && OBJECT_BY_ID[name]
-              ? OBJECT_BY_ID[name].short
-              : 'Jans Schreibtisch'}
-        </span>
-        <button
-          type="button"
-          className="desk-names"
-          aria-pressed={showNames}
-          onClick={() => setShowNames((v) => !v)}
-          title="Alle Gegenstände benennen (Taste N)"
-          data-testid="desk-names"
-        >
-          Namen
-        </button>
-      </div>
+      {/* Bildunterschrift nur für Screenreader: sichtbar zeigen Namen die Gegenstände (ZEIGE NAMEN) */}
+      <span className="sr-only" data-testid="desk-caption" aria-live="polite">
+        {atClub
+          ? 'Im Computerclub – Jugendzentrum Wiedenbrück'
+          : name && OBJECT_BY_ID[name]
+            ? OBJECT_BY_ID[name].short
+            : 'Jans Schreibtisch'}
+      </span>
     </div>
   );
 }

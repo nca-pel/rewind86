@@ -66,16 +66,6 @@ function actionsFor(state: GameState, id: string): Action[] {
         for (const d of itemsAt(state, 'drawer'))
           a.push({ label: `${OBJECT_BY_ID[d].short} nehmen`, cmd: `NIMM ${cmdName(d)}` });
       break;
-    case 'magazine':
-      a.push(
-        { label: 'Zeichentabelle', cmd: 'LIES ZEICHENTABELLE' },
-        { label: 'Koppler-Artikel', cmd: 'LIES ARTIKEL' },
-        { label: 'Kleinanzeigen', cmd: 'LIES KLEINANZEIGEN' },
-      );
-      break;
-    case 'notebook':
-      a.push({ label: 'Notizblock öffnen', cmd: 'NOTIZEN' }, { label: 'Denke nach', cmd: 'DENKE NACH' });
-      break;
     case 'door':
       a.push({ label: 'Tür öffnen', cmd: 'ÖFFNE TÜR' });
       break;

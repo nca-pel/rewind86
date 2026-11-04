@@ -87,15 +87,27 @@ export function dynamicDescription(state: GameState, id: string): string {
   }
 }
 
-export function describe(state: GameState, id: string): string {
+/** Lesestoff: Der Text ist der Inhalt selbst und wird nie gekürzt */
+const ALWAYS_FULL = new Set(['magazine', 'club_letter']);
+
+function firstSentence(text: string): string {
+  return text.match(/^.*?[.!?](?=\s|$)/s)?.[0] ?? text;
+}
+
+/**
+ * Beschreibung eines Objekts. Ohne `full` nur der erste Satz des Grundtextes (plus Zustand), die ausführliche
+ * Fassung gibt es bei UNTERSUCHE und beim Lesen.
+ */
+export function describe(state: GameState, id: string, full = false): string {
   const o = OBJECT_BY_ID[id];
-  const base = o.description.find((d) => evalCondition(state, d.when))?.text ?? '';
+  let base = o.description.find((d) => evalCondition(state, d.when))?.text ?? '';
+  if (!full && !ALWAYS_FULL.has(id) && !id.startsWith('mag_')) base = firstSentence(base);
   const dyn = dynamicDescription(state, id);
   return [base, dyn].filter(Boolean).join(' ');
 }
 
 export function lookAround(state: GameState): string {
-  const parts = [describe(state, 'desk')];
+  const parts = [describe(state, 'desk', true)];
   const onDesk = itemsAt(state, 'desk');
   if (onDesk.length)
     parts.push(`Auf dem Tisch ${onDesk.length > 1 ? 'liegen' : 'liegt'} außerdem ${listNames(onDesk)}.`);

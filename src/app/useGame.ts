@@ -25,6 +25,8 @@ export interface GameUi {
   focusRequest: { target: 'c64' | 'adventure'; n: number } | null;
   detail: string | null;
   setDetail: (id: string | null) => void;
+  showNames: boolean;
+  setShowNames: (on: boolean) => void;
   notebookOpen: boolean;
   setNotebookOpen: (o: boolean) => void;
   menuOpen: false | 'menu' | 'load';
@@ -44,6 +46,7 @@ export function useGame(): GameUi {
   const [toast, setToast] = useState<string | null>(null);
   const [focusRequest, setFocusRequest] = useState<GameUi['focusRequest']>(null);
   const [detail, setDetail] = useState<string | null>(null);
+  const [showNames, setShowNames] = useState(false);
   const [notebookOpen, setNotebookOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState<false | 'menu' | 'load'>(false);
   const [sliceEnd, setSliceEnd] = useState(false);
@@ -84,6 +87,9 @@ export function useGame(): GameUi {
             break;
           case 'closeDetail':
             setDetail(null);
+            break;
+          case 'showNames':
+            setShowNames(e.on);
             break;
           case 'openNotebook':
             setNotebookOpen(true);
@@ -234,6 +240,8 @@ export function useGame(): GameUi {
     focusRequest,
     detail,
     setDetail,
+    showNames,
+    setShowNames,
     notebookOpen,
     setNotebookOpen,
     menuOpen,

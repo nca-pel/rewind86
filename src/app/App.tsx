@@ -29,6 +29,40 @@ export function App() {
     };
   }, [settings.audio, settings.volume]);
 
+  // iOS legt die Bildschirmtastatur über die Seite, ohne das Layout zu verkleinern: Spielfläche auf den
+  // sichtbaren Bereich (visualViewport) begrenzen, damit die Eingabezeile über der Tastatur bleibt
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const root = document.documentElement;
+    const apply = () => {
+      root.style.setProperty('--vv-h', `${vv.height}px`);
+      root.style.setProperty('--vv-top', `${vv.offsetTop}px`);
+    };
+    // Fokus per Code (z. B. nach dem Einschalten) löst auf iOS nicht immer ein resize aus: nachmessen,
+    // bis die Tastatur-Animation durch ist
+    const timers: number[] = [];
+    const remeasure = () => {
+      timers.forEach(window.clearTimeout);
+      timers.length = 0;
+      for (const ms of [0, 150, 400, 800]) timers.push(window.setTimeout(apply, ms));
+    };
+    apply();
+    vv.addEventListener('resize', apply);
+    vv.addEventListener('scroll', apply);
+    window.addEventListener('focusin', remeasure);
+    window.addEventListener('focusout', remeasure);
+    return () => {
+      timers.forEach(window.clearTimeout);
+      vv.removeEventListener('resize', apply);
+      vv.removeEventListener('scroll', apply);
+      window.removeEventListener('focusin', remeasure);
+      window.removeEventListener('focusout', remeasure);
+      root.style.removeProperty('--vv-h');
+      root.style.removeProperty('--vv-top');
+    };
+  }, []);
+
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.textSize = settings.textSize;

@@ -27,7 +27,7 @@ import { advanceTime } from './time';
 const DEFAULT_MINUTES = 1;
 
 const HELP_TEXT = `So spielst du (Beispiele – Groß-/Kleinschreibung und Umlaute egal):
-• Umsehen: SCHAU DICH UM · UNTERSUCHE DISKETTE · SIEH AUF DEN MONITOR
+• Umsehen: SCHAU DICH UM · UNTERSUCHE DISKETTE · SIEH AUF DEN MONITOR · ZEIGE NAMEN (beschriftet die Gegenstände am Schreibtisch) · BLENDE NAMEN AUS
 • Gegenstände: NIMM … · LEGE DISKETTE INS LAUFWERK · ÖFFNE SCHUBLADE · NIMM DISKETTE AUS DEM LAUFWERK
 • Geräte: SCHALTE COMPUTER EIN · SCHALTE RADIO EIN · STELLE RADIO AUF BFBS
 • Telefon: NIMM HÖRER · WÄHLE 12345 · RUFE RALF AN · LEGE HÖRER IN DEN KOPPLER · LEGE AUF
@@ -477,19 +477,19 @@ function read(ctx: Ctx, id: string): number {
   switch (id) {
     case 'magazine':
       ctx.say(
-        describe(s, 'magazine') + ' (z. B. LIES LISTING, LIES TABELLE, LIES ARTIKEL, LIES KLEINANZEIGEN)',
+        describe(s, 'magazine', true) + ' (z. B. LIES LISTING, LIES TABELLE, LIES ARTIKEL, LIES KLEINANZEIGEN)',
       );
       return DEFAULT_MINUTES;
     case 'mag_table':
-      ctx.say(describe(s, id));
+      ctx.say(describe(s, id, true));
       discoverFact(ctx, 'chr_table');
       return 2;
     case 'mag_article':
-      ctx.say(describe(s, id));
+      ctx.say(describe(s, id, true));
       discoverFact(ctx, 'coupler_howto');
       return 3;
     case 'mag_ads':
-      ctx.say(describe(s, id));
+      ctx.say(describe(s, id, true));
       discoverFact(ctx, 'bbs_bitschuppen');
       return 2;
     case 'notebook':
@@ -497,7 +497,7 @@ function read(ctx: Ctx, id: string): number {
       notesSummary(ctx);
       return 0;
     default:
-      ctx.say(describe(s, id));
+      ctx.say(describe(s, id, true));
       applyEffects(ctx, OBJECT_BY_ID[id]?.readEffects);
       return DEFAULT_MINUTES;
   }
@@ -649,6 +649,15 @@ function meta(ctx: Ctx, intent: Extract<Intent, { kind: 'meta' }>): number {
   switch (intent.meta) {
     case 'help':
       ctx.say(intent.arg === 'c64' ? c64HelpText(isHard(s)) : HELP_TEXT, 'system');
+      return 0;
+    case 'names':
+      ctx.ui.push({ type: 'showNames', on: intent.arg !== 'off' });
+      ctx.say(
+        intent.arg === 'off'
+          ? 'Die Namen am Schreibtisch sind ausgeblendet.'
+          : 'Die Namen der Gegenstände sind eingeblendet.',
+        'system',
+      );
       return 0;
     case 'inventory':
       ctx.say(inventoryText(s));
@@ -905,7 +914,7 @@ function verb(ctx: Ctx, intent: Verb): number {
         ctx.say('Ralf ist am Telefon – sehen kannst du ihn nicht.');
         return 0;
       }
-      ctx.say(describe(s, id));
+      ctx.say(describe(s, id, intent.verb === 'examine'));
       return DEFAULT_MINUTES;
     }
     case 'take': {

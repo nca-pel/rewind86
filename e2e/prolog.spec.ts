@@ -92,8 +92,10 @@ test('kompletter Prolog bis zur Mailbox und „Fortsetzung folgt“', async ({ p
   await nb.getByTestId('note-input').fill('Ralf morgen nach Diskette 2 fragen');
   await nb.getByRole('button', { name: 'Notieren' }).click();
   await expect(nb).toContainText('Ralf morgen nach Diskette 2 fragen');
-  await nb.getByTestId('hint-button').click();
-  await expect(nb.locator('.hint-text')).toContainText('(1/3)');
+  await page.keyboard.press('Escape');
+  await adv(page, 'denke nach');
+  await adv(page, 'notizen');
+  await expect(page.getByRole('dialog', { name: 'Notizblock' }).locator('.hint-text')).toContainText('(1/3)');
   expect(errors).toEqual([]);
 });
 

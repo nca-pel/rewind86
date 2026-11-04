@@ -36,7 +36,34 @@ const CUE_GROUP: Record<AudioCueId, Group> = {
   hangup: 'device',
 };
 
+/**
+ * Einsekündige Stille als WAV. iOS spielt Web Audio sonst in der Kategorie „Ambient“ und schweigt bei
+ * aktivem Stummschalter; ein laufendes <audio>-Element schaltet auf „Wiedergabe“ um (wie ein YouTube-Video).
+ */
+function silentWavUrl(): string {
+  const rate = 8000;
+  const n = rate;
+  const buf = new ArrayBuffer(44 + n);
+  const v = new DataView(buf);
+  const str = (o: number, s: string) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  str(0, 'RIFF');
+  v.setUint32(4, 36 + n, true);
+  str(8, 'WAVEfmt ');
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true);
+  v.setUint32(28, rate, true);
+  v.setUint16(32, 1, true);
+  v.setUint16(34, 8, true);
+  str(36, 'data');
+  v.setUint32(40, n, true);
+  new Uint8Array(buf, 44).fill(128);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+
 class AudioEngine {
+  private keepAlive: HTMLAudioElement | null = null;
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private groups: Partial<Record<Group, GainNode>> = {};
@@ -59,6 +86,7 @@ class AudioEngine {
   /** Muss aus einem Nutzerereignis heraus aufgerufen werden (Autoplay-Regeln). */
   unlock(): void {
     if (!this.enabled) return;
+    this.playbackSession();
     if (!this.ctx) {
       const Ctor =
         window.AudioContext ??
@@ -89,6 +117,23 @@ class AudioEngine {
     this.resumeAndSync();
   }
 
+  /** iOS: Ton auch bei aktivem Stummschalter (Kategorie „Wiedergabe“) */
+  private playbackSession(): void {
+    try {
+      const nav = navigator as Navigator & { audioSession?: { type: string } };
+      if (nav.audioSession) nav.audioSession.type = 'playback';
+      if (!this.keepAlive) {
+        const el = new Audio(silentWavUrl());
+        el.loop = true;
+        el.setAttribute('playsinline', '');
+        this.keepAlive = el;
+      }
+      void this.keepAlive.play().catch(() => undefined);
+    } catch {
+      /* ohne Unterstützung bleibt es bei Web Audio */
+    }
+  }
+
   private resumeAndSync(): void {
     const ctx = this.ctx;
     if (!ctx || !this.enabled) return;
@@ -103,6 +148,7 @@ class AudioEngine {
       this.haltRing();
       this.haltRadio();
       void this.ctx?.suspend();
+      this.keepAlive?.pause();
     } else this.resumeAndSync();
   }
 

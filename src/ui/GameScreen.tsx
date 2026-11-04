@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import type { GameUi, Panel } from '../app/useGame';
 import { AdventurePanel } from './AdventurePanel';
 import { C64Panel } from './C64Panel';
@@ -6,13 +6,16 @@ import { COMMAND_NAME } from './commandNames';
 import { Desk } from './Desk';
 import { DetailPanel } from './DetailPanel';
 import { ENDING_BY_ID } from '../content/endings';
-import { DevPanel, devEnabled } from './DevPanel';
+import { DEV_TOOLS, devEnabled } from '../engine/devFlag';
 import { SaveList, SettingsForm } from './Menu';
 import { Modal } from './Modal';
 import { Notebook } from './Notebook';
 import { StatusBar } from './StatusBar';
 import { renderC64 } from '../sim/c64';
 import { useCommandInput } from './useCommandInput';
+
+/** Entwicklerkonsole: nur im Entwicklungsbuild (oder mit VITE_DEV_TOOLS=1) überhaupt im Bundle */
+const DevPanel = DEV_TOOLS ? lazy(() => import('./DevPanel').then((m) => ({ default: m.DevPanel }))) : null;
 
 export function GameScreen({ game }: { game: GameUi }) {
   const state = game.state!;
@@ -27,9 +30,16 @@ export function GameScreen({ game }: { game: GameUi }) {
     if (game.focusRequest?.target === 'c64') setPanel('c64');
   }, [game.focusRequest]);
 
+  // Detailansicht (auch aus dem Inventar geöffnet) liegt im Schreibtisch-Reiter, sonst bliebe sie auf dem Handy unsichtbar
+  useEffect(() => {
+    if (game.detail) setPanel('desk');
+  }, [game.detail]);
+
   const select = (id: string) => {
+    // Der Notizblock hat keine Detailansicht: Klick öffnet ihn direkt
+    if (id === 'notebook') return game.dispatch({ type: 'adventure', text: 'NOTIZEN' });
     game.setDetail(id);
-    game.dispatch({ type: 'adventure', text: `UNTERSUCHE ${COMMAND_NAME[id] ?? id}` });
+    game.dispatch({ type: 'adventure', text: `SCHAU ${COMMAND_NAME[id] ?? id}` });
   };
 
   return (
@@ -53,7 +63,13 @@ export function GameScreen({ game }: { game: GameUi }) {
       </nav>
       <main className="main-grid">
         <div className="desk-area">
-          <Desk state={state} onSelect={select} selected={game.detail} />
+          <Desk
+            state={state}
+            onSelect={select}
+            selected={game.detail}
+            showNames={game.showNames}
+            onToggleNames={() => game.setShowNames(!game.showNames)}
+          />
           <DetailPanel game={game} />
         </div>
         <div className="c64-area">
@@ -123,7 +139,11 @@ export function GameScreen({ game }: { game: GameUi }) {
           </div>
         </div>
       )}
-      {dev && <DevPanel game={game} />}
+      {DevPanel && dev && (
+        <Suspense fallback={null}>
+          <DevPanel game={game} />
+        </Suspense>
+      )}
       <div className="toast" role="status" aria-live="polite" data-testid="toast">
         {game.toast}
       </div>

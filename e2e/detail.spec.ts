@@ -3,7 +3,7 @@ import { adv } from './helpers';
 
 test('Detailansicht: Schublade zeigt Inhalt erst geöffnet, alles ohne Scrollen sichtbar, ✕ zoomt zurück', async ({
   page,
-}) => {
+}, info) => {
   await page.goto('/');
   await page.getByTestId('new-game').click();
   const panel = page.getByTestId('detail-panel');
@@ -24,5 +24,7 @@ test('Detailansicht: Schublade zeigt Inhalt erst geöffnet, alles ohne Scrollen 
   await page.locator('[data-hotspot="phone"]').first().click({ force: true });
   await expect(panel.getByRole('button', { name: 'Wählen' })).toBeVisible();
   const [scrollH, clientH] = await panel.evaluate((e) => [e.scrollHeight, e.clientHeight]);
-  expect(scrollH).toBeLessThanOrEqual(clientH + 2);
+  // Auf dem Handy darf die Detailansicht scrollen: Das Adventure-Fenster behält Vorrang vor ihrer Höhe
+  if (info.project.name === 'desktop') expect(scrollH).toBeLessThanOrEqual(clientH + 2);
+  else expect((await page.locator('.adventure-panel').boundingBox())!.height).toBeGreaterThan(150);
 });

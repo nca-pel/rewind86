@@ -9,6 +9,7 @@ export interface Segment {
 
 export type MetaId =
   | 'help'
+  | 'names'
   | 'inventory'
   | 'notes'
   | 'think'
@@ -117,6 +118,11 @@ function parseMeta(tokens: string[], raw: string): Intent | null {
   if (raw.trim() === '?' || ['hilfe', 'help', 'befehle', 'kommandos'].includes(w0)) {
     const topic = rest.find((w) => HELP_TOPICS[w]);
     return topic ? { kind: 'meta', meta: 'help', arg: HELP_TOPICS[topic] } : { kind: 'meta', meta: 'help' };
+  }
+  // ZEIGE NAMEN / BLENDE NAMEN AUS: Beschriftung der Gegenstände am Schreibtisch
+  if (tokens.some((w) => ['namen', 'beschriftung', 'beschriftungen'].includes(w)) && tokens.length <= 4) {
+    const off = tokens.some((w) => ['aus', 'ab', 'weg', 'ausblenden', 'verstecke', 'verberge'].includes(w));
+    return { kind: 'meta', meta: 'names', arg: off ? 'off' : 'on' };
   }
   if (['i', 'inv', 'inventar', 'inventory', 'taschen'].includes(w0) && tokens.length === 1)
     return { kind: 'meta', meta: 'inventory' };

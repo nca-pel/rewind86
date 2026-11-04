@@ -149,15 +149,8 @@ export function Notebook({ game }: { game: GameUi }) {
       <section aria-labelledby="nb-hint">
         <h3 id="nb-hint">Denkhilfe (optional)</h3>
         <p className="muted">
-          Drei Stufen: Denkanstoß → konkreter Hinweis → ausführliche Hilfestellung. Nur auf Wunsch.
+          Drei Stufen: Denkanstoß → konkreter Hinweis → ausführliche Hilfestellung. Nur auf Wunsch: Schließe den Block und tippe DENKE NACH.
         </p>
-        <button
-          type="button"
-          onClick={() => game.dispatch({ type: 'adventure', text: 'DENKE NACH' })}
-          data-testid="hint-button"
-        >
-          Denke nach
-        </button>
         {lastThought && <p className="hint-text">{lastThought.text}</p>}
       </section>
 

@@ -62,6 +62,11 @@ const MOTHER_ASKS_CHANCE = 0.4;
 
 /** Tür öffnen: Szene nach Wochentag und Tageszeit, gelegentlich eine Frage der Mutter. */
 export function openDoorScene(ctx: Ctx): void {
+  doorScene(ctx);
+  ctx.say('Du schließt die Tür wieder.');
+}
+
+function doorScene(ctx: Ctx): void {
   const s = ctx.state;
   const scene = DOOR_SCENES.find((sc) => sceneMatches(sc, s))!;
   ctx.say(pick(s, scene.texts));

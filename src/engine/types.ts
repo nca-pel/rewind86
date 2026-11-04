@@ -325,6 +325,7 @@ export type UiEffect =
   | { type: 'openDetail'; id: string }
   | { type: 'closeDetail' }
   | { type: 'openNotebook' }
+  | { type: 'showNames'; on: boolean }
   | { type: 'save'; slot: string }
   | { type: 'load'; slot: string }
   | { type: 'listSaves' }
